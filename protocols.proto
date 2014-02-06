@@ -1,0 +1,24 @@
+package reveal;
+
+// A packet of urls pointing to Gazebo SDF files
+message Models {
+  repeated string url = 1;
+}
+
+message WorldState {
+  required double time = 1;
+
+  message State {
+    repeated double q = 1;
+    repeated double dq = 2;
+  }
+
+  repeated State state = 2;
+
+  message Control {
+    repeated double u = 1;
+  }
+
+  repeated Control control = 3;
+}
+

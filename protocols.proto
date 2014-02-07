@@ -1,10 +1,25 @@
-package reveal;
+//TCP/IP protocol messages for reveal
 
-// A packet of urls pointing to Gazebo SDF files
+package reveal.ip;
+
+//Signals
+// TODO: will evolve later.  Initial pass is basically a placeholder but some 
+// primitive signals provided for testing
+message Signal {
+  enum SignalType {
+    MSG_END = 0;
+    MSG_REPLY = 1;
+  }
+
+  required SignalType signal = 1;
+}
+
+//A packet of urls pointing to Gazebo SDF files
 message Models {
   repeated string url = 1;
 }
 
+//The union message of the 'state packet' and the 'state plus controls packet'
 message WorldState {
   required double time = 1;
 

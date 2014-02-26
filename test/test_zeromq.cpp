@@ -14,7 +14,7 @@ length messages
 #include <iostream>
 #include <sstream>
 
-#include "protocols.pb.h"
+#include <protocols.pb.h>
 
 //-----------------------------------------------------------------------------
 

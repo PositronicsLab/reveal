@@ -6,7 +6,7 @@ the read write operations using reveal protocol buffer messages
 
 -----------------------------------------------------------------------------*/
 
-#include "protocols.pb.h"
+#include <protocols.pb.h>
 #include <stdio.h>
 #include <string.h>
 

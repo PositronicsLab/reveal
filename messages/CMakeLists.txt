@@ -6,7 +6,7 @@ include_directories( ${REVEAL_MESSAGES_INCLUDE_DIRS} )
 
 # add any messages to be compiled here
 set( REVEAL_MESSAGES
-  protocols.proto
+  net.proto
 )
 
 # add the protobuf include directories

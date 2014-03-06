@@ -1,29 +1,39 @@
-#include <reveal/server.h>
+#include <Reveal/server.h>
 
 #include <stdio.h>
 #include <assert.h>
 #include <iostream>
 #include <sstream>
 
-namespace reveal {
+#include <Reveal/server_message.h>
+#include <Reveal/client_message.h>
+#include <Reveal/scenario.h>
+#include <Reveal/trial.h>
+#include <Reveal/solution.h>
+
+namespace Reveal {
 
 //-----------------------------------------------------------------------------
+/// Default Constructor
 Server::Server( void ) {
 
 }
 
 //-----------------------------------------------------------------------------
+/// Destructor
 Server::~Server( void ) {
 
 }
 
 //-----------------------------------------------------------------------------
+/// Initialization
 bool Server::Init( void ) {
-  context = zmq_ctx_new();
-  socket = zmq_socket( context, ZMQ_REP );
-  int rc = zmq_bind( socket, getConnectionString().c_str() );
-  assert( rc == 0 );
-  // TODO: add robust error checking
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  _connection = Connection( PORT );
+  if( !_connection.Open() ) {
+    return false;
+  }
 
   printf( "Server is listening...\n" );
 
@@ -31,101 +41,131 @@ bool Server::Init( void ) {
 }
 
 //-----------------------------------------------------------------------------
+/// Main Loop
 void Server::Run( void ) {
-  // generate a sample expected message for any error checking
-  reveal::ip::Models model_expected = genTestMessage();
-  std::string ser_expected;
-  model_expected.SerializeToString( &ser_expected );
+
+  std::string msg_request;
+  std::string msg_response;
+
+  ClientMessage clientmsg;
+  ServerMessage servermsg;
 
   while( true ) {
-    char buffer[ RECEIVE_BUFFER_SZ ];
-    std::string ser_actual = "";
 
-    int more;
-    int nbytes;
-    size_t sz = sizeof( int );
-    
-    int chunks = 0;
-    do {
-      nbytes = zmq_recv( socket, buffer, RECEIVE_BUFFER_SZ, 0 ); 
-      assert( nbytes != -1 );
-      zmq_getsockopt( socket, ZMQ_RCVMORE, &more, &sz );
-      if( more ) {
-        ser_actual.append( buffer, nbytes );
+    // block waiting for a message from a client
+    if( !_connection.Read( msg_request ) ) {
+      // read failed at connection
+      // TODO: improve error handling      
+    }
+
+    // parse the serialized request
+    if( !clientmsg.Parse( msg_request ) ) {
+      printf( "ERROR: Failed to parse ClientRequest\n" );
+      // TODO: improve error handling      
+    } 
+
+    // determine the course of action
+    if( clientmsg.getType() == ClientMessage::SCENARIO ) {
+      ScenarioPtr scenario = clientmsg.getScenario();
+ 
+      // NOTE: If we use workers for DB interaction, worker spawned HERE.
+      // Query into the database to construct the scenario
+
+      // Example scenario:
+      if( scenario->name.compare( "test" ) == 0 ) {
+        scenario->trials = 2;
+        scenario->urls.push_back( "http://www.gazebosim.org/" );
+        scenario->urls.push_back( "http://www.osrfoundation.org/" );
       }
-      chunks++;
-      //printf( "received chunk: %d, bytes: %d, more: %d\n", chunks, nbytes, more );
-    } while( more );
 
-    // Validation
-    // Check that actual and expected have same length
-    if( ser_expected.size() != ser_actual.size() ) {
-      printf( "Validation Failed: Actual size of the message did not equal expected size\n" );
-      // Reply with a 'failure' notification
-      zmq_send( socket, "0", 1, 0 );
-      break;
-    }
-    // Compare the two strings
-    if( ser_expected.compare( ser_actual ) != 0 ) {
-      printf( "Validation Failed: Actual string did not equal expected string\n" );
-      // Reply with a 'failure' notification
-      zmq_send( socket, "0", 1, 0 );
-      break;
-    }
-    // Validation succeeded!.  The message should parse.
+      // once the scenario created, build a message
+      servermsg.setScenario( scenario );
+      // serialize
+      msg_response = servermsg.Serialize();
+    } else if( clientmsg.getType() == ClientMessage::TRIAL ) {
+      TrialPtr trial = clientmsg.getTrial();
 
-    // Print the message to the screen for the user
-    reveal::ip::Models models;
-    models.ParseFromString( ser_actual.c_str() );
-    std::string url;
-    unsigned urls = models.url_size();
-    for( unsigned i = 0; i < urls; i++ ) {
-      url = models.url( i );
-      printf( "url[%u]: %s\n", i, url.c_str() );
-    }
+      // NOTE: If we use workers for DB interaction, worker spawned HERE.
+      // Query the database to construct the trial
+      // TODO: Add database API interface
 
-    // Reply with a 'success' notification
-    zmq_send( socket, "1", 1, 0 );
+      // Example Trials
+      if( trial->scenario == "test" ) {
+        if( trial->index == 0 ) {
+          trial->t = 2.01;
+          trial->dt = 0.001;
+          // build state
+          trial->state.Append_q( 1.0 );
+          trial->state.Append_q( 2.0 );
+          trial->state.Append_dq( 3.0 );
+          trial->state.Append_dq( 4.0 );
+          // build command
+          trial->control.Append( 5.0 );
+          trial->control.Append( 6.0 );
+        } else if( trial->index == 1 ) {
+          trial->t = 1.01;
+          trial->dt = 0.001;
+          // build state
+          trial->state.Append_q( 11.1 );
+          trial->state.Append_q( 12.1 );
+          trial->state.Append_dq( 13.1 );
+          trial->state.Append_dq( 14.1 );
+          // build command
+          trial->control.Append( 15.1 );
+          trial->control.Append( 16.1 );
+        }
+      }
 
-    // Force a yield
-    sleep( 1 );
+      // make adjustments then setup the servermsg using the same trial ref
+      servermsg.setTrial( trial );
+      msg_response = servermsg.Serialize();
+ 
+    } else if( clientmsg.getType() == ClientMessage::SOLUTION ) {
+      SolutionPtr solution = clientmsg.getSolution();
+
+      // TODO: comment/remove later
+      solution->Print();
+
+      // NOTE: If we use workers for DB interaction, worker spawned HERE.
+      // NOTE: Spawn analytic worker after sending response
+      // TODO: Add database API interface
+
+      // make adjustments then setup the servermsg using the same solution ref
+      // Note that there are differences here because we are replying with OK
+      servermsg.setSolution( solution );
+      msg_response = servermsg.Serialize();
+    } else if( clientmsg.getType() == ClientMessage::ERROR ) {
+
+    } 
+
+    // if the last trial, then spawn an analytic worker that queries the db,
+    // applies metrics, and writes results back to db
+    // Note: may need a little more server complexity to join workers while
+    // continuing to service requests
+
+    // broadcast it back to the client
+    _connection.Write( msg_response );
+    // NOTE: End of worker
   }
 }
 
 //-----------------------------------------------------------------------------
 void Server::Terminate( void ) {
-  zmq_close( socket );
-  zmq_ctx_destroy( context );
+  _connection.Close();
+
+  google::protobuf::ShutdownProtobufLibrary();
+
 } 
-
+/*
 //-----------------------------------------------------------------------------
-std::string Server::getConnectionString( void ) {
-  std::stringstream ss;
-  ss << "tcp://*:";
-  ss << PORT;
-  return ss.str();
-}
-
-//-----------------------------------------------------------------------------
-ip::Models Server::genTestMessage( void ) {
-  ip::Models models;
-  models.add_url( "http://robotics.gwu.edu/~positronics/" );
-  models.add_url( "http://www.osrfoundation.org/" );
-  models.add_url( "http://www.gazebosim.org/" );
-  return models;
-}
-
-//-----------------------------------------------------------------------------
-void* Server::Worker( void* arg ) {
-  // send state & command
-
-  // wait for state reply
+void* Server::AnalyticWorker( void* arg ) {
+  printf( "Analytic Worker Thread Spawned...\n" );
   
   return NULL;
 }
-
+*/
 //-----------------------------------------------------------------------------
 
-} // namespace reveal
+} // namespace Reveal
 
 //-----------------------------------------------------------------------------

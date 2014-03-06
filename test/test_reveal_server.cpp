@@ -1,7 +1,7 @@
-#include <reveal/server.h>
+#include <Reveal/server.h>
 
 int main( int argc, char* argv[] ) {
-  reveal::Server server;
+  Reveal::Server server;
 
   server.Init();
   server.Run();

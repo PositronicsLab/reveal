@@ -3,50 +3,45 @@ James R Taylor:jrt@gwu.edu
 
 -----------------------------------------------------------------------------*/
 
-#ifndef _REVEAL_CLIENT_H_
-#define _REVEAL_CLIENT_H_
+#ifndef _REVEAL_SERVER_H_
+#define _REVEAL_SERVER_H_
 
 //-----------------------------------------------------------------------------
 
-#include <zmq.h>
 #include <string.h>
+#include <vector>
+#include <pthread.h>
 
-#include "protocols.pb.h"
+#include <Reveal/connection.h>
 
-//-----------------------------------------------------------------------------
-
-namespace reveal {
-
-//-----------------------------------------------------------------------------
-
-#define PORT 20700
-#define SENDER_CHUNK_SZ    64
+#include "net.pb.h"
 
 //-----------------------------------------------------------------------------
 
-class Client {
+namespace Reveal {
+
+//-----------------------------------------------------------------------------
+
+class Server {
 public:
-  Client( void );
-  virtual ~Client( void );
+  Server( void );
+  virtual ~Server( void );
 
   bool Init( void );
-  bool Connect( void );
+  void Run( void );
   void Terminate( void );
 
+  //static void* AnalyticWorker( void* arg );
+
 private:
-  void* context;
-  void* socket;
-
-  std::string getConnectionString( void );
-
-  ip::Models genTestMessage( void );
+  Connection _connection;
+  //std::vector<pthread_t> workers;
 };
 
 //-----------------------------------------------------------------------------
 
-} // namespace reveal
+}  // namespace Reveal
 
 //-----------------------------------------------------------------------------
 
-#endif // _REVEAL_CLIENT_H_
-
+#endif // _REVEAL_SERVER_H_

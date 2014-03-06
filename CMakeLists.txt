@@ -1,6 +1,6 @@
 # For Debug Build :: -DCMAKE_BUILD_TYPE=Debug
 
-project( reveal )
+project( Reveal )
 cmake_minimum_required(VERSION 2.8)
 
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -g")
@@ -13,19 +13,32 @@ set( CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules ${CMAKE_MODULE_
 find_package( ZeroMQ REQUIRED )
 find_package( Protobuf REQUIRED )
 
+#message( ${PROTOBUF} )
+
 # compile the message library here so files exist for include and linking
 add_subdirectory( messages )
 
 # header files
 set( REVEAL_HEADERS 
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/reveal/server.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/reveal/client.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/connection.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/server.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/client.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/state.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/control.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/scenario.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/trial.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/solution.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/server_message.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/client_message.h
 )
 
 # source files
 set( REVEAL_SOURCES 
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/connection.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/server.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/client.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/server_message.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/client_message.cpp
 )
 
 # additional include paths

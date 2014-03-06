@@ -1,0 +1,91 @@
+//TCP/IP Network protocol messages for Reveal
+
+package Reveal.Messages.Net;
+
+message ClientRequest {
+  enum RequestType {
+    REQUEST_UNDEFINED = 0;
+    REQUEST_ERROR = 1;
+    REQUEST_SCENARIO = 2;
+    REQUEST_TRIAL = 3;
+    REQUEST_SOLUTION = 4;
+  }
+
+  enum ErrorType {
+    ERROR_NONE = 0;
+    ERROR_BAD_RESPONSE = 1;
+  }
+
+  required RequestType type = 1;
+  optional ErrorType error = 2;
+  optional ScenarioRequest scenario = 3;
+  optional TrialRequest trial = 4;
+  optional SolutionRequest solution = 5;
+}
+
+message ServerResponse {
+  enum ResponseType {
+    RESPONSE_UNDEFINED = 0;
+    RESPONSE_ERROR = 1;
+    RESPONSE_SCENARIO = 2;
+    RESPONSE_TRIAL = 3;
+    RESPONSE_RECEIVED_SOLUTION = 4;
+  }
+  
+  enum ErrorType {
+    ERROR_NONE = 0;
+    ERROR_BAD_REQUEST = 1;
+  }
+
+  required ResponseType type = 1;
+  optional ErrorType error = 2;
+  optional ScenarioResponse scenario = 3;
+  optional TrialResponse trial = 4;
+  optional SolutionResponse solution = 5;
+}
+
+message State {
+  repeated double q = 1;
+  repeated double dq = 2;
+}
+
+message Control {
+  repeated double u = 1;
+}
+
+message ScenarioRequest {
+  required string name = 1;
+}
+
+message ScenarioResponse {
+  required string name = 1;
+  required uint32 trials = 2 [default = 0];
+  repeated string url = 3;
+}
+
+message TrialRequest {
+  required string scenario = 1;
+  required uint32 index = 2 [default = 0];
+}
+
+message TrialResponse {
+  required string scenario = 1;
+  required uint32 index = 2;
+  required double t = 3;
+  required double dt = 4;
+  optional State state = 5;
+  optional Control control = 6;
+}
+
+message SolutionRequest {
+  required string scenario = 1;
+  required uint32 index = 2;
+  required double t = 3;
+  optional State state = 4;
+}
+
+message SolutionResponse {
+  required string scenario = 1;
+  required uint32 index = 2;
+}
+

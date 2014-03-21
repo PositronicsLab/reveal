@@ -12,6 +12,7 @@ set( CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules ${CMAKE_MODULE_
 # find all packages
 find_package( ZeroMQ REQUIRED )
 find_package( Protobuf REQUIRED )
+find_package( Boost REQUIRED )
 
 #message( ${PROTOBUF} )
 
@@ -30,6 +31,7 @@ set( REVEAL_HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/solution.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/server_message.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/client_message.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/pendulum.h
 )
 
 # source files
@@ -39,12 +41,14 @@ set( REVEAL_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/src/client.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/server_message.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/client_message.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/pendulum.cpp
 )
 
 # additional include paths
 set( REVEAL_INCLUDE_DIRS
   ${PROTOBUF_INCLUDE_DIR}
   ${ZeroMQ_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
   ${REVEAL_MESSAGES_INCLUDE_DIRS}
   ${CMAKE_CURRENT_SOURCE_DIR}/include/
 )
@@ -53,6 +57,7 @@ set( REVEAL_INCLUDE_DIRS
 set( REVEAL_LIBRARIES
   ${PROTOBUF_LIBRARY}
   ${ZeroMQ_LIBRARIES}
+  ${Boost_LIBRARIES}
   ${REVEAL_MESSAGE_LIBRARY}
 )
 

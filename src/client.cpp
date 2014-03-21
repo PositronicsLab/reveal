@@ -12,6 +12,8 @@
 #include <Reveal/trial.h>
 #include <Reveal/solution.h>
 
+//#include <boost/numeric/odeint.hpp>
+#include <Reveal/pendulum.h>
 namespace Reveal {
 
 //-----------------------------------------------------------------------------
@@ -50,7 +52,8 @@ void Client::Go( void ) {
   // create a scenario
   ScenarioPtr scenario = ScenarioPtr( new Scenario() );
   // request Simulation Scenario by id
-  scenario->name = "test";
+  //scenario->name = "test";
+  scenario->name = "pendulum";
   // build a scenario request message
   clientmsg.setScenario( scenario );
   // serialize the request message for transport
@@ -148,6 +151,29 @@ void Client::Go( void ) {
         solution->state.Append_dq( 15.1 );
         solution->state.Append_dq( 16.1 );
       }
+    } else if( trial->scenario == "pendulum" ) {
+      // copy the solution header
+      solution->scenario = trial->scenario;
+      solution->index = trial->index;
+
+      // simulate
+      std::vector<double> x;
+      x.push_back( trial->state.q(0) );
+      x.push_back( trial->state.dq(0) );
+      double ti = trial->t;
+      double dt = trial->dt;
+      double tf = ti + dt;
+      pendulum_c pendulum( EXPERIMENTAL_PENDULUM_L );
+#ifdef RUNGEKUTTA_STEPPER
+      boost::numeric::odeint::integrate_adaptive( stepper_type(), pendulum, x, ti, tf, dt );
+#elif defined(EULER_STEPPER)
+      boost::numeric::odeint::integrate_const( stepper_type(), pendulum, x, ti, tf, dt );
+#endif
+      // add solution result
+      solution->t = tf;
+      solution->state.Append_q( x[0] );
+      solution->state.Append_dq( x[1] );
+      solution->Print();
     }
 
     // set the client message from the solution data 

@@ -11,6 +11,9 @@
 #include <Reveal/trial.h>
 #include <Reveal/solution.h>
 
+//#include <boost/numeric/odeint.hpp>
+#include <Reveal/pendulum.h>
+
 namespace Reveal {
 
 //-----------------------------------------------------------------------------
@@ -76,6 +79,8 @@ void Server::Run( void ) {
         scenario->trials = 2;
         scenario->urls.push_back( "http://www.gazebosim.org/" );
         scenario->urls.push_back( "http://www.osrfoundation.org/" );
+      } else if( scenario->name.compare( "pendulum" ) == 0 ) {
+        scenario->trials = 10;
       }
 
       // once the scenario created, build a message
@@ -114,6 +119,19 @@ void Server::Run( void ) {
           trial->control.Append( 15.1 );
           trial->control.Append( 16.1 );
         }
+      } else if( trial->scenario == "pendulum" ) {
+        double q, dq, t, dt; 
+        if( pendulum_c::sample_trial( trial->index, q, dq, t, dt ) ) {
+          trial->t = t;
+          trial->dt = dt;
+          // build state
+          trial->state.Append_q( q );
+          trial->state.Append_dq( dq );
+          // no command
+        } else {
+          printf( "failed to fetch trial data from database\n" );
+          // throw?
+        }
       }
 
       // make adjustments then setup the servermsg using the same trial ref
@@ -134,6 +152,30 @@ void Server::Run( void ) {
       // Note that there are differences here because we are replying with OK
       servermsg.setSolution( solution );
       msg_response = servermsg.Serialize();
+
+      // simulate/validate/analyze
+      if( solution->scenario == "pendulum" ) {
+        assert( solution->index < 10 );
+        const double EPSILON = PENDULUM_VALIDATION_EPSILON;
+        std::vector<double> x;
+        //x.clear();
+        double q, dq, ti, dt, tf;
+        if( pendulum_c::sample_trial( solution->index, q, dq, ti, dt ) ) {
+          x.push_back( q );
+          x.push_back( dq );
+          tf = ti + dt;
+          pendulum_c pendulum( EXPERIMENTAL_PENDULUM_L );
+          boost::numeric::odeint::integrate_adaptive( stepper_type(), pendulum, x, ti, tf, dt );
+          if( fabs(x[0] - solution->state.q(0)) < EPSILON && fabs(x[1] - solution->state.dq(0)) < EPSILON ) {
+            printf( "Client passed pendulum trial[%d]\n", 1 );
+          } else {
+            printf( "Client failed pendulum trial[%d]: server(q[%f],dq[%f]), client(q[%f],dq[%f])\n", 1, x[0], x[1], solution->state.q(0), solution->state.dq(0) );
+          }
+        } else {
+          printf( "failed to fetch trial data from database\n" );
+          // throw?
+        }
+      }
     } else if( clientmsg.getType() == ClientMessage::ERROR ) {
 
     } 

@@ -17,13 +17,12 @@ namespace Reveal {
 
 //-----------------------------------------------------------------------------
 
-class ServerMessage {
+class server_message_c {
 public:
-  ServerMessage( void );
-  //ServerMessage( Messages::Net::ServerResponse msg );
-  virtual ~ServerMessage( void );
+  server_message_c( void );
+  virtual ~server_message_c( void );
 
-  enum Type {
+  enum type_e {
     UNDEFINED = 0,
     ERROR,
     SCENARIO,
@@ -31,32 +30,31 @@ public:
     SOLUTION
   };
 
-  enum Error {
+  enum error_e {
     ERR_NONE = 0,
     ERR_REQUEST
   };
 
-  bool Parse( const std::string& serial );
-  std::string Serialize( void );
+  bool parse( const std::string& serial );
+  std::string serialize( void );
 
-  Type getType( void );
-  //void setType( const Type& type );
+  type_e get_type( void );
 
-  ScenarioPtr getScenario( void );
-  void setScenario( ScenarioPtr scenario );
+  scenario_ptr get_scenario( void );
+  void set_scenario( scenario_ptr scenario );
 
-  TrialPtr getTrial( void );
-  void setTrial( TrialPtr trial );
+  trial_ptr get_trial( void );
+  void set_trial( trial_ptr trial );
 
-  SolutionPtr getSolution( void );
-  void setSolution( SolutionPtr solution );
+  solution_ptr get_solution( void );
+  void set_solution( solution_ptr solution );
 
-  Error getError( void );
-  void setError( const Error& error );
+  error_e get_error( void );
+  void set_error( const error_e& error );
 
 private:
-  Type _type;
-  Error _error;
+  type_e _type;
+  error_e _error;
 
   Messages::Net::ServerResponse _response;
 };

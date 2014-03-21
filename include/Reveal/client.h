@@ -20,19 +20,23 @@ namespace Reveal {
 
 //-----------------------------------------------------------------------------
 
-class Client {
+#define REVEAL_SERVER_URI "localhost"
+
+//-----------------------------------------------------------------------------
+
+class client_c {
 public:
-  Client( void );
-  virtual ~Client( void );
+  client_c( void );
+  virtual ~client_c( void );
 
-  bool Init( void );
-  void Go( void );
-  void Terminate( void );
+  bool init( void );
+  void go( void );
+  void terminate( void );
 
-  bool Connect( void );
+  bool connect( void );
 
 private:
-  Connection _connection;
+  connection_c _connection;
 };
 
 //-----------------------------------------------------------------------------

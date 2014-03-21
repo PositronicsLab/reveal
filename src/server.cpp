@@ -18,24 +18,38 @@ namespace Reveal {
 
 //-----------------------------------------------------------------------------
 /// Default Constructor
-Server::Server( void ) {
+server_c::server_c( void ) {
 
 }
 
 //-----------------------------------------------------------------------------
 /// Destructor
-Server::~Server( void ) {
+server_c::~server_c( void ) {
 
 }
 
 //-----------------------------------------------------------------------------
 /// Initialization
-bool Server::Init( void ) {
+bool server_c::init( void ) {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
-  _connection = Connection( PORT );
-  if( !_connection.Open() ) {
+  _clientconnection = connection_c( PORT );
+  if( !_clientconnection.open() ) {
+    printf( "Failed to open clientconnection\n" );
     return false;
+  }
+
+  _workerconnection = connection_c( connection_c::DEALER, _clientconnection.context() );
+  if( !_workerconnection.open() ) {
+    printf( "Failed to open workerconnection\n" );
+    return false; 
+  }
+
+  void* context = _clientconnection.context();
+  for( unsigned i = 0; i < MAX_CLIENT_WORKERS; i++ ) {
+    pthread_t worker_thread;
+    pthread_create( &worker_thread, NULL, server_c::client_worker, context );
+    workers.push_back( worker_thread );
   }
 
   printf( "Server is listening...\n" );
@@ -45,34 +59,61 @@ bool Server::Init( void ) {
 
 //-----------------------------------------------------------------------------
 /// Main Loop
-void Server::Run( void ) {
+void server_c::run( void ) {
+  _clientconnection.route( _workerconnection );
+}
+
+//-----------------------------------------------------------------------------
+void server_c::terminate( void ) {
+  _workerconnection.close();
+  _clientconnection.close();
+
+  google::protobuf::ShutdownProtobufLibrary();
+
+} 
+
+//-----------------------------------------------------------------------------
+void* server_c::analytic_worker( void* context ) {
+  return NULL;
+}
+
+//-----------------------------------------------------------------------------
+void* server_c::client_worker( void* context ) {
+  connection_c receiver = connection_c( connection_c::WORKER, context );
 
   std::string msg_request;
   std::string msg_response;
 
-  ClientMessage clientmsg;
-  ServerMessage servermsg;
+  client_message_c clientmsg;
+  server_message_c servermsg;
+
+  if( !receiver.open() ) {
+    printf( "worker failed to open connection\n" );
+    // return?
+  }
 
   while( true ) {
-
     // block waiting for a message from a client
-    if( !_connection.Read( msg_request ) ) {
+    if( !receiver.read( msg_request ) ) {
       // read failed at connection
       // TODO: improve error handling      
     }
 
     // parse the serialized request
-    if( !clientmsg.Parse( msg_request ) ) {
+    if( !clientmsg.parse( msg_request ) ) {
       printf( "ERROR: Failed to parse ClientRequest\n" );
       // TODO: improve error handling      
     } 
 
     // determine the course of action
-    if( clientmsg.getType() == ClientMessage::SCENARIO ) {
-      ScenarioPtr scenario = clientmsg.getScenario();
+    if( clientmsg.get_type() == client_message_c::SCENARIO ) {
+      scenario_ptr scenario = clientmsg.get_scenario();
  
       // NOTE: If we use workers for DB interaction, worker spawned HERE.
       // Query into the database to construct the scenario
+
+      // simulate database transaction time
+      sleep(DB_SIMULATED_WORK_TIME);
 
       // Example scenario:
       if( scenario->name.compare( "test" ) == 0 ) {
@@ -84,15 +125,18 @@ void Server::Run( void ) {
       }
 
       // once the scenario created, build a message
-      servermsg.setScenario( scenario );
+      servermsg.set_scenario( scenario );
       // serialize
-      msg_response = servermsg.Serialize();
-    } else if( clientmsg.getType() == ClientMessage::TRIAL ) {
-      TrialPtr trial = clientmsg.getTrial();
+      msg_response = servermsg.serialize();
+    } else if( clientmsg.get_type() == client_message_c::TRIAL ) {
+      trial_ptr trial = clientmsg.get_trial();
 
       // NOTE: If we use workers for DB interaction, worker spawned HERE.
       // Query the database to construct the trial
       // TODO: Add database API interface
+
+      // simulate database transaction time
+      sleep(DB_SIMULATED_WORK_TIME);
 
       // Example Trials
       if( trial->scenario == "test" ) {
@@ -100,24 +144,24 @@ void Server::Run( void ) {
           trial->t = 2.01;
           trial->dt = 0.001;
           // build state
-          trial->state.Append_q( 1.0 );
-          trial->state.Append_q( 2.0 );
-          trial->state.Append_dq( 3.0 );
-          trial->state.Append_dq( 4.0 );
+          trial->state.append_q( 1.0 );
+          trial->state.append_q( 2.0 );
+          trial->state.append_dq( 3.0 );
+          trial->state.append_dq( 4.0 );
           // build command
-          trial->control.Append( 5.0 );
-          trial->control.Append( 6.0 );
+          trial->control.append( 5.0 );
+          trial->control.append( 6.0 );
         } else if( trial->index == 1 ) {
           trial->t = 1.01;
           trial->dt = 0.001;
           // build state
-          trial->state.Append_q( 11.1 );
-          trial->state.Append_q( 12.1 );
-          trial->state.Append_dq( 13.1 );
-          trial->state.Append_dq( 14.1 );
+          trial->state.append_q( 11.1 );
+          trial->state.append_q( 12.1 );
+          trial->state.append_dq( 13.1 );
+          trial->state.append_dq( 14.1 );
           // build command
-          trial->control.Append( 15.1 );
-          trial->control.Append( 16.1 );
+          trial->control.append( 15.1 );
+          trial->control.append( 16.1 );
         }
       } else if( trial->scenario == "pendulum" ) {
         double q, dq, t, dt; 
@@ -125,8 +169,8 @@ void Server::Run( void ) {
           trial->t = t;
           trial->dt = dt;
           // build state
-          trial->state.Append_q( q );
-          trial->state.Append_dq( dq );
+          trial->state.append_q( q );
+          trial->state.append_dq( dq );
           // no command
         } else {
           printf( "failed to fetch trial data from database\n" );
@@ -135,14 +179,14 @@ void Server::Run( void ) {
       }
 
       // make adjustments then setup the servermsg using the same trial ref
-      servermsg.setTrial( trial );
-      msg_response = servermsg.Serialize();
+      servermsg.set_trial( trial );
+      msg_response = servermsg.serialize();
  
-    } else if( clientmsg.getType() == ClientMessage::SOLUTION ) {
-      SolutionPtr solution = clientmsg.getSolution();
+    } else if( clientmsg.get_type() == client_message_c::SOLUTION ) {
+      solution_ptr solution = clientmsg.get_solution();
 
       // TODO: comment/remove later
-      solution->Print();
+      solution->print();
 
       // NOTE: If we use workers for DB interaction, worker spawned HERE.
       // NOTE: Spawn analytic worker after sending response
@@ -150,8 +194,11 @@ void Server::Run( void ) {
 
       // make adjustments then setup the servermsg using the same solution ref
       // Note that there are differences here because we are replying with OK
-      servermsg.setSolution( solution );
-      msg_response = servermsg.Serialize();
+      servermsg.set_solution( solution );
+      msg_response = servermsg.serialize();
+
+      // simulate database transaction time
+      sleep(DB_SIMULATED_WORK_TIME);
 
       // simulate/validate/analyze
       if( solution->scenario == "pendulum" ) {
@@ -167,16 +214,16 @@ void Server::Run( void ) {
           pendulum_c pendulum( EXPERIMENTAL_PENDULUM_L );
           boost::numeric::odeint::integrate_adaptive( stepper_type(), pendulum, x, ti, tf, dt );
           if( fabs(x[0] - solution->state.q(0)) < EPSILON && fabs(x[1] - solution->state.dq(0)) < EPSILON ) {
-            printf( "Client passed pendulum trial[%d]\n", 1 );
+            printf( "Client passed pendulum trial[%d]\n", solution->index );
           } else {
-            printf( "Client failed pendulum trial[%d]: server(q[%f],dq[%f]), client(q[%f],dq[%f])\n", 1, x[0], x[1], solution->state.q(0), solution->state.dq(0) );
+            printf( "Client failed pendulum trial[%d]: server(q[%f],dq[%f]), client(q[%f],dq[%f])\n", solution->index, x[0], x[1], solution->state.q(0), solution->state.dq(0) );
           }
         } else {
           printf( "failed to fetch trial data from database\n" );
           // throw?
         }
       }
-    } else if( clientmsg.getType() == ClientMessage::ERROR ) {
+    } else if( clientmsg.get_type() == client_message_c::ERROR ) {
 
     } 
 
@@ -186,26 +233,12 @@ void Server::Run( void ) {
     // continuing to service requests
 
     // broadcast it back to the client
-    _connection.Write( msg_response );
-    // NOTE: End of worker
+    receiver.write( msg_response );
   }
-}
-
-//-----------------------------------------------------------------------------
-void Server::Terminate( void ) {
-  _connection.Close();
-
-  google::protobuf::ShutdownProtobufLibrary();
-
-} 
-/*
-//-----------------------------------------------------------------------------
-void* Server::AnalyticWorker( void* arg ) {
-  printf( "Analytic Worker Thread Spawned...\n" );
-  
+  receiver.close();
   return NULL;
 }
-*/
+
 //-----------------------------------------------------------------------------
 
 } // namespace Reveal

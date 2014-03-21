@@ -18,19 +18,19 @@ namespace Reveal {
 
 //-----------------------------------------------------------------------------
 /// Default Constructor
-Client::Client( void ) {
+client_c::client_c( void ) {
 
 }
 
 //-----------------------------------------------------------------------------
 /// Destructor
-Client::~Client( void ) {
+client_c::~client_c( void ) {
 
 }
 
 //-----------------------------------------------------------------------------
 /// Initialization
-bool Client::Init( void ) {
+bool client_c::init( void ) {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   return true;
@@ -38,50 +38,50 @@ bool Client::Init( void ) {
 
 //-----------------------------------------------------------------------------
 /// Main loop
-void Client::Go( void ) {
+void client_c::go( void ) {
 
   std::string msg_request;
   std::string msg_response;
 
-  ClientMessage clientmsg;
-  ServerMessage servermsg;
+  client_message_c clientmsg;
+  server_message_c servermsg;
 
   // connect to the transport layer
-  if( !Connect() ) return;
+  if( !connect() ) return;
 
   // create a scenario
-  ScenarioPtr scenario = ScenarioPtr( new Scenario() );
+  scenario_ptr scenario = scenario_ptr( new scenario_c() );
   // request Simulation Scenario by id
   //scenario->name = "test";
   scenario->name = "pendulum";
   // build a scenario request message
-  clientmsg.setScenario( scenario );
+  clientmsg.set_scenario( scenario );
   // serialize the request message for transport
-  msg_request = clientmsg.Serialize();
+  msg_request = clientmsg.serialize();
 
   // send the request message to the server
-  if( !_connection.Write( msg_request ) ) {
+  if( !_connection.write( msg_request ) ) {
     // write failed at connection
     printf( "ERROR: failed to write message to connection\n" );
     // TODO: improve error handling
   }
   // block waiting for a server response
-  if( !_connection.Read( msg_response ) ) {
+  if( !_connection.read( msg_response ) ) {
     // read failed at connection
     // right now this should trigger an assert
     // TODO: improve error handling
   }
   
   // parse the serialized response message received from the server
-  if( !servermsg.Parse( msg_response ) ) {
+  if( !servermsg.parse( msg_response ) ) {
     printf( "ERROR: Failed to parse ServerResponse\n" );
     // TODO: improve error handling
   }
   // get the scenario out of the message
-  scenario = servermsg.getScenario();
+  scenario = servermsg.get_scenario();
 
   // TODO: comment/remove later
-  scenario->Print();
+  scenario->print();
 
   // set up simulation
   // TODO: develop API interfaces to handle setting up the sim
@@ -91,39 +91,39 @@ void Client::Go( void ) {
     // *Request a trial*
 
     // create a trial
-    TrialPtr trial = TrialPtr( new Trial() );
+    trial_ptr trial = trial_ptr( new trial_c() );
     // populate the trial structure with scenario information
     trial->scenario = scenario->name;
     trial->index = i;
   
     // set the client message from the trial data
-    clientmsg.setTrial( trial );
+    clientmsg.set_trial( trial );
     // serialize the message for transport
-    msg_request = clientmsg.Serialize();
+    msg_request = clientmsg.serialize();
 
     // send the trial request to the server
-    if( !_connection.Write( msg_request ) ) {
+    if( !_connection.write( msg_request ) ) {
       // write failed at connection
       printf( "ERROR: failed to write message to connection\n" );
       // TODO: improve error handling
     }
     // block waiting for a server response
-    if( !_connection.Read( msg_response ) ) {
+    if( !_connection.read( msg_response ) ) {
       // read failed at connection
       // right now this should trigger an assert within Read
       // TODO: improve error handling
     }
     // parse the serialized response message received from the server
-    if( !servermsg.Parse( msg_response ) ) {
+    if( !servermsg.parse( msg_response ) ) {
       printf( "ERROR: Failed to parse ServerResponse\n" );
       // TODO: improve error handling 
     }
 
     // TODO: add checking that the message is of expected type
-    trial = servermsg.getTrial();
+    trial = servermsg.get_trial();
 
     // TODO: comment/remove later
-    trial->Print();
+    trial->print();
   
     // Run simulation
     // TODO: develop API interfaces to handle setting the sim configuration
@@ -132,24 +132,24 @@ void Client::Go( void ) {
 
     // generate a solution
     // following is just a populating a scenario with a bogus test case
-    SolutionPtr solution = SolutionPtr( new Solution() );
+    solution_ptr solution = solution_ptr( new solution_c() );
     if( trial->scenario == "test" ) {
       if( trial->index == 0 ) {
         solution->scenario = trial->scenario;
         solution->index = trial->index;
         solution->t = trial->t + trial->dt;
-        solution->state.Append_q( 4.0 );
-        solution->state.Append_q( 6.0 );
-        solution->state.Append_dq( 3.0 );
-        solution->state.Append_dq( 4.0 );
+        solution->state.append_q( 4.0 );
+        solution->state.append_q( 6.0 );
+        solution->state.append_dq( 3.0 );
+        solution->state.append_dq( 4.0 );
       } else if( trial->index == 1 ) {
         solution->scenario = trial->scenario;
         solution->index = trial->index;
         solution->t = trial->t + trial->dt;
-        solution->state.Append_q( 24.2 );
-        solution->state.Append_q( 26.2 );
-        solution->state.Append_dq( 15.1 );
-        solution->state.Append_dq( 16.1 );
+        solution->state.append_q( 24.2 );
+        solution->state.append_q( 26.2 );
+        solution->state.append_dq( 15.1 );
+        solution->state.append_dq( 16.1 );
       }
     } else if( trial->scenario == "pendulum" ) {
       // copy the solution header
@@ -171,30 +171,30 @@ void Client::Go( void ) {
 #endif
       // add solution result
       solution->t = tf;
-      solution->state.Append_q( x[0] );
-      solution->state.Append_dq( x[1] );
-      solution->Print();
+      solution->state.append_q( x[0] );
+      solution->state.append_dq( x[1] );
+      solution->print();
     }
 
     // set the client message from the solution data 
-    clientmsg.setSolution( solution );
+    clientmsg.set_solution( solution );
     // serialize the message for transport
-    msg_request = clientmsg.Serialize();
+    msg_request = clientmsg.serialize();
 
     // send the solution 'request' to the server  
-    if( !_connection.Write( msg_request ) ) {
+    if( !_connection.write( msg_request ) ) {
       // write failed at connection
       printf( "ERROR: failed to write message to connection\n" );
       // TODO: improve error handling 
     }
     // block waiting for a response
-    if( !_connection.Read( msg_response ) ) {
+    if( !_connection.read( msg_response ) ) {
       // read failed at connection
       // right now this should trigger an assert within Read
       // TODO: improve error handling 
     }
     // parse out the reponse to validate the solution was received
-    if( !servermsg.Parse( msg_response ) ) {
+    if( !servermsg.parse( msg_response ) ) {
       printf( "ERROR: Failed to parse ServerResponse\n" );
       // TODO: improve error handling 
     }
@@ -205,19 +205,19 @@ void Client::Go( void ) {
 
 //-----------------------------------------------------------------------------
 /// Clean up
-void Client::Terminate( void ) {
-  _connection.Close();
+void client_c::terminate( void ) {
+  _connection.close();
 
   google::protobuf::ShutdownProtobufLibrary();
 }
 
 //-----------------------------------------------------------------------------
 /// Connect to the transport layer as a client
-bool Client::Connect( void ) {
+bool client_c::connect( void ) {
   printf( "Connecting to server...\n" );
 
-  _connection = Connection( "localhost", PORT );
-  if( !_connection.Open() ) {
+  _connection = connection_c( REVEAL_SERVER_URI, PORT );
+  if( !_connection.open() ) {
     return false;
   }
 

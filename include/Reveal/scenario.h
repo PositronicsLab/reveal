@@ -17,16 +17,16 @@ namespace Reveal {
 
 //-----------------------------------------------------------------------------
 
-class Scenario {
+class scenario_c {
 public:
-  Scenario( void ) {}
-  virtual ~Scenario( void ) {}
+  scenario_c( void ) {}
+  virtual ~scenario_c( void ) {}
  
   std::string name;
   unsigned trials;
   std::vector<std::string> urls;
 
-  void Print( void ) const {
+  void print( void ) const {
     printf( "name[%s]", name.c_str() );
     printf( ", trials[%u]", trials );
     printf( ", urls[" );
@@ -38,17 +38,6 @@ public:
   }
 };
 
-//-----------------------------------------------------------------------------
-/*
-class ScenarioMessage {
-public:
-  ScenarioMessage( void );
-  virtual ~ScenarioMessage( void );
-
-  ScenarioMessage( Messages::Net::ScenarioRequest request );
-  ScenarioMessage( Messages::Net::ScenarioResponse response );
-};
-*/
 //-----------------------------------------------------------------------------
 
 }  // namespace Reveal

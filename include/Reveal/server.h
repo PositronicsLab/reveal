@@ -22,20 +22,36 @@ namespace Reveal {
 
 //-----------------------------------------------------------------------------
 
-class Server {
+#define MAX_CLIENT_WORKERS 4
+#define MAX_ANALYTIC_WORKERS 4
+
+//-----------------------------------------------------------------------------
+// Experimental Values
+//-----------------------------------------------------------------------------
+
+#define DB_SIMULATED_WORK_TIME 2
+
+//-----------------------------------------------------------------------------
+
+class server_c {
 public:
-  Server( void );
-  virtual ~Server( void );
+  server_c( void );
+  virtual ~server_c( void );
 
-  bool Init( void );
-  void Run( void );
-  void Terminate( void );
+  bool init( void );
+  void run( void );
+  void terminate( void );
 
-  //static void* AnalyticWorker( void* arg );
+  static void* client_worker( void* context );
+
+  static void* analytic_worker( void* arg );
 
 private:
-  Connection _connection;
-  //std::vector<pthread_t> workers;
+  connection_c _clientconnection;
+  connection_c _workerconnection;
+
+  std::vector<pthread_t> workers;
+
 };
 
 //-----------------------------------------------------------------------------

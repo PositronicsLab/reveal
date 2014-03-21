@@ -21,19 +21,19 @@ namespace Reveal {
 
 //-----------------------------------------------------------------------------
 
-class Trial {
+class trial_c {
 public:
-  Trial( void ) {}
-  virtual ~Trial( void ) {}
+  trial_c( void ) {}
+  virtual ~trial_c( void ) {}
 
   std::string scenario;
   unsigned index;
   double t;
   double dt;
-  State state;
-  Control control;
+  state_c state;
+  control_c control;
 
-  void Print( void ) {
+  void print( void ) {
     printf( "scenario[%s]", scenario.c_str() );
     printf( ", index[%u]", index );
     printf( ", t[%f]", t );
@@ -42,13 +42,13 @@ public:
     // State 
     printf( ", state[" );
     printf( " q[" );
-    for( unsigned i = 0; i < state.Size_q(); i++ ) {
+    for( unsigned i = 0; i < state.size_q(); i++ ) {
       if( i > 0 ) printf( ", " );
       printf( "%f", state.q(i) );
     }
     printf( "]" );
     printf( ", dq[" );
-    for( unsigned i = 0; i < state.Size_dq(); i++ ) {
+    for( unsigned i = 0; i < state.size_dq(); i++ ) {
       if( i > 0 ) printf( ", " );
       printf( "%f", state.dq(i) );
     }
@@ -58,7 +58,7 @@ public:
     // Control
     printf( ", control[" );
     printf( " u[" );
-    for( unsigned i = 0; i < control.Size(); i++ ) {
+    for( unsigned i = 0; i < control.size_u(); i++ ) {
       if( i > 0 ) printf( ", " );
       printf( "%f", control.u(i) );
     }

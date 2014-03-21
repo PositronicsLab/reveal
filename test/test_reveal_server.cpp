@@ -1,11 +1,11 @@
 #include <Reveal/server.h>
 
 int main( int argc, char* argv[] ) {
-  Reveal::Server server;
+  Reveal::server_c server;
 
-  server.Init();
-  server.Run();
-  server.Terminate();
+  server.init();
+  server.run();
+  server.terminate();
 
   return 0;
 }

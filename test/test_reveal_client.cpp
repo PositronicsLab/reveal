@@ -1,11 +1,11 @@
 #include <Reveal/client.h>
 
 int main( int argc, char* argv[] ) {
-  Reveal::Client client;
+  Reveal::client_c client;
 
-  client.Init();
-  client.Go();
-  client.Terminate();
+  client.init();
+  client.go();
+  client.terminate();
 
   return 0;
 }

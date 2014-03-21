@@ -17,10 +17,10 @@ namespace Reveal {
 
 //-----------------------------------------------------------------------------
 
-class State {
+class state_c {
 public:
-  State( void ) {}
-  virtual ~State( void ) {}
+  state_c( void ) {}
+  virtual ~state_c( void ) {}
 
   double q( const unsigned& i ) {
     assert( i < _q.size() );
@@ -31,23 +31,23 @@ public:
     return _dq[i];
   }
 
-  void Append_q( const double& q ) {
+  void append_q( const double& q ) {
     _q.push_back( q );
   }
 
-  void Append_dq( const double& dq ) {
+  void append_dq( const double& dq ) {
     _dq.push_back( dq );
   }
 
-  unsigned Size( void ) const {
+  unsigned size( void ) const {
     return _q.size() + _dq.size();
   }
 
-  unsigned Size_q( void ) const {
+  unsigned size_q( void ) const {
     return _q.size();
   }
 
-  unsigned Size_dq( void ) const {
+  unsigned size_dq( void ) const {
     return _dq.size();
   }
 

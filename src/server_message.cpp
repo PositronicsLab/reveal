@@ -12,14 +12,14 @@ namespace Reveal {
 
 //-----------------------------------------------------------------------------
 /// Default Constructor
-ServerMessage::ServerMessage( void ) {
+server_message_c::server_message_c( void ) {
   _type = UNDEFINED;
   _response = Messages::Net::ServerResponse();
 }
 
 //-----------------------------------------------------------------------------
 /// Destructor
-ServerMessage::~ServerMessage( void ) {
+server_message_c::~server_message_c( void ) {
 
 }
 
@@ -27,7 +27,7 @@ ServerMessage::~ServerMessage( void ) {
 /// Parses a serialize protobuffer ServerResponse message string into the 
 /// protobuf member and returns an error if the message fails to meet the 
 /// required criteria
-bool ServerMessage::Parse( const std::string& serial ) {
+bool server_message_c::parse( const std::string& serial ) {
 
   // clear any old response in the message member
   _response.Clear();
@@ -88,7 +88,7 @@ bool ServerMessage::Parse( const std::string& serial ) {
 //-----------------------------------------------------------------------------
 /// Serializes the protobuf member into a string for transmission through the
 /// transport layer
-std::string ServerMessage::Serialize( void ) {
+std::string server_message_c::serialize( void ) {
   std::string serial;
 
   _response.SerializeToString( &serial );
@@ -98,16 +98,16 @@ std::string ServerMessage::Serialize( void ) {
 
 //-----------------------------------------------------------------------------
 /// Returns the Type of message after it has been parsed or set
-ServerMessage::Type ServerMessage::getType( void ) {
+server_message_c::type_e server_message_c::get_type( void ) {
   return _type;
 }
 
 //-----------------------------------------------------------------------------
 /// Returns the scenario data attached to the message
-ScenarioPtr ServerMessage::getScenario( void ) {
+scenario_ptr server_message_c::get_scenario( void ) {
   assert( _type == SCENARIO );
 
-  ScenarioPtr scenario = ScenarioPtr( new Scenario() );
+  scenario_ptr scenario = scenario_ptr( new scenario_c() );
 
   scenario->name = _response.scenario().name();
   scenario->trials = _response.scenario().trials();
@@ -120,7 +120,7 @@ ScenarioPtr ServerMessage::getScenario( void ) {
 //-----------------------------------------------------------------------------
 /// Sets the protobuf message as a scenario and maps parameters from a scenario
 /// data structure into the protobuffer
-void ServerMessage::setScenario( ScenarioPtr scenario ) {
+void server_message_c::set_scenario( scenario_ptr scenario ) {
   _type = SCENARIO;
 
   _response.Clear();
@@ -135,10 +135,10 @@ void ServerMessage::setScenario( ScenarioPtr scenario ) {
 
 //-----------------------------------------------------------------------------
 /// Return the trial data attached to the message
-TrialPtr ServerMessage::getTrial( void ) {
+trial_ptr server_message_c::get_trial( void ) {
   assert( _type == TRIAL );
 
-  TrialPtr trial = TrialPtr( new Trial() );
+  trial_ptr trial = trial_ptr( new trial_c() );
 
   trial->scenario = _response.trial().scenario();
   trial->index = _response.trial().index();
@@ -146,13 +146,13 @@ TrialPtr ServerMessage::getTrial( void ) {
   trial->dt = _response.trial().dt();
 
   for( int i = 0; i < _response.trial().state().q_size(); i++ ) {
-    trial->state.Append_q( _response.trial().state().q(i) );
+    trial->state.append_q( _response.trial().state().q(i) );
   }
   for( int i = 0; i < _response.trial().state().dq_size(); i++ ) {
-    trial->state.Append_dq( _response.trial().state().dq(i) );
+    trial->state.append_dq( _response.trial().state().dq(i) );
   }
   for( int i = 0; i < _response.trial().control().u_size(); i++ ) {
-    trial->control.Append( _response.trial().control().u(i) );
+    trial->control.append_u( _response.trial().control().u(i) );
   }
 
   return trial;
@@ -161,7 +161,7 @@ TrialPtr ServerMessage::getTrial( void ) {
 //-----------------------------------------------------------------------------
 /// Sets the protobuf message as a trial and maps parameters from a trial 
 /// data structure into the protobuffer
-void ServerMessage::setTrial( TrialPtr trial ) {
+void server_message_c::set_trial( trial_ptr trial ) {
   _type = TRIAL;
 
   _response.Clear();
@@ -172,14 +172,14 @@ void ServerMessage::setTrial( TrialPtr trial ) {
   tr->set_t( trial->t );
   tr->set_dt( trial->dt );
   Messages::Net::State* state = tr->mutable_state();
-  for( unsigned i = 0; i < trial->state.Size_q(); i++ ) {
+  for( unsigned i = 0; i < trial->state.size_q(); i++ ) {
     state->add_q( trial->state.q(i) );
   }
-  for( unsigned i = 0; i < trial->state.Size_dq(); i++ ) {
+  for( unsigned i = 0; i < trial->state.size_dq(); i++ ) {
     state->add_dq( trial->state.dq(i) );
   }
   Messages::Net::Control* control = tr->mutable_control();
-  for( unsigned i = 0; i < trial->control.Size(); i++ ) {
+  for( unsigned i = 0; i < trial->control.size_u(); i++ ) {
     control->add_u( trial->control.u(i) );
   }
  
@@ -187,10 +187,10 @@ void ServerMessage::setTrial( TrialPtr trial ) {
 
 //-----------------------------------------------------------------------------
 /// Returns the solution data attached to the message
-SolutionPtr ServerMessage::getSolution( void ) {
+solution_ptr server_message_c::get_solution( void ) {
   assert( _type == SOLUTION );
 
-  SolutionPtr solution = SolutionPtr( new Solution() );
+  solution_ptr solution = solution_ptr( new solution_c() );
 
   // TODO  Determine how this method apples.  The end result is actually 
   // a good/bad answer and not a SolutionPtr
@@ -201,7 +201,7 @@ SolutionPtr ServerMessage::getSolution( void ) {
 //-----------------------------------------------------------------------------
 /// Sets the protobuf message as a solution and maps parameters from a solution
 /// data structure into the protobuffer
-void ServerMessage::setSolution( SolutionPtr solution ) {
+void server_message_c::set_solution( solution_ptr solution ) {
   _type = SOLUTION;
 
   _response.Clear();
@@ -216,7 +216,7 @@ void ServerMessage::setSolution( SolutionPtr solution ) {
 
 //-----------------------------------------------------------------------------
 /// Returns the error that was transmitted from a server
-ServerMessage::Error ServerMessage::getError( void ) {
+server_message_c::error_e server_message_c::get_error( void ) {
   assert( _type == ERROR );
 
   if( _response.error() == Messages::Net::ServerResponse::ERROR_BAD_REQUEST )
@@ -228,7 +228,7 @@ ServerMessage::Error ServerMessage::getError( void ) {
 //-----------------------------------------------------------------------------
 /// Sets the protobuf message as an error and maps parameters from an error
 /// type into the protobuffer
-void ServerMessage::setError( const ServerMessage::Error& error ) {
+void server_message_c::set_error( const server_message_c::error_e& error ) {
   _type = ERROR;
   _error = error;
 

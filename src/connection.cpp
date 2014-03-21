@@ -8,20 +8,31 @@
 namespace Reveal {
 
 //-----------------------------------------------------------------------------
-Connection::Connection( void ) {
+connection_c::connection_c( void ) {
   _role = UNDEFINED;
   _open = false;
+  _context = NULL;
+  _socket = NULL;
 }
 
 //-----------------------------------------------------------------------------
-Connection::Connection( const unsigned& port ) {
-  _role = SERVER;
+connection_c::connection_c( const unsigned& port ) {
+  _role = ROUTER;
   _open = false;
   _port = port;
 }
 
 //-----------------------------------------------------------------------------
-Connection::Connection( const std::string& host, const unsigned& port ) {
+connection_c::connection_c( const connection_c::role_e& role, void* context ) {
+  assert( role == connection_c::WORKER || role == connection_c::DEALER );
+  _role = role;
+  _open = false;
+  _context = context;
+}
+
+
+//-----------------------------------------------------------------------------
+connection_c::connection_c( const std::string& host, const unsigned& port ) {
   _role = CLIENT;
   _open = false;
   _host = host;
@@ -29,22 +40,30 @@ Connection::Connection( const std::string& host, const unsigned& port ) {
 }
 
 //-----------------------------------------------------------------------------
-Connection::~Connection( void ) {
-  if( _open ) Close();
+connection_c::~connection_c( void ) {
+  if( _open ) close();
 }
 
 //-----------------------------------------------------------------------------
-bool Connection::Open( void ) {
+bool connection_c::open( void ) {
   assert( _role != UNDEFINED );
 
-  _context = zmq_ctx_new();
   if( _role == CLIENT ) {
+    _context = zmq_ctx_new();
     _socket = zmq_socket( _context, ZMQ_REQ );
-    zmq_connect( _socket, ConnectionString().c_str() );
-  } else if( _role == SERVER ) {
-    _socket = zmq_socket( _context, ZMQ_REP );
-    int rc = zmq_bind( _socket, ConnectionString().c_str() );
+    zmq_connect( _socket, connection_string().c_str() );
+  } else if( _role == ROUTER ) {
+    _context = zmq_ctx_new();
+    _socket = zmq_socket( _context, ZMQ_ROUTER );
+    int rc = zmq_bind( _socket, connection_string().c_str() );
     assert( rc == 0 );
+  } else if( _role == DEALER ) {
+    _socket = zmq_socket( _context, ZMQ_DEALER );
+    int rc = zmq_bind( _socket, connection_string().c_str() );
+    assert( rc == 0 );
+  } else if( _role == WORKER ) {
+    _socket = zmq_socket( _context, ZMQ_REP );
+    zmq_connect( _socket, connection_string().c_str() );
   }
   // TODO: Add robust error checking/handling in critical path development
 
@@ -53,15 +72,16 @@ bool Connection::Open( void ) {
 }
 
 //-----------------------------------------------------------------------------
-void Connection::Close( void ) {
+void connection_c::close( void ) {
   zmq_close( _socket );
-  zmq_ctx_destroy( _context );
+  if( _role == CLIENT || _role == ROUTER )
+    zmq_ctx_destroy( _context );
 
   _open = false;
 }
 
 //-----------------------------------------------------------------------------
-bool Connection::Read( std::string& msg ) {
+bool connection_c::read( std::string& msg ) {
   assert( _open );
 
   char buffer[ RCV_BUFFER_SZ ];
@@ -84,7 +104,7 @@ bool Connection::Read( std::string& msg ) {
 }
 
 //-----------------------------------------------------------------------------
-bool Connection::Write( const std::string& msg ) {
+bool connection_c::write( const std::string& msg ) {
   assert( _open );
 
   std::string chunk;        // a chunk of the message
@@ -116,23 +136,37 @@ bool Connection::Write( const std::string& msg ) {
     // errno set
     return false;
   }
-
+  
+  // otherwise success
   return true;
 }
 
 //-----------------------------------------------------------------------------
-std::string Connection::ConnectionString( void ) {
+void connection_c::route( connection_c& dealer ) {
+  assert( _role == ROUTER && dealer._role == DEALER );
+  zmq_proxy( _socket, dealer._socket, NULL );
+}
+
+//-----------------------------------------------------------------------------
+std::string connection_c::connection_string( void ) {
   std::stringstream ss;
 
   assert( _role != UNDEFINED );
 
   if( _role == CLIENT ) {
     ss << "tcp://" << _host << ":" << _port;
-  } else if( _role == SERVER ) {
+  } else if( _role == ROUTER ) {
     ss << "tcp://*:" << _port;
+  } else if( _role == DEALER || _role == WORKER ) {
+    ss << "inproc://workers";
   }
 
   return ss.str();
+}
+
+//-----------------------------------------------------------------------------
+void* connection_c::context( void ) {
+  return _context;
 }
 
 //-----------------------------------------------------------------------------

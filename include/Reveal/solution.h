@@ -19,17 +19,17 @@ namespace Reveal {
 
 //-----------------------------------------------------------------------------
 
-class Solution {
+class solution_c {
 public:
-  Solution( void ) {}
-  virtual ~Solution( void ) {}
+  solution_c( void ) {}
+  virtual ~solution_c( void ) {}
 
   std::string scenario;
   unsigned index;
   double t;
-  State state;
+  state_c state;
 
-  void Print( void ) {
+  void print( void ) {
     printf( "scenario[%s]", scenario.c_str() );
     printf( ", index[%u]", index );
     printf( ", t[%f]", t );
@@ -37,13 +37,13 @@ public:
     // State 
     printf( ", state[" );
     printf( " q[" );
-    for( unsigned i = 0; i < state.Size_q(); i++ ) {
+    for( unsigned i = 0; i < state.size_q(); i++ ) {
       if( i > 0 ) printf( ", " );
       printf( "%f", state.q(i) );
     }
     printf( "]" );
     printf( ", dq[" );
-    for( unsigned i = 0; i < state.Size_dq(); i++ ) {
+    for( unsigned i = 0; i < state.size_dq(); i++ ) {
       if( i > 0 ) printf( ", " );
       printf( "%f", state.dq(i) );
     }

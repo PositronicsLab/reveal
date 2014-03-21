@@ -9,14 +9,14 @@ namespace Reveal {
 
 //-----------------------------------------------------------------------------
 /// Default Constructor
-ClientMessage::ClientMessage( void ) {
+client_message_c::client_message_c( void ) {
   _type = UNDEFINED;
   _request = Messages::Net::ClientRequest();
 }
 
 //-----------------------------------------------------------------------------
 /// Destructor
-ClientMessage::~ClientMessage( void ) {
+client_message_c::~client_message_c( void ) {
 
 }
 
@@ -24,7 +24,7 @@ ClientMessage::~ClientMessage( void ) {
 /// Parses a serialized protobuffer ClientRequest message string into the 
 /// protobuf member and returns an error if the message fails to meet the 
 /// required criteria
-bool ClientMessage::Parse( const std::string& serial ) {
+bool client_message_c::parse( const std::string& serial ) {
 
   // clear any old request in the message member
   _request.Clear();
@@ -85,7 +85,7 @@ bool ClientMessage::Parse( const std::string& serial ) {
 //-----------------------------------------------------------------------------
 /// Serializes the protobuf member into a string for transmission through the 
 /// transport layer
-std::string ClientMessage::Serialize( void ) {
+std::string client_message_c::serialize( void ) {
   std::string serial;
 
   _request.SerializeToString( &serial );
@@ -95,16 +95,16 @@ std::string ClientMessage::Serialize( void ) {
 
 //-----------------------------------------------------------------------------
 /// Returns the Type of message after it has been parsed or set
-ClientMessage::Type ClientMessage::getType( void ) {
+client_message_c::type_e client_message_c::get_type( void ) {
   return _type;
 }
 
 //-----------------------------------------------------------------------------
 /// Returns the scenario data attached to the message.
-ScenarioPtr ClientMessage::getScenario( void ) {
+scenario_ptr client_message_c::get_scenario( void ) {
   assert( _type == SCENARIO );
 
-  ScenarioPtr scenario = ScenarioPtr( new Scenario() );
+  scenario_ptr scenario = scenario_ptr( new scenario_c() );
   scenario->name = _request.scenario().name();
 
   return scenario;
@@ -113,7 +113,7 @@ ScenarioPtr ClientMessage::getScenario( void ) {
 //-----------------------------------------------------------------------------
 /// Sets the protobuf message as a scenario and maps parameters from a scenario
 /// data structure into the protobuffer
-void ClientMessage::setScenario( ScenarioPtr scenario ) {
+void client_message_c::set_scenario( scenario_ptr scenario ) {
   _type = SCENARIO;
 
   _request.set_type( Messages::Net::ClientRequest::REQUEST_SCENARIO );
@@ -123,10 +123,10 @@ void ClientMessage::setScenario( ScenarioPtr scenario ) {
 
 //-----------------------------------------------------------------------------
 /// Returns the trial data attached to the message
-TrialPtr ClientMessage::getTrial( void ) {
+trial_ptr client_message_c::get_trial( void ) {
   assert( _type == TRIAL );
  
-  TrialPtr trial = TrialPtr( new Trial() );
+  trial_ptr trial = trial_ptr( new trial_c() );
 
   trial->scenario = _request.trial().scenario();
   trial->index = _request.trial().index();
@@ -137,7 +137,7 @@ TrialPtr ClientMessage::getTrial( void ) {
 //-----------------------------------------------------------------------------
 /// Sets the protobuf message as a trial and maps parameters from a trial
 /// data structure into the protobuffer
-void ClientMessage::setTrial( TrialPtr trial ) {
+void client_message_c::set_trial( trial_ptr trial ) {
   _type = TRIAL;
 
   _request.Clear();
@@ -149,20 +149,20 @@ void ClientMessage::setTrial( TrialPtr trial ) {
 
 //-----------------------------------------------------------------------------
 /// Returns the solution data attached to the message
-SolutionPtr ClientMessage::getSolution( void ) {
+solution_ptr client_message_c::get_solution( void ) {
   assert( _type == SOLUTION );
 
-  SolutionPtr solution = SolutionPtr( new Solution() );
+  solution_ptr solution = solution_ptr( new solution_c() );
 
   solution->scenario = _request.solution().scenario();
   solution->index = _request.solution().index();
   solution->t = _request.solution().t();
 
   for( int i = 0; i < _request.solution().state().q_size(); i++ ) {
-    solution->state.Append_q( _request.solution().state().q(i) );
+    solution->state.append_q( _request.solution().state().q(i) );
   }
   for( int i = 0; i < _request.solution().state().dq_size(); i++ ) {
-    solution->state.Append_dq( _request.solution().state().dq(i) );
+    solution->state.append_dq( _request.solution().state().dq(i) );
   }
 
   return solution;
@@ -171,7 +171,7 @@ SolutionPtr ClientMessage::getSolution( void ) {
 //-----------------------------------------------------------------------------
 /// Sets the protobuf message as a solution and maps parameters from a solution
 /// data structure into the protobuffer
-void ClientMessage::setSolution( SolutionPtr solution ) {
+void client_message_c::set_solution( solution_ptr solution ) {
   _type = SOLUTION;
 
   _request.set_type( Messages::Net::ClientRequest::REQUEST_SOLUTION );
@@ -180,17 +180,17 @@ void ClientMessage::setSolution( SolutionPtr solution ) {
   sr->set_index( solution->index );
   sr->set_t( solution->t );
   Messages::Net::State* state = sr->mutable_state();
-  for( unsigned i = 0; i < solution->state.Size_q(); i++ ) {
+  for( unsigned i = 0; i < solution->state.size_q(); i++ ) {
     state->add_q( solution->state.q(i) );
   }
-  for( unsigned i = 0; i < solution->state.Size_dq(); i++ ) {
+  for( unsigned i = 0; i < solution->state.size_dq(); i++ ) {
     state->add_dq( solution->state.dq(i) );
   }
 }
 
 //-----------------------------------------------------------------------------
 /// Returns the error that was transmitted from a client
-ClientMessage::Error ClientMessage::getError( void ) {
+client_message_c::error_e client_message_c::get_error( void ) {
   assert( _type == ERROR );
 
   if( _request.error() == Messages::Net::ClientRequest::ERROR_BAD_RESPONSE )
@@ -202,7 +202,7 @@ ClientMessage::Error ClientMessage::getError( void ) {
 //-----------------------------------------------------------------------------
 /// Sets the protobuf message as an error and maps parameters from an error
 /// type into the protobuffer
-void ClientMessage::setError( const ClientMessage::Error& error ) {
+void client_message_c::set_error( const client_message_c::error_e& error ) {
   _type = ERROR;
   _error = error;
 

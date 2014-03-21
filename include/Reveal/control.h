@@ -16,21 +16,29 @@ namespace Reveal {
 
 //-----------------------------------------------------------------------------
 
-class Control {
+class control_c {
 public:
-  Control( void ) {}
-  virtual ~Control( void ) {}
+  control_c( void ) {}
+  virtual ~control_c( void ) {}
 
   double u( const unsigned& i ) {
     assert( i < _u.size() );
     return _u[i];
   }
 
-  void Append( const double& u ) {
+  void append( const double& u ) {
     _u.push_back( u );
   }
 
-  unsigned Size( void ) {
+  void append_u( const double& u ) {
+    _u.push_back( u );
+  }
+
+  unsigned size_u( void ) {
+    return _u.size();
+  }
+
+  unsigned size( void ) {
     return _u.size();
   }
 

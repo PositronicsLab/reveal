@@ -5,14 +5,14 @@
 
 namespace Reveal {
 
-class Scenario;
-typedef boost::shared_ptr<Scenario> ScenarioPtr;
+class scenario_c;
+typedef boost::shared_ptr<scenario_c> scenario_ptr;
 
-class Trial;
-typedef boost::shared_ptr<Trial> TrialPtr;
+class trial_c;
+typedef boost::shared_ptr<trial_c> trial_ptr;
 
-class Solution;
-typedef boost::shared_ptr<Solution> SolutionPtr;
+class solution_c;
+typedef boost::shared_ptr<solution_c> solution_ptr;
 
 } // namespace Reveal
 

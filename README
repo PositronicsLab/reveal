@@ -1,0 +1,4 @@
+dependencies:
+  protobuf-2.5.0
+  zeromq-4.0.3
+  boost (1.55 recommended)

@@ -6,7 +6,7 @@
 //-----------------------------------------------------------------------------
 
 int main( int argc, char* argv[] ) {
-  Reveal::server_c server;
+  Reveal::Server::server_c server;
 
   if( !server.init() ) {
     printf( "ERROR: Server failed to initialize properly.\nExiting.\n" );

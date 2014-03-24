@@ -12,10 +12,15 @@
 #include <Reveal/trial.h>
 #include <Reveal/solution.h>
 
-//#include <boost/numeric/odeint.hpp>
 #include <Reveal/pendulum.h>
 
+//-----------------------------------------------------------------------------
+
 namespace Reveal {
+
+//-----------------------------------------------------------------------------
+
+namespace Server {
 
 //-----------------------------------------------------------------------------
 /// Default Constructor
@@ -32,15 +37,15 @@ server_c::~server_c( void ) {
 //-----------------------------------------------------------------------------
 /// Initialization
 bool server_c::init( void ) {
-  protocol_manager_c::start();  
+  Reveal::Core::protocol_manager_c::start();  
 
-  _clientconnection = connection_c( PORT );
+  _clientconnection = Reveal::Core::connection_c( PORT );
   if( !_clientconnection.open() ) {
     printf( "Failed to open clientconnection\n" );
     return false;
   }
 
-  _workerconnection = connection_c( connection_c::DEALER, _clientconnection.context() );
+  _workerconnection = Reveal::Core::connection_c( Reveal::Core::connection_c::DEALER, _clientconnection.context() );
   if( !_workerconnection.open() ) {
     printf( "Failed to open workerconnection\n" );
     return false; 
@@ -69,19 +74,19 @@ void server_c::terminate( void ) {
   _workerconnection.close();
   _clientconnection.close();
 
-  protocol_manager_c::shutdown();
+  Reveal::Core::protocol_manager_c::shutdown();
 
 } 
 
 //-----------------------------------------------------------------------------
 void* server_c::client_worker( void* context ) {
-  connection_c receiver = connection_c( connection_c::WORKER, context );
+  Reveal::Core::connection_c receiver = Reveal::Core::connection_c( Reveal::Core::connection_c::WORKER, context );
 
   std::string msg_request;
   std::string msg_response;
 
-  client_message_c clientmsg;
-  server_message_c servermsg;
+  Reveal::Core::client_message_c clientmsg;
+  Reveal::Core::server_message_c servermsg;
 
   if( !receiver.open() ) {
     printf( "worker failed to open connection\n" );
@@ -103,8 +108,8 @@ void* server_c::client_worker( void* context ) {
     } 
 
     // determine the course of action
-    if( clientmsg.get_type() == client_message_c::SCENARIO ) {
-      scenario_ptr scenario = clientmsg.get_scenario();
+    if( clientmsg.get_type() == Reveal::Core::client_message_c::SCENARIO ) {
+      Reveal::Core::scenario_ptr scenario = clientmsg.get_scenario();
  
       // NOTE: If we use workers for DB interaction, worker spawned HERE.
       // Query into the database to construct the scenario
@@ -125,8 +130,8 @@ void* server_c::client_worker( void* context ) {
       servermsg.set_scenario( scenario );
       // serialize
       msg_response = servermsg.serialize();
-    } else if( clientmsg.get_type() == client_message_c::TRIAL ) {
-      trial_ptr trial = clientmsg.get_trial();
+    } else if( clientmsg.get_type() == Reveal::Core::client_message_c::TRIAL ) {
+      Reveal::Core::trial_ptr trial = clientmsg.get_trial();
 
       // NOTE: If we use workers for DB interaction, worker spawned HERE.
       // Query the database to construct the trial
@@ -179,8 +184,8 @@ void* server_c::client_worker( void* context ) {
       servermsg.set_trial( trial );
       msg_response = servermsg.serialize();
  
-    } else if( clientmsg.get_type() == client_message_c::SOLUTION ) {
-      solution_ptr solution = clientmsg.get_solution();
+    } else if( clientmsg.get_type() == Reveal::Core::client_message_c::SOLUTION ) {
+      Reveal::Core::solution_ptr solution = clientmsg.get_solution();
 
       // TODO: comment/remove later
       solution->print();
@@ -220,7 +225,7 @@ void* server_c::client_worker( void* context ) {
           // throw?
         }
       }
-    } else if( clientmsg.get_type() == client_message_c::ERROR ) {
+    } else if( clientmsg.get_type() == Reveal::Core::client_message_c::ERROR ) {
 
     } 
 
@@ -235,6 +240,10 @@ void* server_c::client_worker( void* context ) {
   receiver.close();
   return NULL;
 }
+
+//-----------------------------------------------------------------------------
+
+} // namespace Server
 
 //-----------------------------------------------------------------------------
 

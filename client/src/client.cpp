@@ -13,9 +13,15 @@
 #include <Reveal/trial.h>
 #include <Reveal/solution.h>
 
-//#include <boost/numeric/odeint.hpp>
 #include <Reveal/pendulum.h>
+
+//-----------------------------------------------------------------------------
+
 namespace Reveal {
+
+//-----------------------------------------------------------------------------
+
+namespace Client {
 
 //-----------------------------------------------------------------------------
 /// Default Constructor
@@ -32,7 +38,7 @@ client_c::~client_c( void ) {
 //-----------------------------------------------------------------------------
 /// Initialization
 bool client_c::init( void ) {
-  protocol_manager_c::start();
+  Reveal::Core::protocol_manager_c::start();
 
   return true;
 }
@@ -44,14 +50,14 @@ void client_c::go( void ) {
   std::string msg_request;
   std::string msg_response;
 
-  client_message_c clientmsg;
-  server_message_c servermsg;
+  Reveal::Core::client_message_c clientmsg;
+  Reveal::Core::server_message_c servermsg;
 
   // connect to the transport layer
   if( !connect() ) return;
 
   // create a scenario
-  scenario_ptr scenario = scenario_ptr( new scenario_c() );
+  Reveal::Core::scenario_ptr scenario = Reveal::Core::scenario_ptr( new Reveal::Core::scenario_c() );
   // request Simulation Scenario by id
   //scenario->name = "test";
   scenario->name = "pendulum";
@@ -92,7 +98,7 @@ void client_c::go( void ) {
     // *Request a trial*
 
     // create a trial
-    trial_ptr trial = trial_ptr( new trial_c() );
+    Reveal::Core::trial_ptr trial = Reveal::Core::trial_ptr( new Reveal::Core::trial_c() );
     // populate the trial structure with scenario information
     trial->scenario = scenario->name;
     trial->index = i;
@@ -133,7 +139,7 @@ void client_c::go( void ) {
 
     // generate a solution
     // following is just a populating a scenario with a bogus test case
-    solution_ptr solution = solution_ptr( new solution_c() );
+    Reveal::Core::solution_ptr solution = Reveal::Core::solution_ptr( new Reveal::Core::solution_c() );
     if( trial->scenario == "test" ) {
       if( trial->index == 0 ) {
         solution->scenario = trial->scenario;
@@ -210,7 +216,7 @@ void client_c::go( void ) {
 void client_c::terminate( void ) {
   _connection.close();
 
-  protocol_manager_c::shutdown();
+  Reveal::Core::protocol_manager_c::shutdown();
 }
 
 //-----------------------------------------------------------------------------
@@ -218,7 +224,7 @@ void client_c::terminate( void ) {
 bool client_c::connect( void ) {
   printf( "Connecting to server...\n" );
 
-  _connection = connection_c( REVEAL_SERVER_URI, PORT );
+  _connection = Reveal::Core::connection_c( REVEAL_SERVER_URI, PORT );
   if( !_connection.open() ) {
     return false;
   }
@@ -226,6 +232,10 @@ bool client_c::connect( void ) {
   printf( "Connected\n" );
   return true;
 }
+
+//-----------------------------------------------------------------------------
+
+} // namespace Client
 
 //-----------------------------------------------------------------------------
 

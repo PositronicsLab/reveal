@@ -3,8 +3,8 @@ James R Taylor:jrt@gwu.edu
 
 -----------------------------------------------------------------------------*/
 
-#ifndef _REVEAL_PROTOCOL_MANAGER_H_
-#define _REVEAL_PROTOCOL_MANAGER_H_
+#ifndef _REVEAL_CORE_PROTOCOL_MANAGER_H_
+#define _REVEAL_CORE_PROTOCOL_MANAGER_H_
 
 //-----------------------------------------------------------------------------
 
@@ -16,6 +16,10 @@ namespace Reveal {
 
 //-----------------------------------------------------------------------------
 
+namespace Core {
+
+//-----------------------------------------------------------------------------
+
 class protocol_manager_c {
 public:
   static void start( void ) { GOOGLE_PROTOBUF_VERIFY_VERSION; }
@@ -24,8 +28,12 @@ public:
 
 //-----------------------------------------------------------------------------
 
+}  // namespace Core
+
+//-----------------------------------------------------------------------------
+
 }  // namespace Reveal
 
 //-----------------------------------------------------------------------------
 
-#endif // _REVEAL_PROTOCOL_MANAGER_H_
+#endif // _REVEAL_CORE_PROTOCOL_MANAGER_H_

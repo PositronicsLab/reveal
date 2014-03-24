@@ -13,7 +13,6 @@ void pendulum_c::operator()( const state_type& x, state_type& dxdt, const double
 bool pendulum_c::sample_trial( const unsigned& index, double& q, double& dq, double& t, double& dt ) {
   if( index >= 10 ) return false;
 
-//#ifdef _REVEAL_SERVER_H_   // WTF ifdef.  Activating this not working
   switch( index ) {
   default:
   case 0:
@@ -48,8 +47,5 @@ bool pendulum_c::sample_trial( const unsigned& index, double& q, double& dq, dou
     break;
   }
   return true;
-//#else
-//  return false;
-//#endif
 }
  

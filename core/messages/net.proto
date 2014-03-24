@@ -1,6 +1,6 @@
 //TCP/IP Network protocol messages for Reveal
 
-package Reveal.Messages.Net;
+package Reveal.Core.Messages.Net;
 
 message ClientRequest {
   enum RequestType {

@@ -3,8 +3,8 @@ James R Taylor:jrt@gwu.edu
 
 -----------------------------------------------------------------------------*/
 
-#ifndef _REVEAL_SERVER_H_
-#define _REVEAL_SERVER_H_
+#ifndef _REVEAL_SERVER_SERVER_H_
+#define _REVEAL_SERVER_SERVER_H_
 
 //-----------------------------------------------------------------------------
 
@@ -17,6 +17,10 @@ James R Taylor:jrt@gwu.edu
 //-----------------------------------------------------------------------------
 
 namespace Reveal {
+
+//-----------------------------------------------------------------------------
+
+namespace Server {
 
 //-----------------------------------------------------------------------------
 
@@ -43,8 +47,8 @@ public:
   static void* client_worker( void* context );
 
 private:
-  connection_c _clientconnection;
-  connection_c _workerconnection;
+  Reveal::Core::connection_c _clientconnection;
+  Reveal::Core::connection_c _workerconnection;
 
   std::vector<pthread_t> workers;
 
@@ -52,8 +56,12 @@ private:
 
 //-----------------------------------------------------------------------------
 
+}  // namespace Server
+
+//-----------------------------------------------------------------------------
+
 }  // namespace Reveal
 
 //-----------------------------------------------------------------------------
 
-#endif // _REVEAL_SERVER_H_
+#endif // _REVEAL_SERVER_SERVER_H_

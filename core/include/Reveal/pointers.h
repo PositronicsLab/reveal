@@ -1,9 +1,19 @@
-#ifndef _REVEAL_POINTERS_H_
-#define _REVEAL_POINTERS_H_
+#ifndef _REVEAL_CORE_POINTERS_H_
+#define _REVEAL_CORE_POINTERS_H_
+
+//-----------------------------------------------------------------------------
 
 #include <boost/shared_ptr.hpp>
 
+//-----------------------------------------------------------------------------
+
 namespace Reveal {
+
+//-----------------------------------------------------------------------------
+
+namespace Core {
+
+//-----------------------------------------------------------------------------
 
 class scenario_c;
 typedef boost::shared_ptr<scenario_c> scenario_ptr;
@@ -14,6 +24,14 @@ typedef boost::shared_ptr<trial_c> trial_ptr;
 class solution_c;
 typedef boost::shared_ptr<solution_c> solution_ptr;
 
+//-----------------------------------------------------------------------------
+
+} // namespace Core
+
+//-----------------------------------------------------------------------------
+
 } // namespace Reveal
 
-#endif // _REVEAL_POINTERS_H_
+//-----------------------------------------------------------------------------
+
+#endif // _REVEAL_CORE_POINTERS_H_

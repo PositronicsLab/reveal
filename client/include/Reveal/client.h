@@ -3,13 +3,14 @@ James R Taylor:jrt@gwu.edu
 
 -----------------------------------------------------------------------------*/
 
-#ifndef _REVEAL_SCENARIO_H_
-#define _REVEAL_SCENARIO_H_
+#ifndef _REVEAL_CLIENT_H_
+#define _REVEAL_CLIENT_H_
 
 //-----------------------------------------------------------------------------
 
-#include "net.pb.h"
-#include <stdio.h>
+#include <string.h>
+
+#include <Reveal/connection.h>
 
 //-----------------------------------------------------------------------------
 
@@ -17,31 +18,30 @@ namespace Reveal {
 
 //-----------------------------------------------------------------------------
 
-class scenario_c {
-public:
-  scenario_c( void ) {}
-  virtual ~scenario_c( void ) {}
- 
-  std::string name;
-  unsigned trials;
-  std::vector<std::string> urls;
+#define REVEAL_SERVER_URI "localhost"
 
-  void print( void ) const {
-    printf( "name[%s]", name.c_str() );
-    printf( ", trials[%u]", trials );
-    printf( ", urls[" );
-    for( unsigned i = 0; i < urls.size(); i++ ) {
-      if( i > 0 ) printf( ", " );
-      printf( "%s", urls.at(i).c_str() );
-    }
-    printf( "]\n" );
-  }
+//-----------------------------------------------------------------------------
+
+class client_c {
+public:
+  client_c( void );
+  virtual ~client_c( void );
+
+  bool init( void );
+  void go( void );
+  void terminate( void );
+
+  bool connect( void );
+
+private:
+  connection_c _connection;
 };
 
 //-----------------------------------------------------------------------------
 
-}  // namespace Reveal
+} // namespace reveal
 
 //-----------------------------------------------------------------------------
 
-#endif // _REVEAL_SCENARIO_H_
+#endif // _REVEAL_CLIENT_H_
+

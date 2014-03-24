@@ -2,3 +2,4 @@ dependencies:
   protobuf-2.5.0
   zeromq-4.0.3
   boost (1.55 recommended)
+  mongodb-2.4.9 (32-bit)

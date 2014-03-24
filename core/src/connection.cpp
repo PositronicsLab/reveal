@@ -20,6 +20,8 @@ connection_c::connection_c( const unsigned& port ) {
   _role = ROUTER;
   _open = false;
   _port = port;
+  _context = NULL;
+  _socket = NULL;
 }
 
 //-----------------------------------------------------------------------------
@@ -28,6 +30,7 @@ connection_c::connection_c( const connection_c::role_e& role, void* context ) {
   _role = role;
   _open = false;
   _context = context;
+  _socket = NULL;
 }
 
 
@@ -37,6 +40,8 @@ connection_c::connection_c( const std::string& host, const unsigned& port ) {
   _open = false;
   _host = host;
   _port = port;
+  _context = NULL;
+  _socket = NULL;
 }
 
 //-----------------------------------------------------------------------------
@@ -51,21 +56,32 @@ bool connection_c::open( void ) {
   if( _role == CLIENT ) {
     _context = zmq_ctx_new();
     _socket = zmq_socket( _context, ZMQ_REQ );
-    zmq_connect( _socket, connection_string().c_str() );
+    if( zmq_connect( _socket, connection_string().c_str() ) == -1 ) {
+      // errno is set, can check it and adjust method to return enum error
+      return false;
+    }
   } else if( _role == ROUTER ) {
     _context = zmq_ctx_new();
     _socket = zmq_socket( _context, ZMQ_ROUTER );
-    int rc = zmq_bind( _socket, connection_string().c_str() );
-    assert( rc == 0 );
+    if( zmq_bind( _socket, connection_string().c_str() ) == -1 ) {
+      // errno is set, can check it and adjust method to return enum error
+      return false;
+    }
   } else if( _role == DEALER ) {
     _socket = zmq_socket( _context, ZMQ_DEALER );
-    int rc = zmq_bind( _socket, connection_string().c_str() );
-    assert( rc == 0 );
+    if( zmq_bind( _socket, connection_string().c_str() ) == -1 ) {
+      // errno is set, can check it and adjust method to return enum error
+      return false;
+    }
   } else if( _role == WORKER ) {
     _socket = zmq_socket( _context, ZMQ_REP );
-    zmq_connect( _socket, connection_string().c_str() );
+    if( zmq_connect( _socket, connection_string().c_str() ) == -1 ) {
+      // errno is set, can check it and adjust method to return enum error
+      return false;
+    }
+  } else {
+    return false;
   }
-  // TODO: Add robust error checking/handling in critical path development
 
   _open = true;
   return _open;
@@ -92,9 +108,9 @@ bool connection_c::read( std::string& msg ) {
     
   do {
     int bytes = zmq_recv( _socket, buffer, RCV_BUFFER_SZ, 0 );
-    assert( bytes != -1 );
     if( bytes == -1 ) {
-      // errno set
+      // errno is set, can check it and adjust method to return enum error
+      return false;
     }
     zmq_getsockopt( _socket, ZMQ_RCVMORE, &more, &sz );
     if( more && bytes ) msg.append( buffer, bytes );
@@ -126,14 +142,14 @@ bool connection_c::write( const std::string& msg ) {
     // Transmit the chunk with the notification flag that more is to follow
     bytes = zmq_send( _socket, chunk.c_str(), chunk_sz, ZMQ_SNDMORE );
     if( bytes == -1 ) {
-      // errno set
+      // errno is set, can check it and adjust method to return enum error
       return false;
     }
   }
   // Transmit a tiny notification that the message has been entirely sent
   bytes = zmq_send( _socket, "0", 1, 0 );
   if( bytes == -1) {
-    // errno set
+    // errno is set, can check it and adjust method to return enum error
     return false;
   }
   

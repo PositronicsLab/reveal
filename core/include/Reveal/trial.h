@@ -3,15 +3,16 @@ James R Taylor:jrt@gwu.edu
 
 -----------------------------------------------------------------------------*/
 
-#ifndef _REVEAL_SOLUTION_H_
-#define _REVEAL_SOLUTION_H_
+#ifndef _REVEAL_TRIAL_H_
+#define _REVEAL_TRIAL_H_
 
 //-----------------------------------------------------------------------------
 
-#include "net.pb.h"
 #include <vector>
+#include <stdio.h>
 
 #include <Reveal/state.h>
+#include <Reveal/control.h>
 
 //-----------------------------------------------------------------------------
 
@@ -19,20 +20,23 @@ namespace Reveal {
 
 //-----------------------------------------------------------------------------
 
-class solution_c {
+class trial_c {
 public:
-  solution_c( void ) {}
-  virtual ~solution_c( void ) {}
+  trial_c( void ) {}
+  virtual ~trial_c( void ) {}
 
   std::string scenario;
   unsigned index;
   double t;
+  double dt;
   state_c state;
+  control_c control;
 
   void print( void ) {
     printf( "scenario[%s]", scenario.c_str() );
     printf( ", index[%u]", index );
     printf( ", t[%f]", t );
+    printf( ", dt[%f]", dt );
 
     // State 
     printf( ", state[" );
@@ -50,9 +54,18 @@ public:
     printf( "] " );
     printf( "]" );
 
+    // Control
+    printf( ", control[" );
+    printf( " u[" );
+    for( unsigned i = 0; i < control.size_u(); i++ ) {
+      if( i > 0 ) printf( ", " );
+      printf( "%f", control.u(i) );
+    }
+    printf( "] " );
+    printf( "]" );
+
     printf( "\n" );
   }
- 
 };
 
 //-----------------------------------------------------------------------------
@@ -61,4 +74,4 @@ public:
 
 //-----------------------------------------------------------------------------
 
-#endif // _REVEAL_SOLUTION_H_
+#endif // _REVEAL_TRIAL_H_

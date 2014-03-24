@@ -5,6 +5,7 @@
 #include <iostream>
 #include <sstream>
 
+#include <Reveal/protocol_manager.h>
 #include <Reveal/pointers.h>
 #include <Reveal/server_message.h>
 #include <Reveal/client_message.h>
@@ -31,7 +32,7 @@ client_c::~client_c( void ) {
 //-----------------------------------------------------------------------------
 /// Initialization
 bool client_c::init( void ) {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
+  protocol_manager_c::start();
 
   return true;
 }
@@ -63,19 +64,19 @@ void client_c::go( void ) {
   if( !_connection.write( msg_request ) ) {
     // write failed at connection
     printf( "ERROR: failed to write message to connection\n" );
-    // TODO: improve error handling
+    // TODO: improve error handling.  Should bomb or recover here.
   }
   // block waiting for a server response
   if( !_connection.read( msg_response ) ) {
     // read failed at connection
     // right now this should trigger an assert
-    // TODO: improve error handling
+    // TODO: improve error handling.  Should bomb or recover here.
   }
   
   // parse the serialized response message received from the server
   if( !servermsg.parse( msg_response ) ) {
     printf( "ERROR: Failed to parse ServerResponse\n" );
-    // TODO: improve error handling
+    // TODO: improve error handling.  Should bomb or recover here.
   }
   // get the scenario out of the message
   scenario = servermsg.get_scenario();
@@ -105,18 +106,18 @@ void client_c::go( void ) {
     if( !_connection.write( msg_request ) ) {
       // write failed at connection
       printf( "ERROR: failed to write message to connection\n" );
-      // TODO: improve error handling
+      // TODO: improve error handling.  Should bomb or recover here.
     }
     // block waiting for a server response
     if( !_connection.read( msg_response ) ) {
       // read failed at connection
-      // right now this should trigger an assert within Read
-      // TODO: improve error handling
+      printf( "ERROR: failed to read message from connection\n" );
+      // TODO: improve error handling.  Should bomb or recover here.
     }
     // parse the serialized response message received from the server
     if( !servermsg.parse( msg_response ) ) {
       printf( "ERROR: Failed to parse ServerResponse\n" );
-      // TODO: improve error handling 
+      // TODO: improve error handling.  Should bomb or recover here.
     }
 
     // TODO: add checking that the message is of expected type
@@ -185,19 +186,20 @@ void client_c::go( void ) {
     if( !_connection.write( msg_request ) ) {
       // write failed at connection
       printf( "ERROR: failed to write message to connection\n" );
-      // TODO: improve error handling 
+      // TODO: improve error handling.  Should bomb or recover here.
     }
     // block waiting for a response
     if( !_connection.read( msg_response ) ) {
       // read failed at connection
       // right now this should trigger an assert within Read
-      // TODO: improve error handling 
+      // TODO: improve error handling.  Should bomb or recover here.
     }
     // parse out the reponse to validate the solution was received
     if( !servermsg.parse( msg_response ) ) {
       printf( "ERROR: Failed to parse ServerResponse\n" );
-      // TODO: improve error handling 
+      // TODO: improve error handling.  Should bomb or recover here.
     }
+    // Note: the server solution response is just a receipt not a score.
     // TODO: add checking that the message was properly received and that
     //       server sent a receipt
   }
@@ -208,7 +210,7 @@ void client_c::go( void ) {
 void client_c::terminate( void ) {
   _connection.close();
 
-  google::protobuf::ShutdownProtobufLibrary();
+  protocol_manager_c::shutdown();
 }
 
 //-----------------------------------------------------------------------------

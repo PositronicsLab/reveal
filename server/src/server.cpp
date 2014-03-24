@@ -5,6 +5,7 @@
 #include <iostream>
 #include <sstream>
 
+#include <Reveal/protocol_manager.h>
 #include <Reveal/server_message.h>
 #include <Reveal/client_message.h>
 #include <Reveal/scenario.h>
@@ -31,7 +32,7 @@ server_c::~server_c( void ) {
 //-----------------------------------------------------------------------------
 /// Initialization
 bool server_c::init( void ) {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
+  protocol_manager_c::start();  
 
   _clientconnection = connection_c( PORT );
   if( !_clientconnection.open() ) {
@@ -68,14 +69,9 @@ void server_c::terminate( void ) {
   _workerconnection.close();
   _clientconnection.close();
 
-  google::protobuf::ShutdownProtobufLibrary();
+  protocol_manager_c::shutdown();
 
 } 
-
-//-----------------------------------------------------------------------------
-void* server_c::analytic_worker( void* context ) {
-  return NULL;
-}
 
 //-----------------------------------------------------------------------------
 void* server_c::client_worker( void* context ) {
@@ -96,13 +92,14 @@ void* server_c::client_worker( void* context ) {
     // block waiting for a message from a client
     if( !receiver.read( msg_request ) ) {
       // read failed at connection
-      // TODO: improve error handling      
+      printf( "ERROR: Failed to read message from client.\n" );
+      // TODO: improve error handling.  Bomb or recover here.      
     }
 
     // parse the serialized request
     if( !clientmsg.parse( msg_request ) ) {
       printf( "ERROR: Failed to parse ClientRequest\n" );
-      // TODO: improve error handling      
+      // TODO: improve error handling.  Bomb or recover here.      
     } 
 
     // determine the course of action

@@ -3,8 +3,8 @@ James R Taylor:jrt@gwu.edu
 
 -----------------------------------------------------------------------------*/
 
-#ifndef _REVEAL_CORE_SOLUTION_H_
-#define _REVEAL_CORE_SOLUTION_H_
+#ifndef _REVEAL_CORE_MODEL_SOLUTION_H_
+#define _REVEAL_CORE_MODEL_SOLUTION_H_
 
 //-----------------------------------------------------------------------------
 
@@ -22,15 +22,16 @@ namespace Core {
 
 //-----------------------------------------------------------------------------
 
-class solution_c {
+class model_solution_c {
 public:
-  solution_c( void ) {}
-  virtual ~solution_c( void ) {}
+  model_solution_c( void ) {}
+  virtual ~model_solution_c( void ) {}
 
   std::string scenario;
   unsigned index;
   double t;
   state_c state;
+  state_c epsilon;
 
   void print( void ) {
     printf( "scenario[%s]", scenario.c_str() );
@@ -52,6 +53,23 @@ public:
     }
     printf( "] " );
     printf( "]" );
+
+    printf( ", epsilon[" );
+    printf( " q[" );
+    for( unsigned i = 0; i < epsilon.size_q(); i++ ) {
+      if( i > 0 ) printf( ", " );
+      printf( "%f", epsilon.q(i) );
+    }
+    printf( "]" );
+    printf( ", dq[" );
+    for( unsigned i = 0; i < epsilon.size_dq(); i++ ) {
+      if( i > 0 ) printf( ", " );
+      printf( "%f", epsilon.dq(i) );
+    }
+    printf( "] " );
+    printf( "]" );
+
+    printf( "\n" );
   }
  
 };
@@ -66,4 +84,4 @@ public:
 
 //-----------------------------------------------------------------------------
 
-#endif // _REVEAL_CORE_SOLUTION_H_
+#endif // _REVEAL_CORE_MODEL_SOLUTION_H_

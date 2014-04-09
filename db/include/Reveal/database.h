@@ -1,0 +1,79 @@
+#ifndef _REVEAL_DB_DATABASE_
+#define _REVEAL_DB_DATABASE_
+
+//-----------------------------------------------------------------------------
+#include <cstdlib>
+#include <iostream>
+#include <memory>
+
+#include <mongo/client/dbclient.h>
+//#include <string>
+
+#include <Reveal/pointers.h>
+
+//-----------------------------------------------------------------------------
+
+namespace Reveal {
+
+//-----------------------------------------------------------------------------
+
+namespace DB {
+
+//-----------------------------------------------------------------------------
+
+class database_c {
+private:
+  std::string                  _host;
+  unsigned                     _port;
+  bool                         _open;
+  std::string                  _dbname;
+
+//  mongo::ConnectionString      _connection_string;
+  mongo::DBClientConnection    _connection;
+
+public:
+  enum error_e {
+    ERROR_NONE
+  };
+
+  database_c( void );
+  database_c( const std::string& host );
+  virtual ~database_c( void );
+
+  bool open( void );
+  void close( void );
+/*
+  error_e update( const std::string query );
+  error_e fetch( const std::string query, table_c& data );
+  error_e insert( const std::string query );
+*/
+
+private:
+  bool insert( const std::string& table, const mongo::BSONObj& query );
+  bool fetch( std::auto_ptr<mongo::DBClientCursor>& cursor, const std::string& table, mongo::Query query );
+
+public:
+  error_e insert( Reveal::Core::scenario_ptr scenario );
+  error_e query( Reveal::Core::scenario_ptr& scenario, const std::string& name );
+
+  error_e insert( Reveal::Core::trial_ptr trial );
+  error_e query( Reveal::Core::trial_ptr& trial, const std::string& scenario, const unsigned& index );
+
+  error_e insert( Reveal::Core::solution_ptr solution );
+  error_e query( Reveal::Core::solution_ptr& solution, const std::string& scenario, const unsigned& index );
+
+  error_e insert( Reveal::Core::model_solution_ptr solution );
+  error_e query( Reveal::Core::model_solution_ptr& solution, const std::string& scenario, const unsigned& index );
+};
+
+//-----------------------------------------------------------------------------
+
+} // namespace DB
+
+//-----------------------------------------------------------------------------
+
+} // namespace Reveal
+
+//-----------------------------------------------------------------------------
+
+#endif // _REVEAL_DB_DATABASE_

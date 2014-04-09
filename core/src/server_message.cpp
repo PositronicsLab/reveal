@@ -116,8 +116,8 @@ scenario_ptr server_message_c::get_scenario( void ) {
 
   scenario->name = _response.scenario().name();
   scenario->trials = _response.scenario().trials();
-  for( int i = 0; i < _response.scenario().url_size(); i++ ) {
-    scenario->urls.push_back( _response.scenario().url( i ) );
+  for( int i = 0; i < _response.scenario().uri_size(); i++ ) {
+    scenario->uris.push_back( _response.scenario().uri( i ) );
   }
   return scenario; 
 }
@@ -133,8 +133,8 @@ void server_message_c::set_scenario( scenario_ptr scenario ) {
   Messages::Net::ScenarioResponse* sr = _response.mutable_scenario();
   sr->set_name( scenario->name.c_str() );
   sr->set_trials( scenario->trials );
-  for( unsigned i = 0; i < scenario->urls.size(); i++ ) {
-    sr->add_url( scenario->urls.at(i) );
+  for( unsigned i = 0; i < scenario->uris.size(); i++ ) {
+    sr->add_uri( scenario->uris.at(i) );
   }
 }
 

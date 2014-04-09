@@ -24,6 +24,9 @@ typedef boost::shared_ptr<trial_c> trial_ptr;
 class solution_c;
 typedef boost::shared_ptr<solution_c> solution_ptr;
 
+class model_solution_c;
+typedef boost::shared_ptr<model_solution_c> model_solution_ptr;
+
 //-----------------------------------------------------------------------------
 
 } // namespace Core

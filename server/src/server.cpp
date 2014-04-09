@@ -8,11 +8,15 @@
 #include <Reveal/protocol_manager.h>
 #include <Reveal/server_message.h>
 #include <Reveal/client_message.h>
+#include <Reveal/pointers.h>
 #include <Reveal/scenario.h>
 #include <Reveal/trial.h>
 #include <Reveal/solution.h>
+#include <Reveal/model_solution.h>
 
 #include <Reveal/pendulum.h>
+
+#include <Reveal/database.h>
 
 //-----------------------------------------------------------------------------
 
@@ -93,6 +97,9 @@ void* server_c::client_worker( void* context ) {
     // return?
   }
 
+  Reveal::DB::database_c db( "localhost" );
+  db.open();
+
   while( true ) {
     // block waiting for a message from a client
     if( !receiver.read( msg_request ) ) {
@@ -109,121 +116,70 @@ void* server_c::client_worker( void* context ) {
 
     // determine the course of action
     if( clientmsg.get_type() == Reveal::Core::client_message_c::SCENARIO ) {
-      Reveal::Core::scenario_ptr scenario = clientmsg.get_scenario();
+      Reveal::Core::scenario_ptr client_scenario;
+      Reveal::Core::scenario_ptr server_scenario;
+
+      // extract the scenario from the client message
+      client_scenario = clientmsg.get_scenario();
  
-      // NOTE: If we use workers for DB interaction, worker spawned HERE.
-      // Query into the database to construct the scenario
+      // query the database for scenario data
+      db.query( server_scenario, client_scenario->name );
 
-      // simulate database transaction time
-      sleep(DB_SIMULATED_WORK_TIME);
+      // construct the scenario message
+      servermsg.set_scenario( server_scenario );
 
-      // Example scenario:
-      if( scenario->name.compare( "test" ) == 0 ) {
-        scenario->trials = 2;
-        scenario->urls.push_back( "http://www.gazebosim.org/" );
-        scenario->urls.push_back( "http://www.osrfoundation.org/" );
-      } else if( scenario->name.compare( "pendulum" ) == 0 ) {
-        scenario->trials = 10;
-      }
-
-      // once the scenario created, build a message
-      servermsg.set_scenario( scenario );
-      // serialize
+      // serialize the message for transmission
       msg_response = servermsg.serialize();
+
     } else if( clientmsg.get_type() == Reveal::Core::client_message_c::TRIAL ) {
-      Reveal::Core::trial_ptr trial = clientmsg.get_trial();
+      Reveal::Core::trial_ptr client_trial;
+      Reveal::Core::trial_ptr server_trial;
 
-      // NOTE: If we use workers for DB interaction, worker spawned HERE.
-      // Query the database to construct the trial
-      // TODO: Add database API interface
+      // extract the trial from the client message
+      client_trial = clientmsg.get_trial();
 
-      // simulate database transaction time
-      sleep(DB_SIMULATED_WORK_TIME);
+      // query the database for trial data
+      db.query( server_trial, client_trial->scenario, client_trial->index );
 
-      // Example Trials
-      if( trial->scenario == "test" ) {
-        if( trial->index == 0 ) {
-          trial->t = 2.01;
-          trial->dt = 0.001;
-          // build state
-          trial->state.append_q( 1.0 );
-          trial->state.append_q( 2.0 );
-          trial->state.append_dq( 3.0 );
-          trial->state.append_dq( 4.0 );
-          // build command
-          trial->control.append( 5.0 );
-          trial->control.append( 6.0 );
-        } else if( trial->index == 1 ) {
-          trial->t = 1.01;
-          trial->dt = 0.001;
-          // build state
-          trial->state.append_q( 11.1 );
-          trial->state.append_q( 12.1 );
-          trial->state.append_dq( 13.1 );
-          trial->state.append_dq( 14.1 );
-          // build command
-          trial->control.append( 15.1 );
-          trial->control.append( 16.1 );
-        }
-      } else if( trial->scenario == "pendulum" ) {
-        double q, dq, t, dt; 
-        if( pendulum_c::sample_trial( trial->index, q, dq, t, dt ) ) {
-          trial->t = t;
-          trial->dt = dt;
-          // build state
-          trial->state.append_q( q );
-          trial->state.append_dq( dq );
-          // no command
-        } else {
-          printf( "failed to fetch trial data from database\n" );
-          // throw?
-        }
-      }
+      // construct the trial message
+      servermsg.set_trial( server_trial );
 
-      // make adjustments then setup the servermsg using the same trial ref
-      servermsg.set_trial( trial );
+      //serialize the message for transmission
       msg_response = servermsg.serialize();
  
     } else if( clientmsg.get_type() == Reveal::Core::client_message_c::SOLUTION ) {
-      Reveal::Core::solution_ptr solution = clientmsg.get_solution();
+      Reveal::Core::solution_ptr client_solution;
 
-      // TODO: comment/remove later
-      solution->print();
+      // create a solution receipt
+      client_solution = clientmsg.get_solution();
 
-      // NOTE: If we use workers for DB interaction, worker spawned HERE.
-      // NOTE: Spawn analytic worker after sending response
-      // TODO: Add database API interface
+      // TODO: The general structure in this segment is subject to osrf feedback
+      // We could send back a notice on good solution or bad as determined by
+      // analytics, or we can keep client in the dark to minimize gaming.
 
-      // make adjustments then setup the servermsg using the same solution ref
-      // Note that there are differences here because we are replying with OK
-      servermsg.set_solution( solution );
+      // construct the solution receipt message
+      servermsg.set_solution( client_solution );
+
+      // serialize the message for transmission
       msg_response = servermsg.serialize();
 
-      // simulate database transaction time
-      sleep(DB_SIMULATED_WORK_TIME);
+      // TODO: determine appropriate adjustment here.  This worker will bog
+      // down chewing on the db operations and analytics here and will not
+      // send the receipt until it reaches the bottom of this function.
+      // It should immediately return the receipt then deal with database and
+      // analytics
 
-      // simulate/validate/analyze
-      if( solution->scenario == "pendulum" ) {
-        assert( solution->index < 10 );
-        const double EPSILON = PENDULUM_VALIDATION_EPSILON;
-        std::vector<double> x;
-        //x.clear();
-        double q, dq, ti, dt, tf;
-        if( pendulum_c::sample_trial( solution->index, q, dq, ti, dt ) ) {
-          x.push_back( q );
-          x.push_back( dq );
-          tf = ti + dt;
-          pendulum_c pendulum( EXPERIMENTAL_PENDULUM_L );
-          boost::numeric::odeint::integrate_adaptive( stepper_type(), pendulum, x, ti, tf, dt );
-          if( fabs(x[0] - solution->state.q(0)) < EPSILON && fabs(x[1] - solution->state.dq(0)) < EPSILON ) {
-            printf( "Client passed pendulum trial[%d]\n", solution->index );
-          } else {
-            printf( "Client failed pendulum trial[%d]: server(q[%f],dq[%f]), client(q[%f],dq[%f])\n", solution->index, x[0], x[1], solution->state.q(0), solution->state.dq(0) );
-          }
-        } else {
-          printf( "failed to fetch trial data from database\n" );
-          // throw?
-        }
+      // insert the client solution into the database
+      db.insert( client_solution );
+
+      // - Analytics -
+      Reveal::Core::model_solution_ptr server_solution;
+      db.query( server_solution, client_solution->scenario, client_solution->index );
+
+      if( fabs(server_solution->state.q(0) - client_solution->state.q(0)) < server_solution->epsilon.q(0) && fabs(server_solution->state.dq(0) - client_solution->state.dq(0)) < server_solution->epsilon.dq(0) ) {
+        printf( "Client passed pendulum trial[%d]\n", client_solution->index );
+      } else {
+        printf( "Client failed pendulum trial[%d]: server(q[%f],dq[%f]:Eq[%f],Edq[%f]), client(q[%f],dq[%f])\n", client_solution->index, server_solution->state.q(0), server_solution->state.dq(0), server_solution->epsilon.q(0), server_solution->epsilon.dq(0), client_solution->state.q(0), client_solution->state.dq(0) );
       }
     } else if( clientmsg.get_type() == Reveal::Core::client_message_c::ERROR ) {
 

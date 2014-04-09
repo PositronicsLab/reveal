@@ -27,15 +27,15 @@ public:
  
   std::string name;
   unsigned trials;
-  std::vector<std::string> urls;
+  std::vector<std::string> uris;
 
   void print( void ) const {
     printf( "name[%s]", name.c_str() );
     printf( ", trials[%u]", trials );
-    printf( ", urls[" );
-    for( unsigned i = 0; i < urls.size(); i++ ) {
+    printf( ", uris[" );
+    for( unsigned i = 0; i < uris.size(); i++ ) {
       if( i > 0 ) printf( ", " );
-      printf( "%s", urls.at(i).c_str() );
+      printf( "%s", uris.at(i).c_str() );
     }
     printf( "]\n" );
   }

@@ -60,7 +60,7 @@ message ScenarioRequest {
 message ScenarioResponse {
   required string name = 1;
   required uint32 trials = 2 [default = 0];
-  repeated string url = 3;
+  repeated string uri = 3;
 }
 
 message TrialRequest {

@@ -30,6 +30,7 @@ public:
     assert( i < _q.size() );
     return _q[i];
   }
+
   double dq( const unsigned& i ) {
     assert( i < _dq.size() );
     return _dq[i];

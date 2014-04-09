@@ -3,8 +3,9 @@
 project( Reveal )
 cmake_minimum_required(VERSION 2.8)
 
-SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -g")
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -g")
+#SET(CMAKE_CXX_COMPILER clang)
+SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -Wextra -g")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -Wall -Wextra -g ")
 
 # make available any custom .cmakes
 set( CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules ${CMAKE_MODULE_PATH} )
@@ -46,7 +47,7 @@ include_directories( ${CMAKE_CURRENT_BINARY_DIR} )
 # find all packages
 find_package( Protobuf REQUIRED )
 find_package( ZeroMQ REQUIRED )
-find_package( Boost REQUIRED )
+#find_package( Boost REQUIRED )
 
 # header files
 set( REVEAL_CORE_HEADERS 
@@ -57,6 +58,7 @@ set( REVEAL_CORE_HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/core/include/Reveal/scenario.h
   ${CMAKE_CURRENT_SOURCE_DIR}/core/include/Reveal/trial.h
   ${CMAKE_CURRENT_SOURCE_DIR}/core/include/Reveal/solution.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/core/include/Reveal/model_solution.h
   ${CMAKE_CURRENT_SOURCE_DIR}/core/include/Reveal/server_message.h
   ${CMAKE_CURRENT_SOURCE_DIR}/core/include/Reveal/client_message.h
   ${CMAKE_CURRENT_SOURCE_DIR}/core/include/Reveal/pendulum.h
@@ -73,14 +75,13 @@ set( REVEAL_CORE_SOURCES
 # additional include paths
 set( REVEAL_CORE_INCLUDE_DIRS
   ${ZeroMQ_INCLUDE_DIRS}
-  ${Boost_INCLUDE_DIRS}
-#  ${REVEAL_MESSAGES_INCLUDE_DIRS}
+#  ${Boost_INCLUDE_DIRS}
   ${CMAKE_CURRENT_SOURCE_DIR}/core/include/
 )
 
 # any libraries
 set( REVEAL_CORE_LIBRARIES
-  ${Boost_LIBRARIES}
+#  ${Boost_LIBRARIES}
   ${REVEAL_MESSAGES_LIBRARY}
   ${PROTOBUF_LIBRARY}
   ${ZeroMQ_LIBRARIES}
@@ -102,6 +103,58 @@ set( REVEAL_CORE_LIBRARY
 #---------------Reveal DB-------------------
 # find all packages
 #find_package( MongoDB REQUIRED )
+
+# header files
+set( REVEAL_DB_HEADERS 
+  ${CMAKE_CURRENT_SOURCE_DIR}/db/include/Reveal/query.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/db/include/Reveal/database.h
+)
+
+# source files
+set( REVEAL_DB_SOURCES 
+  ${CMAKE_CURRENT_SOURCE_DIR}/db/src/query.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/db/src/database.cpp
+)
+
+# additional include paths
+set( REVEAL_DB_INCLUDE_DIRS
+#  ${Boost_INCLUDE_DIRS}
+#  ${MongoDB_INCLUDE_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR}/db/include/
+)
+
+# any libraries
+set( REVEAL_DB_LIBRARIES
+  ${REVEAL_CORE_LIBRARY}
+  ${REVEAL_CORE_LIBRARIES}
+#  ${Boost_LIBRARIES}
+  /usr/lib/libboost_system.so
+  /usr/lib/libboost_thread.so
+  /usr/lib/libboost_filesystem.so
+  /usr/lib/libboost_program_options.so
+  /usr/local/lib/libmongoclient.so
+#  ${MongoDB_LIBRARIES}
+)
+
+# add the include paths
+include_directories( ${REVEAL_DB_INCLUDE_DIRS} )
+
+# build the library
+add_library( revealdb SHARED ${REVEAL_DB_HEADERS} ${REVEAL_DB_SOURCES} )
+add_dependencies( revealdb revealcore )
+target_link_libraries( revealdb ${REVEAL_DB_LIBARIES})
+
+# create the reveal db library variable for future dependency linking
+set( REVEAL_DB_LIBRARY
+  ${CMAKE_CURRENT_BINARY_DIR}/librevealdb.so
+)
+
+# build the executables in test
+add_executable( test-reveal-db-insert-scenario ${CMAKE_CURRENT_SOURCE_DIR}/db/test/test_reveal_db_insert_scenario.cpp ${REVEAL_DB_HEADERS} ${REVEAL_DB_SOURCES} )
+target_link_libraries( test-reveal-db-insert-scenario ${REVEAL_DB_LIBRARIES} ${REVEAL_DB_LIBRARY} )
+
+add_executable( test-reveal-db-fetch ${CMAKE_CURRENT_SOURCE_DIR}/db/test/test_reveal_db_fetch.cpp ${REVEAL_DB_HEADERS} ${REVEAL_DB_SOURCES} )
+target_link_libraries( test-reveal-db-fetch ${REVEAL_DB_LIBRARIES} ${REVEAL_DB_LIBRARY} )
 
 #---------------Reveal Server---------------
 
@@ -125,15 +178,17 @@ set( REVEAL_SERVER_INCLUDE_DIRS
 set( REVEAL_SERVER_LIBRARIES
   ${REVEAL_CORE_LIBRARY}
   ${REVEAL_CORE_LIBRARIES}
+  ${REVEAL_DB_LIBRARY}
+  ${REVEAL_DB_LIBRARIES}
 )
 
 # add the include paths
 include_directories( ${REVEAL_SERVER_INCLUDE_DIRS} )
 
 # build the executables in test
-add_executable( test_reveal_server ${CMAKE_CURRENT_SOURCE_DIR}/server/test/test_reveal_server.cpp ${REVEAL_SERVER_HEADERS} ${REVEAL_SERVER_SOURCES} )
-add_dependencies( test_reveal_server revealcore )
-target_link_libraries( test_reveal_server ${REVEAL_SERVER_LIBRARIES} )
+add_executable( test-reveal-server ${CMAKE_CURRENT_SOURCE_DIR}/server/test/test_reveal_server.cpp ${REVEAL_SERVER_HEADERS} ${REVEAL_SERVER_SOURCES} )
+add_dependencies( test-reveal-server revealcore revealdb )
+target_link_libraries( test-reveal-server ${REVEAL_SERVER_LIBRARIES} )
 
 #---------------Reveal Client---------------
 
@@ -165,7 +220,7 @@ include_directories( ${REVEAL_CLIENT_INCLUDE_DIRS} )
 # build the executables
 
 # build the executables in test
-add_executable( test_reveal_client ${CMAKE_CURRENT_SOURCE_DIR}/client/test/test_reveal_client.cpp ${REVEAL_CLIENT_HEADERS} ${REVEAL_CLIENT_SOURCES} )
-add_dependencies( test_reveal_client revealcore )
-target_link_libraries( test_reveal_client ${REVEAL_CLIENT_LIBRARIES} )
+add_executable( test-reveal-client ${CMAKE_CURRENT_SOURCE_DIR}/client/test/test_reveal_client.cpp ${REVEAL_CLIENT_HEADERS} ${REVEAL_CLIENT_SOURCES} )
+add_dependencies( test-reveal-client revealcore )
+target_link_libraries( test-reveal-client ${REVEAL_CLIENT_LIBRARIES} )
 

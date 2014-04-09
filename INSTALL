@@ -1,0 +1,6 @@
+
+MongoDB 2.6.0
+Boost 1.55
+
+-- Mongo DB Client --
+sudo scons --32 --sharedclient --release --full --use-system-boost --cpppath=/usr/include install-mongoclient

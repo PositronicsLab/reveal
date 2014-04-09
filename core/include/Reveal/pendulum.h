@@ -8,8 +8,8 @@
 // Experimental Configuration
 //----------------------------------------------------------------
 #ifdef _REVEAL_CLIENT_CLIENT_H_
-  #define RUNGEKUTTA_STEPPER
-//  #define EULER_STEPPER
+//  #define RUNGEKUTTA_STEPPER
+  #define EULER_STEPPER
 #elif defined(_REVEAL_SERVER_SERVER_H_)
   #define RUNGEKUTTA_STEPPER
 #endif

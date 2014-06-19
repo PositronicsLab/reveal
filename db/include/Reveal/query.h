@@ -21,13 +21,15 @@ public:
   mongo::Query operator()( void );
   void operator()( mongo::Query query );
 
+  void digest( void );
+  void scenario( int scenario_id );
   void scenario( const std::string& name );
-  void trial( const std::string& scenario );
-  void trial( const std::string& scenario, const unsigned& index );
-  void solution( const std::string& scenario );
-  void solution( const std::string& scenario, const unsigned& index );
-  void model_solution( const std::string& scenario );
-  void model_solution( const std::string& scenario, const unsigned& index );
+  //void trial( int scenario_id );
+  void trial( int scenario_id, int trial_id );
+  //void solution( int scenario_id );
+  void solution( int scenario_id, int trial_id );
+  //void model_solution( int scenario_id );
+  void model_solution( int scenario_id, int trial_id );
 
 };
 

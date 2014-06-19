@@ -10,6 +10,7 @@
 #include <mongo/client/dbclient.h>
 
 #include <Reveal/query.h>
+#include <Reveal/digest.h>
 #include <Reveal/scenario.h>
 #include <Reveal/trial.h>
 #include <Reveal/solution.h>
@@ -99,12 +100,47 @@ bool database_c::fetch( std::auto_ptr<mongo::DBClientCursor>& cursor, const std:
 }
 
 //-----------------------------------------------------------------------------
+database_c::error_e database_c::query( Reveal::Core::digest_ptr& digest ) {
+
+  std::auto_ptr<mongo::DBClientCursor> cursor;
+  Reveal::DB::query_c query;
+  Reveal::Core::scenario_ptr scenario;
+
+  query.digest( );
+  fetch( cursor, "scenario", query() );
+
+  digest = Reveal::Core::digest_ptr( new Reveal::Core::digest_c() );
+
+  while( cursor->more() ) {
+    // add error handling
+    mongo::BSONObj record = cursor->next();
+
+    // create a new scenario from the database record
+    // Note: at summarization level not detail
+    scenario = Reveal::Core::scenario_ptr( new Reveal::Core::scenario_c() );
+   
+    scenario->id = record.getField( "id" ).Int();
+    scenario->name = record.getField( "name" ).String();
+    scenario->trials = record.getField( "trials" ).Int();
+    scenario->description = record.getField( "description" ).String();
+    // number of resources?
+
+    // add the scenario to the digest
+    digest->add_scenario( scenario );
+  }
+
+  return ERROR_NONE;
+}
+
+//-----------------------------------------------------------------------------
 database_c::error_e database_c::insert( Reveal::Core::scenario_ptr scenario ) {
 
   mongo::BSONObjBuilder bob_scenario;
   mongo::BSONArrayBuilder bab_scenario_uris;
 
+  bob_scenario.append( "id", scenario->id );
   bob_scenario.append( "name", scenario->name );
+  bob_scenario.append( "description", scenario->description );
   bob_scenario.append( "trials", scenario->trials );
   for( unsigned uri = 0; uri < scenario->uris.size(); uri++ )
     bab_scenario_uris.append( scenario->uris[uri] );
@@ -119,9 +155,10 @@ database_c::error_e database_c::insert( Reveal::Core::scenario_ptr scenario ) {
 
 //-----------------------------------------------------------------------------
 database_c::error_e database_c::query( Reveal::Core::scenario_ptr& scenario, const std::string& name ) {
+/*
   std::auto_ptr<mongo::DBClientCursor> cursor;
   Reveal::DB::query_c query;
-  Reveal::Core::scenario_ptr ptr;
+  //Reveal::Core::scenario_ptr ptr;
 
   query.scenario( name );
   fetch( cursor, "scenario", query() );
@@ -139,6 +176,35 @@ database_c::error_e database_c::query( Reveal::Core::scenario_ptr& scenario, con
 
   for( unsigned i = 0; i < vec_uris.size(); i++ )
     scenario->uris.push_back( vec_uris[i].String() );
+*/
+  return ERROR_NONE;
+}
+
+//-----------------------------------------------------------------------------
+database_c::error_e database_c::query( Reveal::Core::scenario_ptr& scenario, int scenario_id ) {
+
+  std::auto_ptr<mongo::DBClientCursor> cursor;
+  Reveal::DB::query_c query;
+  //Reveal::Core::scenario_ptr ptr;
+
+  query.scenario( scenario_id );
+  fetch( cursor, "scenario", query() );
+
+  // add error handling
+  mongo::BSONObj record = cursor->next();
+
+  scenario = Reveal::Core::scenario_ptr( new Reveal::Core::scenario_c() );
+  scenario->id = record.getField( "id" ).Int();
+  scenario->name = record.getField( "name" ).String();
+  scenario->description = record.getField( "description" ).String();
+  scenario->trials = record.getField( "trials" ).Int();
+
+  mongo::BSONObj bson_uris = record.getObjectField( "uris" );
+  std::vector<mongo::BSONElement> vec_uris;
+  bson_uris.elems( vec_uris );
+
+  for( unsigned i = 0; i < vec_uris.size(); i++ )
+    scenario->uris.push_back( vec_uris[i].String() );
 
   return ERROR_NONE;
 }
@@ -147,8 +213,8 @@ database_c::error_e database_c::query( Reveal::Core::scenario_ptr& scenario, con
 database_c::error_e database_c::insert( Reveal::Core::trial_ptr trial ) {
 
   mongo::BSONObjBuilder bob_trial;
-  bob_trial.append( "scenario", trial->scenario );
-  bob_trial.append( "index", trial->index );
+  bob_trial.append( "scenario_id", trial->scenario_id );
+  bob_trial.append( "trial_id", trial->trial_id );
   bob_trial.append( "t", trial->t );
   bob_trial.append( "dt", trial->dt );
   mongo::BSONArrayBuilder bab_trial_state_q;
@@ -168,20 +234,21 @@ database_c::error_e database_c::insert( Reveal::Core::trial_ptr trial ) {
 }
 
 //-----------------------------------------------------------------------------
-database_c::error_e database_c::query( Reveal::Core::trial_ptr& trial, const std::string& scenario, const unsigned& index ) {
+database_c::error_e database_c::query( Reveal::Core::trial_ptr& trial, int scenario_id, int trial_id ) {
+
   std::auto_ptr<mongo::DBClientCursor> cursor;
   Reveal::DB::query_c query;
   Reveal::Core::scenario_ptr ptr;
 
-  query.trial( scenario, index );
+  query.trial( scenario_id, trial_id );
   fetch( cursor, "trial", query() );
 
   // add error handling
   mongo::BSONObj record = cursor->next();
 
   trial = Reveal::Core::trial_ptr( new Reveal::Core::trial_c() );
-  trial->scenario = record.getField( "scenario" ).String();
-  trial->index = record.getField( "index" ).Int();
+  trial->scenario_id = record.getField( "scenario_id" ).Int();
+  trial->trial_id = record.getField( "trial_id" ).Int();
   trial->t = record.getField( "t" ).Double();
   trial->dt = record.getField( "dt" ).Double();
 
@@ -210,8 +277,8 @@ database_c::error_e database_c::query( Reveal::Core::trial_ptr& trial, const std
 database_c::error_e database_c::insert( Reveal::Core::solution_ptr solution ) {
 
   mongo::BSONObjBuilder bob_solution;
-  bob_solution.append( "scenario", solution->scenario );
-  bob_solution.append( "index", solution->index );
+  bob_solution.append( "scenario_id", solution->scenario_id );
+  bob_solution.append( "trial_id", solution->trial_id );
   bob_solution.append( "t", solution->t );
   mongo::BSONArrayBuilder bab_solution_state_q;
   for( unsigned iq = 0; iq < solution->state.size_q(); iq++ ) 
@@ -230,21 +297,21 @@ database_c::error_e database_c::insert( Reveal::Core::solution_ptr solution ) {
 }
 
 //-----------------------------------------------------------------------------
-database_c::error_e database_c::query( Reveal::Core::solution_ptr& solution, const std::string& scenario, const unsigned& index ) {
+database_c::error_e database_c::query( Reveal::Core::solution_ptr& solution, int scenario_id, int trial_id ) {
 
   std::auto_ptr<mongo::DBClientCursor> cursor;
   Reveal::DB::query_c query;
   Reveal::Core::scenario_ptr ptr;
 
-  query.solution( scenario, index );
+  query.solution( scenario_id, trial_id );
   fetch( cursor, "solution", query() );
 
   // add error handling
   mongo::BSONObj record = cursor->next();
 
   solution = Reveal::Core::solution_ptr( new Reveal::Core::solution_c() );
-  solution->scenario = record.getField( "scenario" ).String();
-  solution->index = record.getField( "index" ).Int();
+  solution->scenario_id = record.getField( "scenario_id" ).Int();
+  solution->trial_id = record.getField( "trial_id" ).Int();
   solution->t = record.getField( "t" ).Double();
 
   mongo::BSONObj bson_state_q = record.getObjectField( "state_q" );
@@ -266,8 +333,8 @@ database_c::error_e database_c::query( Reveal::Core::solution_ptr& solution, con
 database_c::error_e database_c::insert( Reveal::Core::model_solution_ptr solution ) {
 
   mongo::BSONObjBuilder bob_solution;
-  bob_solution.append( "scenario", solution->scenario );
-  bob_solution.append( "index", solution->index );
+  bob_solution.append( "scenario_id", solution->scenario_id );
+  bob_solution.append( "trial_id", solution->trial_id );
   bob_solution.append( "t", solution->t );
   mongo::BSONArrayBuilder bab_solution_state_q;
   for( unsigned iq = 0; iq < solution->state.size_q(); iq++ ) 
@@ -277,6 +344,7 @@ database_c::error_e database_c::insert( Reveal::Core::model_solution_ptr solutio
   for( unsigned idq = 0; idq < solution->state.size_dq(); idq++ ) 
     bab_solution_state_dq.append( solution->state.dq(idq) );
   bob_solution.appendArray( "state_dq", bab_solution_state_dq.arr() );
+/*
   mongo::BSONArrayBuilder bab_solution_epsilon_q;
   for( unsigned iq = 0; iq < solution->epsilon.size_q(); iq++ ) 
     bab_solution_epsilon_q.append( solution->epsilon.q(iq) );
@@ -285,7 +353,7 @@ database_c::error_e database_c::insert( Reveal::Core::model_solution_ptr solutio
   for( unsigned idq = 0; idq < solution->epsilon.size_dq(); idq++ ) 
     bab_solution_epsilon_dq.append( solution->epsilon.dq(idq) );
   bob_solution.appendArray( "epsilon_dq", bab_solution_epsilon_dq.arr() );
-
+*/
   mongo::BSONObj solution_query = bob_solution.obj();
   
   insert( "model_solution", solution_query );  
@@ -294,21 +362,21 @@ database_c::error_e database_c::insert( Reveal::Core::model_solution_ptr solutio
 }
 
 //-----------------------------------------------------------------------------
-database_c::error_e database_c::query( Reveal::Core::model_solution_ptr& solution, const std::string& scenario, const unsigned& index ) {
+database_c::error_e database_c::query( Reveal::Core::model_solution_ptr& solution, int scenario_id, int trial_id ) {
 
   std::auto_ptr<mongo::DBClientCursor> cursor;
   Reveal::DB::query_c query;
   Reveal::Core::scenario_ptr ptr;
 
-  query.model_solution( scenario, index );
+  query.model_solution( scenario_id, trial_id );
   fetch( cursor, "model_solution", query() );
 
   // add error handling
   mongo::BSONObj record = cursor->next();
 
   solution = Reveal::Core::model_solution_ptr( new Reveal::Core::model_solution_c() );
-  solution->scenario = record.getField( "scenario" ).String();
-  solution->index = record.getField( "index" ).Int();
+  solution->scenario_id = record.getField( "scenario_id" ).Int();
+  solution->trial_id = record.getField( "trial_id" ).Int();
   solution->t = record.getField( "t" ).Double();
 
   mongo::BSONObj bson_state_q = record.getObjectField( "state_q" );
@@ -322,7 +390,7 @@ database_c::error_e database_c::query( Reveal::Core::model_solution_ptr& solutio
   bson_state_dq.elems( vec_state_dq );
   for( unsigned i = 0; i < vec_state_dq.size(); i++ )
     solution->state.append_dq( vec_state_dq[i].Double() );
-
+/*
   mongo::BSONObj bson_epsilon_q = record.getObjectField( "epsilon_q" );
   std::vector<mongo::BSONElement> vec_epsilon_q;
   bson_epsilon_q.elems( vec_epsilon_q );
@@ -334,7 +402,7 @@ database_c::error_e database_c::query( Reveal::Core::model_solution_ptr& solutio
   bson_epsilon_dq.elems( vec_epsilon_dq );
   for( unsigned i = 0; i < vec_epsilon_dq.size(); i++ )
     solution->epsilon.append_dq( vec_epsilon_dq[i].Double() );
-
+*/
   return ERROR_NONE;
 }
 

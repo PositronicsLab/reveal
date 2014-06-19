@@ -27,15 +27,15 @@ public:
   model_solution_c( void ) {}
   virtual ~model_solution_c( void ) {}
 
-  std::string scenario;
-  unsigned index;
+  unsigned scenario_id;
+  unsigned trial_id;
   double t;
   state_c state;
-  state_c epsilon;
+  //state_c epsilon;
 
   void print( void ) {
-    printf( "scenario[%s]", scenario.c_str() );
-    printf( ", index[%u]", index );
+    printf( "scenario_id[%u]", scenario_id );
+    printf( ", trial_id[%u]", trial_id );
     printf( ", t[%f]", t );
 
     // State 
@@ -53,7 +53,7 @@ public:
     }
     printf( "] " );
     printf( "]" );
-
+/*
     printf( ", epsilon[" );
     printf( " q[" );
     for( unsigned i = 0; i < epsilon.size_q(); i++ ) {
@@ -68,7 +68,7 @@ public:
     }
     printf( "] " );
     printf( "]" );
-
+*/
     printf( "\n" );
   }
  

@@ -2,7 +2,7 @@
 #define _PENDULUM_H_
 
 #include <vector>
-#include <boost/numeric/odeint.hpp>
+//#include <boost/numeric/odeint.hpp>
 
 //----------------------------------------------------------------
 // Experimental Configuration
@@ -23,14 +23,14 @@
 //----------------------------------------------------------------
 
 typedef std::vector< double > state_type;
-
+/*
 #ifdef RUNGEKUTTA_STEPPER
 typedef boost::numeric::odeint::controlled_runge_kutta< boost::numeric::odeint::runge_kutta_cash_karp54< state_type > > stepper_type;
 #endif
 #ifdef EULER_STEPPER
 typedef boost::numeric::odeint::euler< state_type, double, state_type, double > stepper_type;
 #endif
-
+*/
 //----------------------------------------------------------------
 
 class pendulum_c {

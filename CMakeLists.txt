@@ -15,6 +15,7 @@ find_package( Protobuf REQUIRED )
 
 # add any messages to be compiled here
 set( REVEAL_MESSAGES_PROTOS
+  core/messages/data.proto
   core/messages/net.proto
 )
 
@@ -51,25 +52,28 @@ find_package( ZeroMQ REQUIRED )
 
 # header files
 set( REVEAL_CORE_HEADERS 
-  ${CMAKE_CURRENT_SOURCE_DIR}/core/include/Reveal/protocol_manager.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/core/include/Reveal/pointers.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/core/include/Reveal/transport_exchange.h
   ${CMAKE_CURRENT_SOURCE_DIR}/core/include/Reveal/connection.h
   ${CMAKE_CURRENT_SOURCE_DIR}/core/include/Reveal/state.h
   ${CMAKE_CURRENT_SOURCE_DIR}/core/include/Reveal/control.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/core/include/Reveal/digest.h
   ${CMAKE_CURRENT_SOURCE_DIR}/core/include/Reveal/scenario.h
   ${CMAKE_CURRENT_SOURCE_DIR}/core/include/Reveal/trial.h
   ${CMAKE_CURRENT_SOURCE_DIR}/core/include/Reveal/solution.h
   ${CMAKE_CURRENT_SOURCE_DIR}/core/include/Reveal/model_solution.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/core/include/Reveal/server_message.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/core/include/Reveal/client_message.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/core/include/Reveal/pendulum.h
+#  ${CMAKE_CURRENT_SOURCE_DIR}/core/include/Reveal/server_message.h
+#  ${CMAKE_CURRENT_SOURCE_DIR}/core/include/Reveal/client_message.h
+#  ${CMAKE_CURRENT_SOURCE_DIR}/core/include/Reveal/pendulum.h
 )
 
 # source files
 set( REVEAL_CORE_SOURCES 
+  ${CMAKE_CURRENT_SOURCE_DIR}/core/src/transport_exchange.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/core/src/connection.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/core/src/server_message.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/core/src/client_message.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/core/src/pendulum.cpp
+#  ${CMAKE_CURRENT_SOURCE_DIR}/core/src/server_message.cpp
+#  ${CMAKE_CURRENT_SOURCE_DIR}/core/src/client_message.cpp
+#  ${CMAKE_CURRENT_SOURCE_DIR}/core/src/pendulum.cpp
 )
 
 # additional include paths
@@ -153,8 +157,8 @@ set( REVEAL_DB_LIBRARY
 add_executable( test-reveal-db-insert-scenario ${CMAKE_CURRENT_SOURCE_DIR}/db/test/test_reveal_db_insert_scenario.cpp ${REVEAL_DB_HEADERS} ${REVEAL_DB_SOURCES} )
 target_link_libraries( test-reveal-db-insert-scenario ${REVEAL_DB_LIBRARIES} ${REVEAL_DB_LIBRARY} )
 
-add_executable( test-reveal-db-fetch ${CMAKE_CURRENT_SOURCE_DIR}/db/test/test_reveal_db_fetch.cpp ${REVEAL_DB_HEADERS} ${REVEAL_DB_SOURCES} )
-target_link_libraries( test-reveal-db-fetch ${REVEAL_DB_LIBRARIES} ${REVEAL_DB_LIBRARY} )
+#add_executable( test-reveal-db-fetch ${CMAKE_CURRENT_SOURCE_DIR}/db/test/test_reveal_db_fetch.cpp ${REVEAL_DB_HEADERS} ${REVEAL_DB_SOURCES} )
+#target_link_libraries( test-reveal-db-fetch ${REVEAL_DB_LIBRARIES} ${REVEAL_DB_LIBRARY} )
 
 #---------------Reveal Server---------------
 
@@ -170,7 +174,6 @@ set( REVEAL_SERVER_SOURCES
 
 # additional include paths
 set( REVEAL_SERVER_INCLUDE_DIRS
-#  ${REVEAL_CORE_INCLUDE_DIRS}
   ${CMAKE_CURRENT_SOURCE_DIR}/server/include/
 )
 
@@ -204,7 +207,6 @@ set( REVEAL_CLIENT_SOURCES
 
 # additional include paths
 set( REVEAL_CLIENT_INCLUDE_DIRS
-#  ${REVEAL_CORE_INCLUDE_DIRS}
   ${CMAKE_CURRENT_SOURCE_DIR}/client/include/
 )
 

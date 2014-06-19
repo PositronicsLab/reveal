@@ -184,7 +184,7 @@ void client_message_c::set_solution( solution_ptr solution ) {
   sr->set_scenario( solution->scenario.c_str() );
   sr->set_index( solution->index );
   sr->set_t( solution->t );
-  Messages::Net::State* state = sr->mutable_state();
+  Messages::Data::State* state = sr->mutable_state();
   for( unsigned i = 0; i < solution->state.size_q(); i++ ) {
     state->add_q( solution->state.q(i) );
   }

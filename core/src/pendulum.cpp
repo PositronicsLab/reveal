@@ -1,5 +1,7 @@
 #include <Reveal/pendulum.h>
 
+#include <math.h>
+
 pendulum_c::pendulum_c( const double& l ) {
   _l = l;
   _G = 9.8;

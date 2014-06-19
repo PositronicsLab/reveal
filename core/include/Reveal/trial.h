@@ -11,6 +11,7 @@ James R Taylor:jrt@gwu.edu
 #include <vector>
 #include <stdio.h>
 
+//#include <Reveal/scenario.h>
 #include <Reveal/state.h>
 #include <Reveal/control.h>
 
@@ -29,16 +30,19 @@ public:
   trial_c( void ) {}
   virtual ~trial_c( void ) {}
 
-  std::string scenario;
-  unsigned index;
+  //std::string scenario;
+  //scenario_ptr scenario;
+  unsigned scenario_id;
+  unsigned trial_id;
   double t;
   double dt;
   state_c state;
   control_c control;
 
   void print( void ) {
-    printf( "scenario[%s]", scenario.c_str() );
-    printf( ", index[%u]", index );
+    //printf( "scenario[%s]", scenario->name.c_str() );
+    printf( "scenario_id[%u]", scenario_id );
+    printf( ", trial_id[%u]", trial_id );
     printf( ", t[%f]", t );
     printf( ", dt[%f]", dt );
 

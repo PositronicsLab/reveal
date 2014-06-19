@@ -53,17 +53,20 @@ private:
   bool fetch( std::auto_ptr<mongo::DBClientCursor>& cursor, const std::string& table, mongo::Query query );
 
 public:
+  error_e query( Reveal::Core::digest_ptr& digest );
+
   error_e insert( Reveal::Core::scenario_ptr scenario );
   error_e query( Reveal::Core::scenario_ptr& scenario, const std::string& name );
+  error_e query( Reveal::Core::scenario_ptr& scenario, int scenario_id );
 
   error_e insert( Reveal::Core::trial_ptr trial );
-  error_e query( Reveal::Core::trial_ptr& trial, const std::string& scenario, const unsigned& index );
+  error_e query( Reveal::Core::trial_ptr& trial, int scenario_id, int trial_id );
 
   error_e insert( Reveal::Core::solution_ptr solution );
-  error_e query( Reveal::Core::solution_ptr& solution, const std::string& scenario, const unsigned& index );
+  error_e query( Reveal::Core::solution_ptr& solution, int scenario_id, int trial_id );
 
   error_e insert( Reveal::Core::model_solution_ptr solution );
-  error_e query( Reveal::Core::model_solution_ptr& solution, const std::string& scenario, const unsigned& index );
+  error_e query( Reveal::Core::model_solution_ptr& solution, int scenario_id, int trial_id );
 };
 
 //-----------------------------------------------------------------------------

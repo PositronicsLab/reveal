@@ -15,6 +15,9 @@ namespace Core {
 
 //-----------------------------------------------------------------------------
 
+class digest_c;
+typedef boost::shared_ptr<digest_c> digest_ptr;
+
 class scenario_c;
 typedef boost::shared_ptr<scenario_c> scenario_ptr;
 

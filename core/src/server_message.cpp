@@ -45,20 +45,20 @@ bool server_message_c::parse( const std::string& serial ) {
   }
 
   // determine the type of server response
-  switch( _response.type() ) {
-  case Messages::Net::ServerResponse::RESPONSE_SCENARIO:
+  switch( _response.header().type() ) {
+  case Messages::Net::ServerResponse::SCENARIO:
     _type = SCENARIO;
     break;
-  case Messages::Net::ServerResponse::RESPONSE_TRIAL:
+  case Messages::Net::ServerResponse::TRIAL:
     _type = TRIAL;
     break;
-  case Messages::Net::ServerResponse::RESPONSE_RECEIVED_SOLUTION:
+  case Messages::Net::ServerResponse::RECEIVED_SOLUTION:
     _type = SOLUTION;
     break;
-  case Messages::Net::ServerResponse::RESPONSE_ERROR:
+  case Messages::Net::ServerResponse::ERROR:
     _type = ERROR;
     break;
-  case Messages::Net::ServerResponse::RESPONSE_UNDEFINED:
+  case Messages::Net::ServerResponse::UNDEFINED:
   default:
     _type = UNDEFINED;
     return false;                // bad message.  Failed to parse
@@ -76,11 +76,11 @@ bool server_message_c::parse( const std::string& serial ) {
       // Error.  malformed message
       return false;
     }
-  } else if( _type == SOLUTION ) {
-    if( !_response.has_solution() ) {
+//  } else if( _type == SOLUTION ) {
+    //if( !_response.has_solution() ) {
       // Error.  malformed message
-      return false;
-    }
+    //  return false;
+    //}
   } else if( _type == ERROR ) {
 
   }
@@ -112,13 +112,19 @@ server_message_c::type_e server_message_c::get_type( void ) {
 scenario_ptr server_message_c::get_scenario( void ) {
   assert( _type == SCENARIO );
 
+  // create a new scenario pointer
   scenario_ptr scenario = scenario_ptr( new scenario_c() );
 
+  // populate the scenario pointer from the message protocol
+  scenario->id = _response.scenario().id();
   scenario->name = _response.scenario().name();
+  scenario->description = _response.scenario().description();
+
   scenario->trials = _response.scenario().trials();
   for( int i = 0; i < _response.scenario().uri_size(); i++ ) {
     scenario->uris.push_back( _response.scenario().uri( i ) );
   }
+
   return scenario; 
 }
 
@@ -129,12 +135,20 @@ void server_message_c::set_scenario( scenario_ptr scenario ) {
   _type = SCENARIO;
 
   _response.Clear();
-  _response.set_type( Messages::Net::ServerResponse::RESPONSE_SCENARIO );
-  Messages::Net::ScenarioResponse* sr = _response.mutable_scenario();
-  sr->set_name( scenario->name.c_str() );
-  sr->set_trials( scenario->trials );
+  
+  // build the header
+  Messages::Net::ServerResponse::Header* header = _response.mutable_header();
+  header->set_type( Messages::Net::ServerResponse::SCENARIO );
+
+  // build the scenario data
+  Messages::Data::Scenario* scene = _response.mutable_scenario();
+  scene->set_id( scenario->id );
+  scene->set_name( scenario->name.c_str() );
+  scene->set_description( scenario->description.c_str() );
+
+  scene->set_trials( scenario->trials );
   for( unsigned i = 0; i < scenario->uris.size(); i++ ) {
-    sr->add_uri( scenario->uris.at(i) );
+    scene->add_uri( scenario->uris.at(i) );
   }
 }
 
@@ -145,7 +159,14 @@ trial_ptr server_message_c::get_trial( void ) {
 
   trial_ptr trial = trial_ptr( new trial_c() );
 
+/*
   trial->scenario = _response.trial().scenario();
+*/
+  trial->scenario = scenario_ptr( new scenario_c() );
+  trial->scenario->id = _response.trial().scenario().id();
+  trial->scenario->name = _response.trial().scenario().name();
+  trial->scenario->description = _response.trial().scenario().description();
+
   trial->index = _response.trial().index();
   trial->t = _response.trial().t();
   trial->dt = _response.trial().dt();
@@ -170,20 +191,22 @@ void server_message_c::set_trial( trial_ptr trial ) {
   _type = TRIAL;
 
   _response.Clear();
+  //Messages::Net::ServerResponse::Header* header = _response.mutable_header();
+  //header->set_type( Messages::Net::ServerResponse::SCENARIO );
   _response.set_type( Messages::Net::ServerResponse::RESPONSE_TRIAL );
   Messages::Net::TrialResponse* tr = _response.mutable_trial();
   tr->set_scenario( trial->scenario.c_str() );
   tr->set_index( trial->index );
   tr->set_t( trial->t );
   tr->set_dt( trial->dt );
-  Messages::Net::State* state = tr->mutable_state();
+  Messages::Data::State* state = tr->mutable_state();
   for( unsigned i = 0; i < trial->state.size_q(); i++ ) {
     state->add_q( trial->state.q(i) );
   }
   for( unsigned i = 0; i < trial->state.size_dq(); i++ ) {
     state->add_dq( trial->state.dq(i) );
   }
-  Messages::Net::Control* control = tr->mutable_control();
+  Messages::Data::Control* control = tr->mutable_control();
   for( unsigned i = 0; i < trial->control.size_u(); i++ ) {
     control->add_u( trial->control.u(i) );
   }

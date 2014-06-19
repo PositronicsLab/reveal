@@ -1,0 +1,49 @@
+package Reveal.Core.Messages.Data;
+
+// The state of the system
+// Note: may need additional configurations or subdivisions to map properly
+message State {
+  repeated double q = 1;
+  repeated double dq = 2;
+}
+
+// A control to be applied
+// Note: may need additional configurations or subdivisions to map properly
+message Control {
+  repeated double u = 1;
+}
+
+// The set of all scenarios.
+message Digest {
+  repeated Scenario scenario = 1;
+}
+
+// A given scenario to evaluate
+message Scenario {
+  required int32 id = 1;
+  optional string name = 2 [default = ""];
+  optional string description = 3 [default = ""];
+  optional int32 trials = 4 [default = 0];
+  repeated string uri = 5;
+}
+
+// A single trial within a scenario
+message Trial {
+  required uint32 scenario_id = 1;
+  required uint32 trial_id = 2;
+  optional uint32 t = 3;
+  optional uint32 dt = 4;
+  optional State state = 5;
+  optional Control control = 6;
+}
+
+// A single solution for a given trial within a scenario
+message Solution {
+  required uint32 scenario_id = 1;
+  required uint32 trial_id = 2;
+  optional uint32 t = 3;
+  optional State state = 5;
+}
+
+// Robot protocol??
+

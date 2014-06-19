@@ -29,16 +29,18 @@ if(WIN32)
 else(WIN32)
   find_library(MongoDB_LIBRARIES NAMES mongoclient
       PATHS
-      /usr/lib
-	  /usr/lib64
-      /usr/lib/mongo
-	  /usr/lib64/mongo
-      /usr/local/lib
-	  /usr/local/lib64
-      /usr/local/lib/mongo
-	  /usr/local/lib64/mongo
-	  /opt/mongo/lib
-	  /opt/mongo/lib64
+        /usr/lib
+	/usr/lib64
+        /usr/lib/mongo
+        /usr/lib64/mongo
+        /usr/local/bin
+        /usr/local/lib
+	/usr/local/lib64
+        /usr/local/lib/mongo
+	/usr/local/lib64/mongo
+	/opt/mongo/lib
+	/opt/mongo/lib64
+        /opt/mongo/bin
       )
 endif(WIN32)
 

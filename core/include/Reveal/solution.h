@@ -27,14 +27,15 @@ public:
   solution_c( void ) {}
   virtual ~solution_c( void ) {}
 
-  std::string scenario;
-  unsigned index;
+  unsigned scenario_id;
+  unsigned trial_id;
+  // user identifier
   double t;
   state_c state;
 
   void print( void ) {
-    printf( "scenario[%s]", scenario.c_str() );
-    printf( ", index[%u]", index );
+    printf( "scenario_id[%u]", scenario_id );
+    printf( ", trial_id[%u]", trial_id );
     printf( ", t[%f]", t );
 
     // State 

@@ -1,91 +1,43 @@
 //TCP/IP Network protocol messages for Reveal
 
+import "data.proto";
+
 package Reveal.Core.Messages.Net;
 
-message ClientRequest {
-  enum RequestType {
-    REQUEST_UNDEFINED = 0;
-    REQUEST_ERROR = 1;
-    REQUEST_SCENARIO = 2;
-    REQUEST_TRIAL = 3;
-    REQUEST_SOLUTION = 4;
+message Message {
+
+  enum Type {
+    UNDEFINED = 0;   // necessary? 
+    ERROR = 1;      
+    DIGEST = 2;    
+    SCENARIO = 3;    
+    TRIAL = 4;      
+    SOLUTION = 5;   
   }
 
-  enum ErrorType {
+  enum Error {
     ERROR_NONE = 0;
     ERROR_BAD_RESPONSE = 1;
   }
 
-  required RequestType type = 1;
-  optional ErrorType error = 2;
-  optional ScenarioRequest scenario = 3;
-  optional TrialRequest trial = 4;
-  optional SolutionRequest solution = 5;
-}
-
-message ServerResponse {
-  enum ResponseType {
-    RESPONSE_UNDEFINED = 0;
-    RESPONSE_ERROR = 1;
-    RESPONSE_SCENARIO = 2;
-    RESPONSE_TRIAL = 3;
-    RESPONSE_RECEIVED_SOLUTION = 4;
-  }
-  
-  enum ErrorType {
-    ERROR_NONE = 0;
-    ERROR_BAD_REQUEST = 1;
+  enum Origin {
+    SERVER = 0;
+    CLIENT = 1;
   }
 
-  required ResponseType type = 1;
-  optional ErrorType error = 2;
-  optional ScenarioResponse scenario = 3;
-  optional TrialResponse trial = 4;
-  optional SolutionResponse solution = 5;
-}
+  message Header {
+    required Origin origin = 1;
+    required Type type = 2;
+    optional Error error = 3;
+    
+    //required uint32 session_id = 4 [default = 0]; 
+  }
 
-message State {
-  repeated double q = 1;
-  repeated double dq = 2;
-}
+  required Header header = 1;
+  optional Reveal.Core.Messages.Data.Digest digest = 2;    
+  optional Reveal.Core.Messages.Data.Scenario scenario = 3;    
+  optional Reveal.Core.Messages.Data.Trial trial = 4;
+  optional Reveal.Core.Messages.Data.Solution solution = 5;
 
-message Control {
-  repeated double u = 1;
-}
-
-message ScenarioRequest {
-  required string name = 1;
-}
-
-message ScenarioResponse {
-  required string name = 1;
-  required uint32 trials = 2 [default = 0];
-  repeated string uri = 3;
-}
-
-message TrialRequest {
-  required string scenario = 1;
-  required uint32 index = 2 [default = 0];
-}
-
-message TrialResponse {
-  required string scenario = 1;
-  required uint32 index = 2;
-  required double t = 3;
-  required double dt = 4;
-  optional State state = 5;
-  optional Control control = 6;
-}
-
-message SolutionRequest {
-  required string scenario = 1;
-  required uint32 index = 2;
-  required double t = 3;
-  optional State state = 4;
-}
-
-message SolutionResponse {
-  required string scenario = 1;
-  required uint32 index = 2;
 }
 

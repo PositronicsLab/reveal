@@ -14,7 +14,7 @@
 #include <Reveal/trial.h>
 #include <Reveal/solution.h>
 
-#include <Reveal/pendulum.h>
+//#include <Reveal/pendulum.h>
 
 //-----------------------------------------------------------------------------
 
@@ -45,7 +45,177 @@ bool client_c::init( void ) {
 }
 
 //-----------------------------------------------------------------------------
-/// Main loop
+bool client_c::request_reply( const std::string& request, std::string& reply ) {
+  // send the request message to the server
+  if( !_connection.write( request ) ) {
+    // write failed at connection
+    printf( "ERROR: failed to write message to connection\n" );
+    // TODO: improve error handling.  Should bomb or recover here.
+    return false;
+  }
+  // block waiting for a server response
+  if( !_connection.read( reply ) ) {
+    // read failed at connection
+    // right now this should trigger an assert
+    // TODO: improve error handling.  Should bomb or recover here.
+    printf( "ERROR: failed to read message from connection\n" );
+    return false;
+  }
+  return true;
+}
+
+//-----------------------------------------------------------------------------
+bool client_c::request_digest( Reveal::Core::digest_ptr& digest ) {
+  std::string request;
+  std::string reply;
+
+  Reveal::Core::transport_exchange_c client_exchange;
+  Reveal::Core::transport_exchange_c server_exchange;
+  Reveal::Core::transport_exchange_c::error_e err;
+
+  // create a digest request
+  client_exchange.set_origin( Reveal::Core::transport_exchange_c::ORIGIN_CLIENT );
+  client_exchange.set_type( Reveal::Core::transport_exchange_c::TYPE_DIGEST );
+  client_exchange.set_error( Reveal::Core::transport_exchange_c::ERROR_NONE );
+
+  // build the request message
+  err = client_exchange.build( request );
+  if( err != Reveal::Core::transport_exchange_c::ERROR_NONE ) {
+    printf( "failed to build digest request message\n" );
+    return false;
+  }
+
+  //std::cout << msg_request << std::endl;
+
+  // send the request message and wait for reply message
+  if( !request_reply( request, reply ) ) return false;
+
+  // parse the reply message
+  server_exchange.parse( reply );
+  // TODO : validation and error handling
+
+  // extract the digest
+  digest = server_exchange.get_digest();
+  digest->print();
+ 
+  return true;
+}
+
+//-----------------------------------------------------------------------------
+bool client_c::request_scenario( Reveal::Core::scenario_ptr& scenario ) {
+  std::string request;
+  std::string reply;
+
+  Reveal::Core::transport_exchange_c client_exchange;
+  Reveal::Core::transport_exchange_c server_exchange;
+  Reveal::Core::transport_exchange_c::error_e err;
+
+  // create a scenario request 
+  client_exchange.set_origin( Reveal::Core::transport_exchange_c::ORIGIN_CLIENT );
+  client_exchange.set_type( Reveal::Core::transport_exchange_c::TYPE_SCENARIO );
+  client_exchange.set_error( Reveal::Core::transport_exchange_c::ERROR_NONE );
+  client_exchange.set_scenario( scenario );
+
+  // build the request message
+  err = client_exchange.build( request );
+  if( err != Reveal::Core::transport_exchange_c::ERROR_NONE ) {
+    printf( "failed to build scenario request message\n" );
+    return false;
+  }
+
+  // send the request message and wait for reply message
+  if( !request_reply( request, reply ) ) return false;
+
+  // parse the reply message
+  server_exchange.parse( reply );
+  // TODO : validation and error handling
+
+  // extract the scenario
+  scenario = server_exchange.get_scenario();
+
+  // TODO: comment/remove later
+  scenario->print();
+
+  return true;
+}
+
+//-----------------------------------------------------------------------------
+bool client_c::request_trial( Reveal::Core::trial_ptr& trial ) {
+  std::string request;
+  std::string reply;
+
+  Reveal::Core::transport_exchange_c client_exchange;
+  Reveal::Core::transport_exchange_c server_exchange;
+  Reveal::Core::transport_exchange_c::error_e err;
+
+  // create a trial request 
+  client_exchange.set_origin( Reveal::Core::transport_exchange_c::ORIGIN_CLIENT );
+  client_exchange.set_type( Reveal::Core::transport_exchange_c::TYPE_TRIAL );
+  client_exchange.set_trial( trial );
+
+  // build the request message
+  err = client_exchange.build( request );
+  if( err != Reveal::Core::transport_exchange_c::ERROR_NONE ) {
+    printf( "failed to build scenario request message\n" );
+    return false;
+  }
+
+  // send the request message and wait for reply message
+  if( !request_reply( request, reply ) ) return false;
+
+  // parse the reply message
+  server_exchange.parse( reply );
+  // TODO : validation and error handling
+
+  // extract the trial
+  trial = server_exchange.get_trial();
+  // TODO : validation and error handling
+
+  // TODO: comment/remove later
+  trial->print();
+
+  return true;
+}
+
+//-----------------------------------------------------------------------------
+bool client_c::submit_solution( Reveal::Core::solution_ptr& solution ) {
+  std::string request;
+  std::string reply;
+
+  Reveal::Core::transport_exchange_c client_exchange;
+  Reveal::Core::transport_exchange_c server_exchange;
+  Reveal::Core::transport_exchange_c::error_e err;
+
+  // create a solution 'request'
+  client_exchange.set_origin( Reveal::Core::transport_exchange_c::ORIGIN_CLIENT );
+  client_exchange.set_type( Reveal::Core::transport_exchange_c::TYPE_SOLUTION );
+  client_exchange.set_solution( solution );
+
+  // build the 'request' message
+  err = client_exchange.build( request );
+  if( err != Reveal::Core::transport_exchange_c::ERROR_NONE ) {
+    printf( "failed to build scenario request message\n" );
+    return false;
+  }
+
+  // send the request message and wait for receipt ('reply') message
+  if( !request_reply( request, reply ) ) return false;
+
+  // parse the reply message
+  server_exchange.parse( reply );
+  // TODO : validation and error handling
+
+  // TODO : validation and error handling
+  if( server_exchange.get_type() != Reveal::Core::transport_exchange_c::TYPE_SOLUTION ) {
+    // We have not received the appropriate receipt from the server
+  }
+
+  return true;
+}
+
+//-----------------------------------------------------------------------------
+// Main loop (Really a simulation of the client interaction.  Should be moved
+// into testing)
 void client_c::go( void ) {
 
   std::string msg_request;
@@ -64,70 +234,19 @@ void client_c::go( void ) {
   // connect to the transport layer
   if( !connect() ) return;
 
-  // create a digest request
-  client_exchange.set_origin( Reveal::Core::transport_exchange_c::ORIGIN_CLIENT );
-  client_exchange.set_type( Reveal::Core::transport_exchange_c::TYPE_DIGEST );
-  client_exchange.set_error( Reveal::Core::transport_exchange_c::ERROR_NONE );
-  Reveal::Core::transport_exchange_c::error_e err = client_exchange.build( msg_request );
-  if( err != Reveal::Core::transport_exchange_c::ERROR_NONE ) {
-    printf( "failed to build digest request message\n" );
-  }
-
-  //std::cout << msg_request << std::endl;
-
-  // send the request message to the server
-  if( !_connection.write( msg_request ) ) {
-    // write failed at connection
-    printf( "ERROR: failed to write message to connection\n" );
-    // TODO: improve error handling.  Should bomb or recover here.
-  }
-  // block waiting for a server response
-  if( !_connection.read( msg_response ) ) {
-    // read failed at connection
-    // right now this should trigger an assert
-    // TODO: improve error handling.  Should bomb or recover here.
-  }
-
-  server_exchange.parse( msg_response );
-  // TODO : validation and error handling
-  digest = server_exchange.get_digest();
-  digest->print();
-
+  // request the digest
+  request_digest( digest );
+  // TODO: error handling
 
   // for testing purposes, pick a random scenario
   assert( digest->scenarios() );
   scenario = digest->get_scenario( 0 );
   
   scenario->print();
- 
-  client_exchange.reset();
- 
-  client_exchange.set_origin( Reveal::Core::transport_exchange_c::ORIGIN_CLIENT );
-  client_exchange.set_type( Reveal::Core::transport_exchange_c::TYPE_SCENARIO );
-  client_exchange.set_error( Reveal::Core::transport_exchange_c::ERROR_NONE );
-  client_exchange.set_scenario( scenario );
-  client_exchange.build( msg_request );
 
-  // send the request message to the server
-  if( !_connection.write( msg_request ) ) {
-    // write failed at connection
-    printf( "ERROR: failed to write message to connection\n" );
-    // TODO: improve error handling.  Should bomb or recover here.
-  }
-  // block waiting for a server response
-  if( !_connection.read( msg_response ) ) {
-    // read failed at connection
-    // right now this should trigger an assert
-    // TODO: improve error handling.  Should bomb or recover here.
-  }
-
-  server_exchange.parse( msg_response );
-  // TODO : validation and error handling
-  scenario = server_exchange.get_scenario();
-
-  // TODO: comment/remove later
-  scenario->print();
-
+  // request the scenario
+  request_scenario( scenario );
+  // TODO: error handling
 
   // *For each trial* 
   for( unsigned i = 0; i < scenario->trials; i++ ) {
@@ -138,36 +257,13 @@ void client_c::go( void ) {
     trial->scenario_id = scenario->id;
     trial->trial_id = i;
 
-    client_exchange.reset();
-    client_exchange.set_origin( Reveal::Core::transport_exchange_c::ORIGIN_CLIENT );
-    client_exchange.set_type( Reveal::Core::transport_exchange_c::TYPE_TRIAL );
-    client_exchange.set_trial( trial );
-    client_exchange.build( msg_request );
-
-    // send the trial request to the server
-    if( !_connection.write( msg_request ) ) {
-      // write failed at connection
-      printf( "ERROR: failed to write message to connection\n" );
-      // TODO: improve error handling.  Should bomb or recover here.
-    }
-    // block waiting for a server response
-    if( !_connection.read( msg_response ) ) {
-      // read failed at connection
-      printf( "ERROR: failed to read message from connection\n" );
-      // TODO: improve error handling.  Should bomb or recover here.
-    }
-
-    server_exchange.parse( msg_response );
-    // TODO : validation and error handling
-    trial = server_exchange.get_trial();
-
-    // TODO: comment/remove later
-    trial->print();
-  
+    request_trial( trial );
+/*
     // Run simulation
     // TODO: develop API interfaces to handle setting the sim configuration
     // TODO: develop API interfaces to handle running the sim forward
     // TODO: develop API interfaces to handle extracting state from sim
+*/
 
     solution = Reveal::Core::solution_ptr( new Reveal::Core::solution_c() );
     // copy the solution header
@@ -183,30 +279,7 @@ void client_c::go( void ) {
     solution->state.append_dq( 0.0 );
     solution->print();
 
-    client_exchange.reset();
-    client_exchange.set_origin( Reveal::Core::transport_exchange_c::ORIGIN_CLIENT );
-    client_exchange.set_type( Reveal::Core::transport_exchange_c::TYPE_SOLUTION );
-    client_exchange.set_solution( solution );
-    client_exchange.build( msg_request );
-
-    // send the trial request to the server
-    if( !_connection.write( msg_request ) ) {
-      // write failed at connection
-      printf( "ERROR: failed to write message to connection\n" );
-      // TODO: improve error handling.  Should bomb or recover here.
-    }
-    // block waiting for a server response
-    if( !_connection.read( msg_response ) ) {
-      // read failed at connection
-      printf( "ERROR: failed to read message from connection\n" );
-      // TODO: improve error handling.  Should bomb or recover here.
-    }
-
-    server_exchange.parse( msg_response );
-    // TODO : validation and error handling
-    if( server_exchange.get_type() != Reveal::Core::transport_exchange_c::TYPE_SOLUTION ) {
-      // We have not received the appropriate receipt from the server
-    }
+    submit_solution( solution );
   }
 
 /*

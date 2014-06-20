@@ -11,6 +11,7 @@ James R Taylor:jrt@gwu.edu
 #include <string.h>
 
 #include <Reveal/connection.h>
+#include <Reveal/pointers.h>
 
 //-----------------------------------------------------------------------------
 
@@ -37,8 +38,16 @@ public:
 
   bool connect( void );
 
+  // API
+  bool request_digest( Reveal::Core::digest_ptr& digest );
+  bool request_scenario( Reveal::Core::scenario_ptr& scenario );
+  bool request_trial( Reveal::Core::trial_ptr& trial );
+  bool submit_solution( Reveal::Core::solution_ptr& solution );
+
 private:
   Reveal::Core::connection_c _connection;
+
+  bool request_reply( const std::string& request, std::string& reply );
 };
 
 //-----------------------------------------------------------------------------

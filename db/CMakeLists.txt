@@ -36,7 +36,9 @@ include_directories( ${REVEAL_DB_INCLUDE_DIRS} )
 # build the library
 add_library( revealdb SHARED ${REVEAL_DB_HEADERS} ${REVEAL_DB_SOURCES} )
 add_dependencies( revealdb revealcore )
-target_link_libraries( revealdb LINK_PRIVATE ${REVEAL_DB_LIBARIES} ${REVEAL_CORE_LIBRARY})
+#target_link_libraries( revealdb LINK_PRIVATE ${REVEAL_DB_LIBARIES} ${REVEAL_CORE_LIBRARY})
+target_link_libraries(revealdb LINK_PRIVATE /usr/local/lib/libmongoclient.so)
+target_link_libraries(revealdb LINK_PRIVATE ${REVEAL_CORE_LIBRARY})
 
 # create the reveal db include and library variables for future linking
 set( REVEAL_DB_INCLUDE_DIR

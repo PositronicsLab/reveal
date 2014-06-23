@@ -27,7 +27,7 @@ namespace Core {
 /// The server's external connection port
 #define PORT            20700
 /// The size of the send buffer.  Messages are sent in chunks.
-#define SND_BUFFER_SZ   64                // Small for validation. TODO:Increase
+#define SND_BUFFER_SZ   64        // Small for validation. TODO:Increase
 /// The size of the receive buffer.  Must be larger than the send buffer.
 #define RCV_BUFFER_SZ   SND_BUFFER_SZ + 1 
 
@@ -41,6 +41,11 @@ public:
     DEALER,       ///< Internal server binding, ipc routing server-worker.
     WORKER,       ///< Internal server connection, ipc routing endpoint, worker.
     CLIENT        ///< Client connection, makes connections to servers.
+  };
+
+  enum error_e {
+    ERROR_NONE = 0,
+    ERROR_INTERRUPT
   };
 
   /// Default constructor.

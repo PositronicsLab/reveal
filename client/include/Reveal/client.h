@@ -33,9 +33,7 @@ public:
   virtual ~client_c( void );
 
   bool init( void );
-  void go( void );
   void terminate( void );
-
   bool connect( void );
 
   // API

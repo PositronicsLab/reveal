@@ -86,7 +86,6 @@ private:
   trial_ptr _trial;
   solution_ptr _solution;
 
-  Reveal::Core::Messages::Net::Message protomsg;
 };
 
 //----------------------------------------------------------------------------

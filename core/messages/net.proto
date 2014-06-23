@@ -18,6 +18,8 @@ message Message {
   enum Error {
     ERROR_NONE = 0;
     ERROR_BAD_RESPONSE = 1;
+    ERROR_BAD_SCENARIO = 2;
+    ERROR_BAD_TRIAL = 3;
   }
 
   enum Origin {

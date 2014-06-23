@@ -90,7 +90,10 @@ include_directories( ${REVEAL_CORE_INCLUDE_DIRS} )
 add_library( revealcore SHARED ${REVEAL_CORE_HEADERS} ${REVEAL_CORE_SOURCES} )
 add_dependencies( revealcore revealmessages )
 #add_dependencies( revealcore ${REVEAL_MESSAGES_LIBRARY} )
-target_link_libraries( revealcore LINK_PRIVATE ${REVEAL_CORE_LIBARIES})
+#target_link_libraries( revealcore LINK_PRIVATE ${REVEAL_CORE_LIBARIES})
+target_link_libraries(revealcore LINK_PRIVATE ${ZeroMQ_LIBRARIES})
+target_link_libraries(revealcore LINK_PRIVATE ${PROTOBUF_LIBRARIES})
+target_link_libraries(revealcore LINK_PRIVATE ${REVEAL_MESSAGES_LIBRARY})
 
 # create the reveal core include and library variables for future linking
 set( REVEAL_CORE_INCLUDE_DIR

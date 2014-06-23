@@ -190,7 +190,7 @@ database_c::error_e database_c::query( Reveal::Core::scenario_ptr& scenario, int
   query.scenario( scenario_id );
   fetch( cursor, "scenario", query() );
 
-  // add error handling
+  // TODO:add error handling
   mongo::BSONObj record = cursor->next();
 
   scenario = Reveal::Core::scenario_ptr( new Reveal::Core::scenario_c() );

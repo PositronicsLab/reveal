@@ -8,11 +8,13 @@ find_package( Pthread REQUIRED )
 # header files
 set( REVEAL_SERVER_HEADERS 
   ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/server.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/worker.h
 )
 
 # source files
 set( REVEAL_SERVER_SOURCES 
   ${CMAKE_CURRENT_SOURCE_DIR}/src/server.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/worker.cpp
 )
 
 # additional include paths

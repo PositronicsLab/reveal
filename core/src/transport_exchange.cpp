@@ -15,7 +15,6 @@ namespace Core {
 //----------------------------------------------------------------------------
 transport_exchange_c::transport_exchange_c( void ) {
   reset();
-  protomsg = Reveal::Core::Messages::Net::Message();
 }
 
 //----------------------------------------------------------------------------
@@ -120,7 +119,7 @@ void transport_exchange_c::set_trial( trial_ptr trial ) {
 trial_ptr transport_exchange_c::get_trial( void ) {
   assert( _origin != ORIGIN_UNDEFINED );
   assert( _error == ERROR_NONE );
-  assert( _type == TYPE_TRIAL || _type == TYPE_SOLUTION );
+  assert( _type == TYPE_TRIAL );
   assert( _trial );
 
   return _trial;
@@ -144,11 +143,10 @@ solution_ptr transport_exchange_c::get_solution( void ) {
 
 //----------------------------------------------------------------------------
 transport_exchange_c::error_e transport_exchange_c::build( std::string& message ) {
-  //Reveal::Core::Messages::Net::Message protomsg = Reveal::Core::Messages::Net::Message();
+  Reveal::Core::Messages::Net::Message proto = Reveal::Core::Messages::Net::Message();
   Reveal::Core::Messages::Net::Message::Header* header;
-  protomsg.Clear();
 
-  header = protomsg.mutable_header();
+  header = proto.mutable_header();
 
   if( _origin == ORIGIN_SERVER ) {
     header->set_origin( Messages::Net::Message::SERVER );
@@ -168,16 +166,16 @@ transport_exchange_c::error_e transport_exchange_c::build( std::string& message 
       header->set_error( Messages::Net::Message::ERROR_NONE );
       digest_ptr digest = get_digest(); // accessed by method to use asserts
 
-      Messages::Data::Digest* protodigest = protomsg.mutable_digest();
+      Messages::Data::Digest* proto_digest = proto.mutable_digest();
       for( unsigned i = 0; i < digest->scenarios(); i++ ) {
         scenario_ptr scenario = digest->get_scenario( i );
-        Messages::Data::Scenario* protoscenario = protodigest->add_scenario();
-        protoscenario->set_id( scenario->id );
-        protoscenario->set_name( scenario->name );
-        protoscenario->set_description( scenario->description );
-        protoscenario->set_trials( scenario->trials );
+        Messages::Data::Scenario* proto_scenario = proto_digest->add_scenario();
+        proto_scenario->set_id( scenario->id );
+        proto_scenario->set_name( scenario->name );
+        proto_scenario->set_description( scenario->description );
+        proto_scenario->set_trials( scenario->trials );
         for( unsigned j = 0; j < scenario->uris.size(); j++ ) {
-          protoscenario->add_uri( scenario->uris.at(j) );
+          proto_scenario->add_uri( scenario->uris.at(j) );
         }
       }
 
@@ -187,26 +185,14 @@ transport_exchange_c::error_e transport_exchange_c::build( std::string& message 
       header->set_error( Messages::Net::Message::ERROR_NONE );
       scenario_ptr scenario = get_scenario(); // accessed by method to use asserts
 
-      Messages::Data::Scenario* protoscenario = protomsg.mutable_scenario();
-/*
-      for( unsigned i = 0; i < digest->scenarios(); i++ ) {
-        scenario_ptr scenario = digest->get_scenario( i );
-        Messages::Data::Scenario* protoscenario = protodigest->add_scenario();
-        protoscenario->set_id( scenario->id );
-        protoscenario->set_name( scenario->name );
-        protoscenario->set_description( scenario->description );
-        protoscenario->set_trials( scenario->trials );
-        for( unsigned j = 0; j < scenario->uris.size(); j++ ) {
-          protoscenario->add_uri( scenario->uris.at(j) );
-        }
-      }
-*/
-      protoscenario->set_id( scenario->id );
-      protoscenario->set_name( scenario->name );
-      protoscenario->set_description( scenario->description );
-      protoscenario->set_trials( scenario->trials );
+      Messages::Data::Scenario* proto_scenario = proto.mutable_scenario();
+
+      proto_scenario->set_id( scenario->id );
+      proto_scenario->set_name( scenario->name );
+      proto_scenario->set_description( scenario->description );
+      proto_scenario->set_trials( scenario->trials );
       for( unsigned j = 0; j < scenario->uris.size(); j++ ) {
-        protoscenario->add_uri( scenario->uris.at(j) );
+        proto_scenario->add_uri( scenario->uris.at(j) );
       }
     } else if( _type == TYPE_TRIAL ) {
       // trial response
@@ -214,17 +200,17 @@ transport_exchange_c::error_e transport_exchange_c::build( std::string& message 
       header->set_error( Messages::Net::Message::ERROR_NONE );
       trial_ptr trial = get_trial();    // accessed by method to use asserts
 
-      Messages::Data::Trial* prototrial = protomsg.mutable_trial();
-      prototrial->set_scenario_id( trial->scenario_id );
-      prototrial->set_trial_id( trial->trial_id );
-      prototrial->set_t( trial->t );
-      prototrial->set_dt( trial->dt );
-      Messages::Data::State* state = prototrial->mutable_state();
+      Messages::Data::Trial* proto_trial = proto.mutable_trial();
+      proto_trial->set_scenario_id( trial->scenario_id );
+      proto_trial->set_trial_id( trial->trial_id );
+      proto_trial->set_t( trial->t );
+      proto_trial->set_dt( trial->dt );
+      Messages::Data::State* state = proto_trial->mutable_state();
       for( unsigned i = 0; i < trial->state.size_q(); i++ ) 
         state->add_q( trial->state.q(i) );
       for( unsigned i = 0; i < trial->state.size_dq(); i++ )
         state->add_dq( trial->state.dq(i) );
-      Messages::Data::Control* control = prototrial->mutable_control();
+      Messages::Data::Control* control = proto_trial->mutable_control();
       for( unsigned i = 0; i < trial->control.size_u(); i++ )
         control->add_u( trial->control.u(i) );
 
@@ -257,8 +243,8 @@ transport_exchange_c::error_e transport_exchange_c::build( std::string& message 
       header->set_error( Messages::Net::Message::ERROR_NONE );
       scenario_ptr scenario = get_scenario();    // accessed by method to use asserts
 
-      Messages::Data::Scenario* protoscenario = protomsg.mutable_scenario();
-      protoscenario->set_id( scenario->id );
+      Messages::Data::Scenario* proto_scenario = proto.mutable_scenario();
+      proto_scenario->set_id( scenario->id );
 
     } else if( _type == TYPE_TRIAL ) {
       // trial request
@@ -266,20 +252,20 @@ transport_exchange_c::error_e transport_exchange_c::build( std::string& message 
       header->set_error( Messages::Net::Message::ERROR_NONE );
       trial_ptr trial = get_trial();    // accessed by method to use asserts
 
-      Messages::Data::Trial* prototrial = protomsg.mutable_trial();
-      prototrial->set_scenario_id( trial->scenario_id );
-      prototrial->set_trial_id( trial->trial_id );
+      Messages::Data::Trial* proto_trial = proto.mutable_trial();
+      proto_trial->set_scenario_id( trial->scenario_id );
+      proto_trial->set_trial_id( trial->trial_id );
     } else if( _type == TYPE_SOLUTION ) {
       // solution publication
       header->set_type( Messages::Net::Message::SOLUTION );
       header->set_error( Messages::Net::Message::ERROR_NONE );
       solution_ptr solution = get_solution();    // accessed by method to use asserts
 
-      Messages::Data::Solution* protosolution = protomsg.mutable_solution();
-      protosolution->set_scenario_id( solution->scenario_id );
-      protosolution->set_trial_id( solution->trial_id );
-      protosolution->set_t( solution->t );
-      Messages::Data::State* state = protosolution->mutable_state();
+      Messages::Data::Solution* proto_solution = proto.mutable_solution();
+      proto_solution->set_scenario_id( solution->scenario_id );
+      proto_solution->set_trial_id( solution->trial_id );
+      proto_solution->set_t( solution->t );
+      Messages::Data::State* state = proto_solution->mutable_state();
       for( unsigned i = 0; i < solution->state.size_q(); i++ ) 
         state->add_q( solution->state.q(i) );
       for( unsigned i = 0; i < solution->state.size_dq(); i++ )
@@ -293,36 +279,35 @@ transport_exchange_c::error_e transport_exchange_c::build( std::string& message 
     _error = ERROR_BUILD;
     return ERROR_BUILD;
   }
-  protomsg.SerializeToString( &message );
+  proto.SerializeToString( &message );
   return ERROR_NONE;
 }
 
 //----------------------------------------------------------------------------
 transport_exchange_c::error_e transport_exchange_c::parse( const std::string& message ) {
-  protomsg.Clear();
-  //Reveal::Core::Messages::Net::Message protomsg;
+  Reveal::Core::Messages::Net::Message proto;
   error_e error;
 
   reset();
 
-  protomsg.ParseFromString( message );
+  proto.ParseFromString( message );
  
-  if( protomsg.header().origin() == Messages::Net::Message::SERVER ) {
+  if( proto.header().origin() == Messages::Net::Message::SERVER ) {
     _origin = ORIGIN_SERVER;
-  } else if( protomsg.header().origin() == Messages::Net::Message::CLIENT ) {
+  } else if( proto.header().origin() == Messages::Net::Message::CLIENT ) {
     _origin = ORIGIN_CLIENT;
   }
   // Note: pure else case cannot happen
 
-  if( protomsg.header().type() == Messages::Net::Message::ERROR ) {
+  if( proto.header().type() == Messages::Net::Message::ERROR ) {
     _type = TYPE_ERROR;
-  } else if( protomsg.header().type() == Messages::Net::Message::DIGEST ) {
+  } else if( proto.header().type() == Messages::Net::Message::DIGEST ) {
     _type = TYPE_DIGEST;
-  } else if( protomsg.header().type() == Messages::Net::Message::SCENARIO ) {
+  } else if( proto.header().type() == Messages::Net::Message::SCENARIO ) {
     _type = TYPE_SCENARIO;
-  } else if( protomsg.header().type() == Messages::Net::Message::TRIAL ) {
+  } else if( proto.header().type() == Messages::Net::Message::TRIAL ) {
     _type = TYPE_TRIAL;
-  } else if( protomsg.header().type() == Messages::Net::Message::SOLUTION ) {
+  } else if( proto.header().type() == Messages::Net::Message::SOLUTION ) {
     _type = TYPE_SOLUTION;
   } else {
     // UNDEFINED
@@ -332,7 +317,7 @@ transport_exchange_c::error_e transport_exchange_c::parse( const std::string& me
 /*
   if( _type == TYPE_ERROR )
     // determine error and course of action
-    // if( protomsg.header().error() == Messages::Net::Message::ERROR_? ) {
+    // if( proto.header().error() == Messages::Net::Message::ERROR_? ) {
     //   _error = ERROR_?
     // } else if( ... ) {
     // }
@@ -349,53 +334,54 @@ transport_exchange_c::error_e transport_exchange_c::parse( const std::string& me
     } else if( _type == TYPE_DIGEST ) {
       // read out the digest
       // TODO: enumerate a specific error
-      if( !protomsg.has_digest() ) return ERROR_PARSE;
+      if( !proto.has_digest() ) return ERROR_PARSE;
 
       _digest = digest_ptr( new digest_c() );
       
-      for( unsigned i = 0; i < protomsg.digest().scenario_size(); i++ ) {
+      for( unsigned i = 0; i < proto.digest().scenario_size(); i++ ) {
         scenario_ptr scenario = scenario_ptr( new scenario_c() );
         _digest->add_scenario( scenario );
 
-        scenario->id = protomsg.digest().scenario(i).id();
-        scenario->name = protomsg.digest().scenario(i).name();
-        scenario->description = protomsg.digest().scenario(i).description();
-        scenario->trials = protomsg.digest().scenario(i).trials();
-        for( unsigned j = 0; j < protomsg.digest().scenario(i).uri().size(); j++ ) {
-          scenario->uris.push_back( protomsg.digest().scenario(i).uri(j) );
+        scenario->id = proto.digest().scenario(i).id();
+        scenario->name = proto.digest().scenario(i).name();
+        scenario->description = proto.digest().scenario(i).description();
+        scenario->trials = proto.digest().scenario(i).trials();
+        for( unsigned j = 0; j < proto.digest().scenario(i).uri().size(); j++ ) {
+          scenario->uris.push_back( proto.digest().scenario(i).uri(j) );
         }
       }
     } else if( _type == TYPE_SCENARIO ) {
       // read out the digest
       // TODO: enumerate a specific error
-      if( !protomsg.has_scenario() ) return ERROR_PARSE;
+      if( !proto.has_scenario() ) return ERROR_PARSE;
 
       _scenario = scenario_ptr( new scenario_c() );
       
-      _scenario->id = protomsg.scenario().id();
-      _scenario->name = protomsg.scenario().name();
-      _scenario->description = protomsg.scenario().description();
-      _scenario->trials = protomsg.scenario().trials();
-      for( unsigned j = 0; j < protomsg.scenario().uri().size(); j++ ) {
-        _scenario->uris.push_back( protomsg.scenario().uri(j) );
+      _scenario->id = proto.scenario().id();
+      _scenario->name = proto.scenario().name();
+      _scenario->description = proto.scenario().description();
+      _scenario->trials = proto.scenario().trials();
+      for( unsigned j = 0; j < proto.scenario().uri().size(); j++ ) {
+        _scenario->uris.push_back( proto.scenario().uri(j) );
       }
     } else if( _type == TYPE_TRIAL ) {
       // read out the trial
+      if( !proto.has_trial() ) return ERROR_PARSE;
 
       _trial = trial_ptr( new trial_c() );
 
-      _trial->scenario_id = protomsg.trial().scenario_id();
-      _trial->trial_id = protomsg.trial().trial_id();
-      _trial->t = protomsg.trial().t();
-      _trial->dt = protomsg.trial().dt();
-      for( int i = 0; i < protomsg.trial().state().q_size(); i++ ) {
-        _trial->state.append_q( protomsg.trial().state().q(i) );
+      _trial->scenario_id = proto.trial().scenario_id();
+      _trial->trial_id = proto.trial().trial_id();
+      _trial->t = proto.trial().t();
+      _trial->dt = proto.trial().dt();
+      for( int i = 0; i < proto.trial().state().q_size(); i++ ) {
+        _trial->state.append_q( proto.trial().state().q(i) );
       }
-      for( int i = 0; i < protomsg.trial().state().dq_size(); i++ ) {
-        _trial->state.append_dq( protomsg.trial().state().dq(i) );
+      for( int i = 0; i < proto.trial().state().dq_size(); i++ ) {
+        _trial->state.append_dq( proto.trial().state().dq(i) );
       }
-      for( int i = 0; i < protomsg.trial().control().u_size(); i++ ) {
-        _trial->control.append_u( protomsg.trial().control().u(i) );
+      for( int i = 0; i < proto.trial().control().u_size(); i++ ) {
+        _trial->control.append_u( proto.trial().control().u(i) );
       }
 
     } else if( _type == TYPE_SOLUTION ) {
@@ -408,24 +394,25 @@ transport_exchange_c::error_e transport_exchange_c::parse( const std::string& me
       // flag as digest request.  Note: already handled in _type branch above
     } else if( _type == TYPE_SCENARIO ) {
       _scenario = scenario_ptr( new scenario_c() );
-      _scenario->id = protomsg.scenario().id();
+      _scenario->id = proto.scenario().id();
     } else if( _type == TYPE_TRIAL ) {
       _trial = trial_ptr( new trial_c() );
-      _trial->scenario_id = protomsg.trial().scenario_id();
-      _trial->trial_id = protomsg.trial().trial_id();
+      _trial->scenario_id = proto.trial().scenario_id();
+      _trial->trial_id = proto.trial().trial_id();
     } else if( _type == TYPE_SOLUTION ) {
       // read out the solution
+      if( !proto.has_solution() ) return ERROR_PARSE;
 
       _solution = solution_ptr( new solution_c() );
 
-      _solution->scenario_id = protomsg.solution().scenario_id();
-      _solution->trial_id = protomsg.solution().trial_id();
-      _solution->t = protomsg.solution().t();
-      for( int i = 0; i < protomsg.solution().state().q_size(); i++ ) {
-        _solution->state.append_q( protomsg.solution().state().q(i) );
+      _solution->scenario_id = proto.solution().scenario_id();
+      _solution->trial_id = proto.solution().trial_id();
+      _solution->t = proto.solution().t();
+      for( int i = 0; i < proto.solution().state().q_size(); i++ ) {
+        _solution->state.append_q( proto.solution().state().q(i) );
       }
-      for( int i = 0; i < protomsg.solution().state().dq_size(); i++ ) {
-        _solution->state.append_dq( protomsg.solution().state().dq(i) );
+      for( int i = 0; i < proto.solution().state().dq_size(); i++ ) {
+        _solution->state.append_dq( proto.solution().state().dq(i) );
       }
     }
   }

@@ -10,6 +10,10 @@ James R Taylor:jrt@gwu.edu
 
 #include <stdio.h>
 
+#include <Reveal/pointers.h>
+#include <Reveal/trial.h>
+#include <Reveal/solution.h>
+
 //-----------------------------------------------------------------------------
 
 namespace Reveal {
@@ -42,6 +46,29 @@ public:
     }
     printf( "]\n" );
   }
+
+  trial_ptr get_trial( int trial_id ) {
+    assert( trial_id < trials );
+
+    trial_ptr trial = trial_ptr( new trial_c() );
+    trial->scenario_id = id;
+    trial->trial_id = trial_id;
+
+    return trial;
+  }
+
+  solution_ptr get_solution( trial_ptr trial, double t ) {
+    assert( trial->scenario_id == id );
+    assert( trial->trial_id < trials );
+
+    solution_ptr solution = solution_ptr( new solution_c() );
+    solution->scenario_id = id;
+    solution->trial_id = trial->trial_id;
+    solution->t = t;
+
+    return solution;
+  }
+
 };
 
 //-----------------------------------------------------------------------------

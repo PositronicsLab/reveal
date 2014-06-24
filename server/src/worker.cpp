@@ -121,23 +121,32 @@ worker_c::error_e worker_c::service_digest_request( void ) {
   std::string reply;
 
   // query the database for digest data
-  _db->query( digest );
-  // TODO: Validation
+  Reveal::DB::database_c::error_e db_error = _db->query( digest );
 
-  //digest->print();      
+  if( db_error == Reveal::DB::database_c::ERROR_NONE ) {
+    // the query was successful
 
-  // construct the digest message
-  exchange.set_origin( Reveal::Core::transport_exchange_c::ORIGIN_SERVER );
-  exchange.set_type( Reveal::Core::transport_exchange_c::TYPE_DIGEST );
-  exchange.set_digest( digest );
+    //digest->print();      
 
-  // serialize the message for transmission
-  exchange.build( reply );
+    // construct the digest message
+    exchange.set_origin( Reveal::Core::transport_exchange_c::ORIGIN_SERVER );
+    exchange.set_type( Reveal::Core::transport_exchange_c::TYPE_DIGEST );
+    exchange.set_digest( digest );
 
-  // broadcast the reply message back to the client
-  _connection.write( reply );
+    // serialize the message for transmission
+    exchange.build( reply );
 
-  return ERROR_NONE;
+    // broadcast the reply message back to the client
+    _connection.write( reply );
+
+    return ERROR_NONE;
+  }
+
+  // otherwise there was an error in the query
+  if( db_error == Reveal::DB::database_c::ERROR_EMPTYSET ) {
+    // the query returned an empty set
+  }
+  return ERROR_NONE;  // temporary until any error enumeration is determined
 }
 
 //-----------------------------------------------------------------------------
@@ -147,21 +156,41 @@ worker_c::error_e worker_c::service_scenario_request( int scenario_id ) {
   std::string reply;
 
   // query the database for scenario data
-  _db->query( scenario, scenario_id );
-  // TODO: Validation
+  Reveal::DB::database_c::error_e db_error = _db->query( scenario, scenario_id );
 
-  // construct the scenario message
-  exchange.set_origin( Reveal::Core::transport_exchange_c::ORIGIN_SERVER );
-  exchange.set_type( Reveal::Core::transport_exchange_c::TYPE_SCENARIO );
-  exchange.set_scenario( scenario );
+  if( db_error == Reveal::DB::database_c::ERROR_NONE ) {
+    // the query was successful
 
-  // serialize the message for transmission
-  exchange.build( reply );
+    // construct the scenario message
+    exchange.set_origin( Reveal::Core::transport_exchange_c::ORIGIN_SERVER );
+    exchange.set_type( Reveal::Core::transport_exchange_c::TYPE_SCENARIO );
+    exchange.set_scenario( scenario );
 
-  // broadcast the reply message back to the client
-  _connection.write( reply );
+    // serialize the message for transmission
+    exchange.build( reply );
 
-  return ERROR_NONE;
+    // broadcast the reply message back to the client
+    _connection.write( reply );
+
+    return ERROR_NONE;
+  }
+
+  // otherwise there was an error in the query
+  if( db_error == Reveal::DB::database_c::ERROR_EMPTYSET ) {
+    // the query returned an empty set
+
+    // construct an error message
+    exchange.set_origin( Reveal::Core::transport_exchange_c::ORIGIN_SERVER );
+    exchange.set_type( Reveal::Core::transport_exchange_c::TYPE_ERROR );
+    exchange.set_error( Reveal::Core::transport_exchange_c::ERROR_BAD_SCENARIO_REQUEST );
+
+    //serialize the message for transmission
+    exchange.build( reply );
+
+    // broadcast the reply message back to the client
+    _connection.write( reply );
+  }
+  return ERROR_NONE;  // temporary until any error enumeration is determined
 }
 
 //-----------------------------------------------------------------------------
@@ -171,21 +200,42 @@ worker_c::error_e worker_c::service_trial_request( int scenario_id, int trial_id
   std::string reply;
 
   // query the database for trial data
-  _db->query( trial, scenario_id, trial_id );
+  Reveal::DB::database_c::error_e db_error = _db->query( trial, scenario_id, trial_id );
   // TODO: Validation
 
-  // construct the trial message
-  exchange.set_origin( Reveal::Core::transport_exchange_c::ORIGIN_SERVER );
-  exchange.set_type( Reveal::Core::transport_exchange_c::TYPE_TRIAL );
-  exchange.set_trial( trial );
+  if( db_error == Reveal::DB::database_c::ERROR_NONE ) {
+    // the query was successful
 
-  //serialize the message for transmission
-  exchange.build( reply );
+    // construct the trial message
+    exchange.set_origin( Reveal::Core::transport_exchange_c::ORIGIN_SERVER );
+    exchange.set_type( Reveal::Core::transport_exchange_c::TYPE_TRIAL );
+    exchange.set_trial( trial );
 
-  // broadcast the reply message back to the client
-  _connection.write( reply );
+    //serialize the message for transmission
+    exchange.build( reply );
 
-  return ERROR_NONE;
+    // broadcast the reply message back to the client
+    _connection.write( reply );
+
+    return ERROR_NONE;
+  }
+
+  // otherwise there was an error in the query
+  if( db_error == Reveal::DB::database_c::ERROR_EMPTYSET ) {
+    // the query returned an empty set
+
+    // construct an error message
+    exchange.set_origin( Reveal::Core::transport_exchange_c::ORIGIN_SERVER );
+    exchange.set_type( Reveal::Core::transport_exchange_c::TYPE_ERROR );
+    exchange.set_error( Reveal::Core::transport_exchange_c::ERROR_BAD_TRIAL_REQUEST );
+
+    //serialize the message for transmission
+    exchange.build( reply );
+
+    // broadcast the reply message back to the client
+    _connection.write( reply );
+  }
+  return ERROR_NONE;  // temporary until any error enumeration is determined
 }
 
 //-----------------------------------------------------------------------------
@@ -208,7 +258,7 @@ worker_c::error_e worker_c::service_solution_submission( Reveal::Core::solution_
   // transactions
 
   // insert the client solution into the database
-  _db->insert( solution );
+  Reveal::DB::database_c::error_e db_error = _db->insert( solution );
 
   // - Analytics -
   Reveal::Core::model_solution_ptr model_solution;

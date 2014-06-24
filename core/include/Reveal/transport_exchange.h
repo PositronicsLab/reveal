@@ -32,7 +32,10 @@ public:
   enum error_e {
     ERROR_NONE = 0,
     ERROR_PARSE,
-    ERROR_BUILD
+    ERROR_BUILD,
+    ERROR_BAD_SCENARIO_REQUEST,
+    ERROR_BAD_TRIAL_REQUEST,
+    ERROR_BAD_SOLUTION_SUBMISSION
   };
 
   enum type_e {

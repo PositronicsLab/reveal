@@ -154,12 +154,14 @@ transport_exchange_c::error_e transport_exchange_c::build( std::string& message 
       header->set_type( Messages::Net::Message::ERROR );
       // cross reference the correct error
       error_e error = get_error();      // accessed by method to use asserts
-      // TODO : Expand as error conditions are developed
-      // if( error == ERROR_? ) {
-      //   protomsg.header().set_error( ERROR_? );
-      // }
-      // TODO: map errors
-      header->set_error( Messages::Net::Message::ERROR_NONE );
+      // TODO: map any newly defined errors
+      if( error == ERROR_BAD_SCENARIO_REQUEST ) {
+        header->set_error( Messages::Net::Message::ERROR_BAD_SCENARIO );
+      } else if( error == ERROR_BAD_TRIAL_REQUEST ) {
+        header->set_error( Messages::Net::Message::ERROR_BAD_TRIAL );
+      } else {
+        header->set_error( Messages::Net::Message::ERROR_GENERAL );
+      }
      } else if( _type == TYPE_DIGEST ) {
       // digest response
       header->set_type( Messages::Net::Message::DIGEST );
@@ -224,15 +226,7 @@ transport_exchange_c::error_e transport_exchange_c::build( std::string& message 
   } else if( _origin == ORIGIN_CLIENT ) {
     header->set_origin( Messages::Net::Message::CLIENT );
     if( _type == TYPE_ERROR ) {
-      header->set_type( Messages::Net::Message::ERROR );
-      // cross reference the correct error
-      error_e error = get_error();      // accessed by method to use asserts
-      // TODO : Expand as error conditions are developed
-      // if( error == ERROR_? ) {
-      //   protomsg.header().set_error( ERROR_? );
-      // }
-      // TODO: map errors
-      header->set_error( Messages::Net::Message::ERROR_NONE );
+
     } else if( _type == TYPE_DIGEST ) {
       // digest request
       header->set_type( Messages::Net::Message::DIGEST );
@@ -331,6 +325,15 @@ transport_exchange_c::error_e transport_exchange_c::parse( const std::string& me
   if( _origin == ORIGIN_SERVER ) {
     if( _type == TYPE_ERROR ) {
       // cross reference errors
+      Messages::Net::Message::Error proto_error = proto.header().error();
+      if( proto_error == Messages::Net::Message::ERROR_BAD_SCENARIO ) {
+        _error = ERROR_BAD_SCENARIO_REQUEST;
+      } else if( proto_error == Messages::Net::Message::ERROR_BAD_TRIAL ) {
+        _error = ERROR_BAD_TRIAL_REQUEST;
+      } else {
+        // TODO:
+      }
+      printf( "detected error\n" );
     } else if( _type == TYPE_DIGEST ) {
       // read out the digest
       // TODO: enumerate a specific error

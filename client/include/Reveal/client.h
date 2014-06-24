@@ -29,6 +29,19 @@ namespace Client {
 
 class client_c {
 public:
+  enum error_e {
+    ERROR_NONE = 0,
+    ERROR_READ,                      //< Error attempting to read
+    ERROR_WRITE,                     //< Error attempting to write
+    ERROR_CONNECTION,                //< Error in the connection
+    ERROR_EXCHANGE_RESPONSE,         //< Error in the response
+    ERROR_EXCHANGE_BUILD,            //< Unable to build message
+    ERROR_EXCHANGE_PARSE,            //< Unable to parse
+    ERROR_INVALID_SCENARIO_REQUEST,  //< Requested scenario is invalid
+    ERROR_INVALID_TRIAL_REQUEST,     //< Requested trial is invalid
+    ERROR_INVALID_SOLUTION           //< Attempted solution sent was malformed
+  };
+
   client_c( void );
   virtual ~client_c( void );
 
@@ -37,15 +50,15 @@ public:
   bool connect( void );
 
   // API
-  bool request_digest( Reveal::Core::digest_ptr& digest );
-  bool request_scenario( Reveal::Core::scenario_ptr& scenario );
-  bool request_trial( Reveal::Core::trial_ptr& trial );
-  bool submit_solution( Reveal::Core::solution_ptr& solution );
+  error_e request_digest( Reveal::Core::digest_ptr& digest );
+  error_e request_scenario( Reveal::Core::scenario_ptr& scenario );
+  error_e request_trial( Reveal::Core::trial_ptr& trial );
+  error_e submit_solution( Reveal::Core::solution_ptr& solution );
 
 private:
   Reveal::Core::connection_c _connection;
 
-  bool request_reply( const std::string& request, std::string& reply );
+  error_e request_reply( const std::string& request, std::string& reply );
 };
 
 //-----------------------------------------------------------------------------

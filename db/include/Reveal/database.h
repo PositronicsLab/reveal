@@ -33,7 +33,8 @@ private:
 
 public:
   enum error_e {
-    ERROR_NONE
+    ERROR_NONE,
+    ERROR_EMPTYSET
   };
 
   database_c( void );

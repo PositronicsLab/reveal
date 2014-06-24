@@ -111,6 +111,8 @@ database_c::error_e database_c::query( Reveal::Core::digest_ptr& digest ) {
 
   digest = Reveal::Core::digest_ptr( new Reveal::Core::digest_c() );
 
+  if( !cursor->more() ) return ERROR_EMPTYSET;
+
   while( cursor->more() ) {
     // add error handling
     mongo::BSONObj record = cursor->next();
@@ -190,6 +192,8 @@ database_c::error_e database_c::query( Reveal::Core::scenario_ptr& scenario, int
   query.scenario( scenario_id );
   fetch( cursor, "scenario", query() );
 
+  if( !cursor->more() ) return ERROR_EMPTYSET;
+
   // TODO:add error handling
   mongo::BSONObj record = cursor->next();
 
@@ -242,6 +246,8 @@ database_c::error_e database_c::query( Reveal::Core::trial_ptr& trial, int scena
 
   query.trial( scenario_id, trial_id );
   fetch( cursor, "trial", query() );
+
+  if( !cursor->more() ) return ERROR_EMPTYSET;
 
   // add error handling
   mongo::BSONObj record = cursor->next();
@@ -305,6 +311,8 @@ database_c::error_e database_c::query( Reveal::Core::solution_ptr& solution, int
 
   query.solution( scenario_id, trial_id );
   fetch( cursor, "solution", query() );
+
+  if( !cursor->more() ) return ERROR_EMPTYSET;
 
   // add error handling
   mongo::BSONObj record = cursor->next();
@@ -370,6 +378,8 @@ database_c::error_e database_c::query( Reveal::Core::model_solution_ptr& solutio
 
   query.model_solution( scenario_id, trial_id );
   fetch( cursor, "model_solution", query() );
+
+  if( !cursor->more() ) return ERROR_EMPTYSET;
 
   // add error handling
   mongo::BSONObj record = cursor->next();

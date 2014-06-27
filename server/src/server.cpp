@@ -33,13 +33,13 @@ bool server_c::init( void ) {
   Reveal::Core::transport_exchange_c::open();  
 
   _clientconnection = Reveal::Core::connection_c( PORT );
-  if( !_clientconnection.open() ) {
+  if( _clientconnection.open() != Reveal::Core::connection_c::ERROR_NONE ) {
     printf( "Failed to open clientconnection\n" );
     return false;
   }
 
   _workerconnection = Reveal::Core::connection_c( Reveal::Core::connection_c::DEALER, _clientconnection.context() );
-  if( !_workerconnection.open() ) {
+  if( _workerconnection.open() != Reveal::Core::connection_c::ERROR_NONE ) {
     printf( "Failed to open workerconnection\n" );
     return false; 
   }
@@ -64,6 +64,8 @@ void server_c::run( void ) {
 
 //-----------------------------------------------------------------------------
 void server_c::terminate( void ) {
+  // Note: may need to loop on these connection close operations if they don't
+  // return ERROR_NONE and do return ERROR_INTERRUPT
   _workerconnection.close();
   _clientconnection.close();
 

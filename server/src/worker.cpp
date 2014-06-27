@@ -42,7 +42,7 @@ worker_c::~worker_c( void ) {
 bool worker_c::init( void ) {
   _connection = Reveal::Core::connection_c( Reveal::Core::connection_c::WORKER, _context );
 
-  if( !_connection.open() ) {
+  if( _connection.open() != Reveal::Core::connection_c::ERROR_NONE ) {
     printf( "worker failed to open connection\n" );
     // return?
     // TODO: determine what to do in event of failure to open connection
@@ -57,6 +57,8 @@ bool worker_c::init( void ) {
 //-----------------------------------------------------------------------------
 void worker_c::terminate( void ) {
   _db->close();
+  // Note: may need to loop on connection close operation if they don't
+  // return ERROR_NONE and do return ERROR_INTERRUPT
   _connection.close();
 }
 
@@ -67,7 +69,7 @@ void worker_c::work( void ) {
 
   while( true ) {
     // block waiting for a message from a client
-    if( !_connection.read( request ) ) {
+    if( _connection.read( request ) != Reveal::Core::connection_c::ERROR_NONE ) {
       // read failed at connection
       printf( "ERROR: Failed to read message from client.\n" );
       // TODO: improve error handling.  Bomb or recover here.      
@@ -137,7 +139,9 @@ worker_c::error_e worker_c::service_digest_request( void ) {
     exchange.build( reply );
 
     // broadcast the reply message back to the client
-    _connection.write( reply );
+    if( _connection.write( reply ) != Reveal::Core::connection_c::ERROR_NONE ) {
+      // TODO: trap and recover
+    }
 
     return ERROR_NONE;
   }
@@ -170,7 +174,9 @@ worker_c::error_e worker_c::service_scenario_request( int scenario_id ) {
     exchange.build( reply );
 
     // broadcast the reply message back to the client
-    _connection.write( reply );
+    if( _connection.write( reply ) != Reveal::Core::connection_c::ERROR_NONE ) {
+      // TODO: trap and recover
+    }
 
     return ERROR_NONE;
   }
@@ -188,7 +194,9 @@ worker_c::error_e worker_c::service_scenario_request( int scenario_id ) {
     exchange.build( reply );
 
     // broadcast the reply message back to the client
-    _connection.write( reply );
+    if( _connection.write( reply ) != Reveal::Core::connection_c::ERROR_NONE ) {
+      // TODO: trap and recover
+    }
   }
   return ERROR_NONE;  // temporary until any error enumeration is determined
 }
@@ -215,7 +223,9 @@ worker_c::error_e worker_c::service_trial_request( int scenario_id, int trial_id
     exchange.build( reply );
 
     // broadcast the reply message back to the client
-    _connection.write( reply );
+    if( _connection.write( reply ) != Reveal::Core::connection_c::ERROR_NONE ) {
+      // TODO: trap and recover
+    }
 
     return ERROR_NONE;
   }
@@ -233,7 +243,9 @@ worker_c::error_e worker_c::service_trial_request( int scenario_id, int trial_id
     exchange.build( reply );
 
     // broadcast the reply message back to the client
-    _connection.write( reply );
+    if( _connection.write( reply ) != Reveal::Core::connection_c::ERROR_NONE ) {
+      // TODO: trap and recover
+    }
   }
   return ERROR_NONE;  // temporary until any error enumeration is determined
 }
@@ -251,7 +263,9 @@ worker_c::error_e worker_c::service_solution_submission( Reveal::Core::solution_
   exchange.build( reply );
 
   // broadcast the reply message back to the client
-  _connection.write( reply );
+  if( _connection.write( reply ) != Reveal::Core::connection_c::ERROR_NONE ) {
+    // TODO: trap and recover
+  }
 
   // NOTE: Change in pattern from above.  Send reply immediately then determine
   // the interactions necessary.  This prevents clients from waiting on data

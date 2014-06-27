@@ -45,12 +45,12 @@ bool client_c::init( void ) {
 //-----------------------------------------------------------------------------
 client_c::error_e client_c::request_reply( const std::string& request, std::string& reply ) {
   // send the request message to the server
-  if( !_connection.write( request ) ) {
+  if( _connection.write( request ) != Reveal::Core::connection_c::ERROR_NONE ) {
     // write failed at connection
     return ERROR_WRITE;
   }
   // block waiting for a server response
-  if( !_connection.read( reply ) ) {
+  if( _connection.read( reply ) != Reveal::Core::connection_c::ERROR_NONE ) {
     // read failed at connection
     return ERROR_READ;
   }
@@ -255,6 +255,8 @@ client_c::error_e client_c::submit_solution( Reveal::Core::solution_ptr& solutio
 //-----------------------------------------------------------------------------
 /// Clean up
 void client_c::terminate( void ) {
+  // Note: may need to loop on connection close operation if they don't
+  // return ERROR_NONE and do return ERROR_INTERRUPT
   _connection.close();
 
   Reveal::Core::transport_exchange_c::close();
@@ -266,7 +268,7 @@ bool client_c::connect( void ) {
   printf( "Connecting to server...\n" );
 
   _connection = Reveal::Core::connection_c( REVEAL_SERVER_URI, PORT );
-  if( !_connection.open() ) {
+  if( _connection.open() != Reveal::Core::connection_c::ERROR_NONE ) {
     return false;
   }
 

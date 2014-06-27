@@ -55,7 +55,7 @@ connection_c::~connection_c( void ) {
 
 //-----------------------------------------------------------------------------
 // TODO: determine level of detail for return value, i.e. bool or enum
-bool connection_c::open( void ) {
+connection_c::error_e connection_c::open( void ) {
   // sanity checks
   assert( !_open );
   assert( _role != UNDEFINED );  
@@ -65,7 +65,7 @@ bool connection_c::open( void ) {
     // Note: for DEALER or WORKER, the context was supplied in construction
     _context = zmq_ctx_new();
     if( _context == NULL ) {
-      return false;
+      return ERROR_CONTEXT;
       // Note: no error values are defined for zmq_ctx_new
     }
   }
@@ -81,21 +81,28 @@ bool connection_c::open( void ) {
     _socket = zmq_socket( _context, ZMQ_REP );
   } else {
     // Note: sanity checks should guarantee never getting here.
-    return false;
+    return ERROR_SOCKET;
   }
 
   // validate socket creation
   if( _socket == NULL ) {
     if( errno == EINVAL ) {
       // the requested socket type is invalid
+      return ERROR_SOCKET;
     } else if( errno == EFAULT ) {
       // the provided context is invalid
+      return ERROR_CONTEXT;
     } else if( errno == EMFILE ) {
       // the limit on the number of open sockets has been reached
+      return ERROR_LIMIT;
     } else if( errno == ETERM ) {
       // the context specified was terminated
+      return ERROR_CONTEXT;
+    } else {
+      // Note: above should trap specifics, but if fall through then return
+      // a socket error
+      return ERROR_SOCKET;
     }
-    return false;
   }
 
   if( _role == CLIENT || _role == WORKER ) {  
@@ -103,54 +110,75 @@ bool connection_c::open( void ) {
     if( zmq_connect( _socket, connection_string().c_str() ) == -1 ) {
       if( errno == EINVAL ) {
         // endpoint invalid
+        return ERROR_ADDRESS;
       } else if( errno == EPROTONOSUPPORT ) {
         // transport protocol is not supported
+        return ERROR_SOCKET;
       } else if( errno == ENOCOMPATPROTO ) {
         // transport protocol incompatible with socket
+        return ERROR_SOCKET;
       } else if( errno == ETERM ) {
         // zeromq context was terminated
+        return ERROR_CONTEXT;
       } else if( errno == ENOTSOCK ) {
         // socket is invalid
+        return ERROR_SOCKET;
       } else if( errno == EMTHREAD ) {
         // no I/O thread available
+        return ERROR_CONTEXT;
+      } else {
+        // Note: above should trap specifics, but if fall through then return
+        // a socket error  
+        return ERROR_SOCKET;
       }
-      return false;
     }
   } else if( _role == ROUTER || _role == DEALER ) {  
     // if router or dealer, bind to the socket
     if( zmq_bind( _socket, connection_string().c_str() ) == -1 ) {
       if( errno == EINVAL ) {
         // endpoint invalid
+        return ERROR_ADDRESS;
       } else if( errno == EPROTONOSUPPORT ) {
         // transport protocol is not supported
+        return ERROR_SOCKET;
       } else if( errno == ENOCOMPATPROTO ) {
         // transport protocol incompatible with socket
+        return ERROR_SOCKET;
       } else if( errno == EADDRINUSE ) {
         // requested address already in use
+        return ERROR_ADDRESS;
       } else if( errno == EADDRNOTAVAIL ) {
         // requested address was not local
+        return ERROR_ADDRESS;
       } else if( errno == ENODEV ) {
         // requested address specifies a nonexistent interface
+        return ERROR_ADDRESS;
       } else if( errno == ETERM ) {
         // zeromq context was terminated
+        return ERROR_CONTEXT;
       } else if( errno == ENOTSOCK ) {
         // socket is invalid
+        return ERROR_SOCKET;
       } else if( errno == EMTHREAD ) {
         // no I/O thread available
+        return ERROR_CONTEXT;
+      } else {
+        // Note: above should trap specifics, but if fall through then return
+        // a socket error  
+        return ERROR_SOCKET;
       }
-      return false;
     }
   }
 
   // otherwise success, socket is open
   _open = true;
-  return _open;
+  return ERROR_NONE;
 }
 
 //-----------------------------------------------------------------------------
 // TODO: determine level of detail for return value, i.e. void, bool or enum or
 // if the errors should cause this function to automatically try again.
-void connection_c::close( void ) {
+connection_c::error_e connection_c::close( void ) {
   // sanity checks
   assert( _open );
 
@@ -158,6 +186,7 @@ void connection_c::close( void ) {
   if( zmq_close( _socket ) == -1 ) {
     if( errno == ENOTSOCK ) {
       // the provided socket was invalid
+      return ERROR_SOCKET;
     }
   }
 
@@ -166,18 +195,25 @@ void connection_c::close( void ) {
     if( zmq_ctx_destroy( _context ) == -1 ) {
       if( errno == EFAULT ) {
         // The provided context was invalid
+        return ERROR_CONTEXT;
       } else if( errno == EINTR ) {
         // Termination was interrupted by a signal, can be restarted.
+        return ERROR_INTERRUPT;
+      } else {
+        // Note: above should trap specifics, but if fall through then return
+        // a socket error  
+        return ERROR_SOCKET;
       }    
     }
   }
 
   _open = false;
+  return ERROR_NONE;
 }
 
 //-----------------------------------------------------------------------------
 // TODO: determine level of detail for return value, i.e. bool or enum
-bool connection_c::read( std::string& msg ) {
+connection_c::error_e connection_c::read( std::string& msg ) {
   // sanity checks
   assert( _open );
 
@@ -192,40 +228,57 @@ bool connection_c::read( std::string& msg ) {
     if( bytes == -1 ) {
       if( errno == EAGAIN ) {
         // non-blocking mode was requested and no messages available
+        return ERROR_EMPTY;
       } else if( errno == ENOTSUP ) {
         // zmq_recv is not supported by this socket type
+        return ERROR_MODE;
       } else if( errno == EFSM ) {
         // zmq_recv operation cannot be performed as socket not in correct state
+        return ERROR_STATE;
       } else if( errno == ETERM ) {
         // zeromq context associated with socket was terminated
+        return ERROR_CONTEXT;
       } else if( errno == ENOTSOCK ) {
         // The socket was invalid
+        return ERROR_SOCKET;
       } else if( errno == EINTR ) {
         // The operation was interrupted by delivery of a signal
+        return ERROR_INTERRUPT;
+      } else {
+        // Note: above should trap specifics, but if fall through then return
+        // a socket error  
+        return ERROR_SOCKET;
       }
-      return false;
     }
     if( zmq_getsockopt( _socket, ZMQ_RCVMORE, &more, &sz ) == -1 ) {
       if( errno == EINVAL ) {
         // The requested option is unknown, or option_len or option_value is
         // invalid, or the size of the buffer is insufficient
+        return ERROR_OPTION;
       } else if( errno == ETERM ) {
         // zeromq context associated with socket was terminated
+        return ERROR_CONTEXT;
       } else if( errno == ENOTSOCK ) {
         // The socket was invalid
+        return ERROR_SOCKET;
       } else if( errno == EINTR ) {
         // The operation was interrupted by delivery of a signal
+        return ERROR_INTERRUPT;
+      } else {
+        // Note: above should trap specifics, but if fall through then return
+        // a socket error  
+        return ERROR_SOCKET;
       }
     }
     if( more && bytes ) msg.append( buffer, bytes );
   } while( more );
 
-  return true;
+  return ERROR_NONE;
 }
 
 //-----------------------------------------------------------------------------
 // TODO: determine level of detail for return value, i.e. bool or enum
-bool connection_c::write( const std::string& msg ) {
+connection_c::error_e connection_c::write( const std::string& msg ) {
   // sanity checks
   assert( _open );
 
@@ -251,23 +304,32 @@ bool connection_c::write( const std::string& msg ) {
       // errno is set, can check it and adjust method to return enum error
       if( errno == EAGAIN ) {
         // non-blocking mode was requested and message cannot be sent now
+        return ERROR_STATE;
       } else if( errno == ENOTSUP ) {
         // zmq_send is not supported by this socket type
+        return ERROR_MODE;
       } else if( errno == EFSM ) {
-        // zmq_sned operation cannot be performed as socket not in correct state
+        // zmq_send operation cannot be performed as socket not in correct state
+        return ERROR_STATE;
       } else if( errno == ETERM ) {
         // zeromq context associated with socket was terminated
+        return ERROR_CONTEXT;
       } else if( errno == ENOTSOCK ) {
         // The socket was invalid
+        return ERROR_SOCKET;
       } else if( errno == EINTR ) {
         // The operation was interrupted by delivery of a signal
+        return ERROR_INTERRUPT;
 /*
       } else if( errno == ECANTROUTE ) {
         // Message cannot be routed to the destination as peer either dead or
         // disconnected
 */
+      } else {
+        // Note: above should trap specifics, but if fall through then return
+        // a socket error  
+        return ERROR_SOCKET;
       }
-      return false;
     }
   }
   // Transmit a tiny notification that the message has been entirely sent
@@ -276,27 +338,36 @@ bool connection_c::write( const std::string& msg ) {
     // errno is set, can check it and adjust method to return enum error
     if( errno == EAGAIN ) {
       // non-blocking mode was requested and message cannot be sent now
+      return ERROR_STATE;
     } else if( errno == ENOTSUP ) {
       // zmq_send is not supported by this socket type
+      return ERROR_MODE;
     } else if( errno == EFSM ) {
-      // zmq_sned operation cannot be performed as socket not in correct state
+      // zmq_send operation cannot be performed as socket not in correct state
+      return ERROR_STATE;
     } else if( errno == ETERM ) {
       // zeromq context associated with socket was terminated
+      return ERROR_CONTEXT;
     } else if( errno == ENOTSOCK ) {
       // The socket was invalid
+      return ERROR_SOCKET;
     } else if( errno == EINTR ) {
       // The operation was interrupted by delivery of a signal
+      return ERROR_INTERRUPT;
 /*
     } else if( errno == ECANTROUTE ) {
       // Message cannot be routed to the destination as peer either dead or
       // disconnected
 */
+    } else {
+      // Note: above should trap specifics, but if fall through then return
+      // a socket error  
+      return ERROR_SOCKET;
     }
-    return false;
   }
   
   // otherwise success
-  return true;
+  return ERROR_NONE;
 }
 
 //-----------------------------------------------------------------------------

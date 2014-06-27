@@ -45,6 +45,14 @@ public:
 
   enum error_e {
     ERROR_NONE = 0,
+    ERROR_CONTEXT,
+    ERROR_SOCKET,
+    ERROR_LIMIT,
+    ERROR_ADDRESS,
+    ERROR_EMPTY,
+    ERROR_MODE,
+    ERROR_STATE,
+    ERROR_OPTION,
     ERROR_INTERRUPT
   };
 
@@ -72,22 +80,26 @@ public:
   virtual ~connection_c( void );
 
   /// Opens the connection.
-  /// @return returns true if the connection was successfully opened; otherwise
-  ///         returns false.
-  bool open( void );
+  /// @return returns ERROR_NONE if the connection was successfully opened;
+  /// otherwise returns enumerated error.
+  error_e open( void );
 
   /// Closes the connection.
-  void close( void );
+  /// @return returns ERROR_NONE if the connection was successfully closed;
+  /// otherwise returns enumerated error.
+  error_e close( void );
 
   /// Blocking read from the connection.
   /// @param msg the string read from the connection on success.
-  /// @return returns true if the read was successful; otherwise returns false.
-  bool read( std::string& msg );
+  /// @return returns ERROR_NONE if the read was successful; otherwise returns 
+  /// enumerated error.
+  error_e read( std::string& msg );
 
   /// Non-blocking write to the connection. 
   /// @param msg the string to write to the connection.
-  /// @return returns true if the write was successful; otherwise returns false.
-  bool write( const std::string& msg );
+  /// @return returns ERROR_NONE if the read was successful; otherwise returns 
+  /// enumerated error.
+  error_e write( const std::string& msg );
 
   /// Only valid for a ROUTER, routes connections to workers via a dealer.
   void route( connection_c& dealer );

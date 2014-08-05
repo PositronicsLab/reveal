@@ -54,18 +54,12 @@ set( REVEAL_CORE_HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/trial.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/solution.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/model_solution.h
-#  ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/server_message.h
-#  ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/client_message.h
-#  ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/pendulum.h
 )
 
 # source files
 set( REVEAL_CORE_SOURCES 
   ${CMAKE_CURRENT_SOURCE_DIR}/src/transport_exchange.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/connection.cpp
-#  ${CMAKE_CURRENT_SOURCE_DIR}/src/server_message.cpp
-#  ${CMAKE_CURRENT_SOURCE_DIR}/src/client_message.cpp
-#  ${CMAKE_CURRENT_SOURCE_DIR}/src/pendulum.cpp
 )
 
 # additional include paths

@@ -10,7 +10,6 @@
 //-----------------------------------------------------------------------------
 
 #include <Reveal/database.h>
-#include <Reveal/pendulum.h>
 #include <Reveal/pointers.h>
 #include <Reveal/scenario.h>
 #include <Reveal/trial.h>
@@ -25,66 +24,7 @@ std::string expected_solution_doc = "model_solution";
 //-----------------------------------------------------------------------------
 
 boost::shared_ptr<Reveal::DB::database_c> db;
-/*
-//-----------------------------------------------------------------------------
-void insert_pendulum( void ) {
-  // generate the pendulum scenario entry
-  Reveal::Core::scenario_ptr scenario = Reveal::Core::scenario_ptr( new Reveal::Core::scenario_c() );
 
-  scenario->id = 3;
-  scenario->name = "pendulum";
-  scenario->description = "pendulum test case";
-  scenario->trials = 10;
-  scenario->uris.push_back( "http://www.gazebosim.org/" );
-  scenario->uris.push_back( "http://www.osrffoundation.org/" );
-  db->insert( scenario );
-
-  // generate the entries for all pendulum trials 
-  for( unsigned i = 0; i < 10; i++ ) {
-    double q, dq, t, dt;
-    //pendulum_c::sample_trial( i, q, dq, t, dt ); 
-
-    Reveal::Core::trial_ptr trial = Reveal::Core::trial_ptr( new Reveal::Core::trial_c() );
-
-    trial->scenario_id = scenario->id;
-    trial->trial_id = i;
-    trial->t = t;
-    trial->dt = dt;
-    //trial->state.append_q( q );
-    //trial->state.append_dq( dq );
-    trial->state.append_q( 0.0 );
-    trial->state.append_dq( 0.0 );
-    // TODO: add controls
-    db->insert( trial );
-  }
-
-  // generate the entries for all pendulum expected solutions 
-  //pendulum_c pendulum( EXPERIMENTAL_PENDULUM_L );
-
-  for( unsigned i = 0; i < 10; i++ ) {
-    std::vector<double> x, epsilon_q, epsilon_dq;
-    double q, dq, ti, dt, tf;
-    //pendulum_c::sample_trial( i, q, dq, ti, dt );     
-
-    //x.push_back( q );
-    //x.push_back( dq );
-    tf = ti + dt;
-    //boost::numeric::odeint::integrate_adaptive( stepper_type(), pendulum, x, ti, tf, dt );
-
-    Reveal::Core::model_solution_ptr solution = Reveal::Core::model_solution_ptr( new Reveal::Core::model_solution_c() );
-
-    solution->scenario_id = scenario->id;
-    solution->trial_id = i;
-    solution->t = tf;
-    solution->state.append_q( 0.0 );
-    solution->state.append_dq( 0.0 );
-    //solution->epsilon.append_q( PENDULUM_VALIDATION_EPSILON );
-    //solution->epsilon.append_dq( PENDULUM_VALIDATION_EPSILON );
-    db->insert( solution );
-  }
-
-}
-*/
 //-----------------------------------------------------------------------------
 void insert_test1( void ) {
   // generate the scenario entry

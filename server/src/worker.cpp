@@ -6,16 +6,12 @@
 #include <sstream>
 
 #include <Reveal/transport_exchange.h>
-//#include <Reveal/server_message.h>
-//#include <Reveal/client_message.h>
 #include <Reveal/pointers.h>
 #include <Reveal/digest.h>
 #include <Reveal/scenario.h>
 #include <Reveal/trial.h>
 #include <Reveal/solution.h>
 #include <Reveal/model_solution.h>
-
-#include <Reveal/pendulum.h>
 
 #include <Reveal/database.h>
 

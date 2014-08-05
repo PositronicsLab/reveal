@@ -28,7 +28,14 @@ set( REVEAL_CLIENT_LIBRARIES
 # add the include paths
 include_directories( ${REVEAL_CLIENT_INCLUDE_DIRS} )
 
+set( REVEAL_CLIENT_INCLUDE_DIR
+  ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
 # build the executables
 
 # build the tests
 add_subdirectory( test )
+
+set( REVEAL_CLIENT_INCLUDE_DIR ${REVEAL_CLIENT_INCLUDE_DIR} PARENT_SCOPE )
+set( REVEAL_CLIENT_SOURCES ${REVEAL_CLIENT_SOURCES} PARENT_SCOPE )

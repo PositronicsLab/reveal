@@ -28,9 +28,12 @@ set( REVEAL_CORE_LIBRARIES )
 set( REVEAL_DB_INCLUDE_DIR )
 set( REVEAL_DB_LIBRARY )
 set( REVEAL_DB_LIBRARIES )
+set( REVEAL_CLIENT_INCLUDE_DIR )
+set( REVEAL_CLIENT_SOURCES )
 
 add_subdirectory( core )
 add_subdirectory( db )
 add_subdirectory( server )
 add_subdirectory( client )
+add_subdirectory( scenarios )
 

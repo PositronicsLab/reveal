@@ -31,8 +31,8 @@ message Scenario {
 message Trial {
   required uint32 scenario_id = 1;
   required uint32 trial_id = 2;
-  optional uint32 t = 3;
-  optional uint32 dt = 4;
+  optional double t = 3;
+  optional double dt = 4;
   optional State state = 5;
   optional Control control = 6;
 }
@@ -41,7 +41,7 @@ message Trial {
 message Solution {
   required uint32 scenario_id = 1;
   required uint32 trial_id = 2;
-  optional uint32 t = 3;
+  optional double t = 3;
   optional State state = 5;
 }
 

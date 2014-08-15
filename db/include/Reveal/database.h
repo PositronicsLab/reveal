@@ -10,6 +10,8 @@
 //#include <string>
 
 #include <Reveal/pointers.h>
+#include <Reveal/analysis.h>
+#include <Reveal/analyzer.h>
 
 //-----------------------------------------------------------------------------
 
@@ -64,10 +66,12 @@ public:
   error_e query( Reveal::Core::trial_ptr& trial, int scenario_id, int trial_id );
 
   error_e insert( Reveal::Core::solution_ptr solution );
-  error_e query( Reveal::Core::solution_ptr& solution, int scenario_id, int trial_id );
+  error_e query( Reveal::Core::solution_ptr& solution, Reveal::Core::solution_c::type_e type, int scenario_id, int trial_id );
 
-  error_e insert( Reveal::Core::model_solution_ptr solution );
-  error_e query( Reveal::Core::model_solution_ptr& solution, int scenario_id, int trial_id );
+  error_e insert( Reveal::Core::analyzer_ptr analyzer );
+  error_e query( Reveal::Core::analyzer_ptr& analyzer, int scenario_id );
+  error_e query( Reveal::Core::solution_set_ptr& solution_set, int scenario_id, int session_id );
+  error_e insert( Reveal::Core::analysis_ptr analysis );
 };
 
 //-----------------------------------------------------------------------------

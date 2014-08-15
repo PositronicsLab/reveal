@@ -17,6 +17,7 @@ connection_c::connection_c( void ) {
   _open = false;
   _context = NULL;
   _socket = NULL;
+  _id = "";
 }
 
 //-----------------------------------------------------------------------------
@@ -26,6 +27,7 @@ connection_c::connection_c( const unsigned& port ) {
   _port = port;
   _context = NULL;
   _socket = NULL;
+  _id = "";
 }
 
 //-----------------------------------------------------------------------------
@@ -35,8 +37,8 @@ connection_c::connection_c( const connection_c::role_e& role, void* context ) {
   _open = false;
   _context = context;
   _socket = NULL;
+  _id = "";
 }
-
 
 //-----------------------------------------------------------------------------
 connection_c::connection_c( const std::string& host, const unsigned& port ) {
@@ -46,6 +48,17 @@ connection_c::connection_c( const std::string& host, const unsigned& port ) {
   _port = port;
   _context = NULL;
   _socket = NULL;
+  _id = "";
+}
+
+//-----------------------------------------------------------------------------
+connection_c::connection_c( const connection_c::role_e& role, void* context, std::string id ) {
+  assert( role == connection_c::IPC_SERVER || role == connection_c::IPC_CLIENT );
+  _role = role;
+  _open = false;
+  _context = context;
+  _socket = NULL;
+  _id = id;
 }
 
 //-----------------------------------------------------------------------------
@@ -79,6 +92,10 @@ connection_c::error_e connection_c::open( void ) {
     _socket = zmq_socket( _context, ZMQ_DEALER );
   } else if( _role == WORKER ) {
     _socket = zmq_socket( _context, ZMQ_REP );
+  } else if( _role == IPC_SERVER ) {
+    _socket = zmq_socket( _context, ZMQ_PAIR );
+  } else if( _role == IPC_CLIENT ) {
+    _socket = zmq_socket( _context, ZMQ_PAIR );
   } else {
     // Note: sanity checks should guarantee never getting here.
     return ERROR_SOCKET;
@@ -105,7 +122,7 @@ connection_c::error_e connection_c::open( void ) {
     }
   }
 
-  if( _role == CLIENT || _role == WORKER ) {  
+  if( _role == CLIENT || _role == WORKER || _role == IPC_CLIENT ) {  
     // if client or worker, connect to the socket
     if( zmq_connect( _socket, connection_string().c_str() ) == -1 ) {
       if( errno == EINVAL ) {
@@ -132,7 +149,7 @@ connection_c::error_e connection_c::open( void ) {
         return ERROR_SOCKET;
       }
     }
-  } else if( _role == ROUTER || _role == DEALER ) {  
+  } else if( _role == ROUTER || _role == DEALER || _role == IPC_SERVER ) {  
     // if router or dealer, bind to the socket
     if( zmq_bind( _socket, connection_string().c_str() ) == -1 ) {
       if( errno == EINVAL ) {
@@ -392,6 +409,8 @@ std::string connection_c::connection_string( void ) {
     ss << "tcp://*:" << _port;
   } else if( _role == DEALER || _role == WORKER ) {
     ss << "inproc://workers";
+  } else if( _role == IPC_SERVER || _role == IPC_CLIENT ) {
+    ss << "inproc://" << _id;
   }
 
   return ss.str();

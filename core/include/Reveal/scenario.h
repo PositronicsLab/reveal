@@ -57,18 +57,20 @@ public:
     return trial;
   }
 
-  solution_ptr get_solution( trial_ptr trial, double t ) {
+  solution_ptr get_solution( Reveal::Core::solution_c::type_e type, trial_ptr trial, double t ) {
     assert( trial->scenario_id == id );
     assert( trial->trial_id < trials );
 
-    solution_ptr solution = solution_ptr( new solution_c() );
+    // TODO : temporary change of adding type into solution constructor.
+    solution_ptr solution = solution_ptr( new solution_c( type ) );
+    // !!
+
     solution->scenario_id = id;
     solution->trial_id = trial->trial_id;
     solution->t = t;
 
     return solution;
   }
-
 };
 
 //-----------------------------------------------------------------------------

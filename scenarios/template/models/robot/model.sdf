@@ -1,0 +1,54 @@
+<?xml version="1.0" ?>
+<sdf version="1.4">
+  <model name="robot">
+    <link name="body">
+      <pose>0 0 0 0 0 0</pose>
+
+      <!-- Inertial Properties -->
+      <inertial>
+        <pose>0 0 0 0 0 0</pose>
+        <inertia>
+          <ixx>0.16667</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.16667</iyy>
+          <iyz>0</iyz>
+          <izz>0.16667</izz>
+        </inertia>
+        <mass>1.0</mass>
+      </inertial>
+
+      <!-- Collision Mesh -->
+      <collision name="body_col">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>1.0 1.0 1.0</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <!-- Visible Mesh -->
+      <visual name="body_vis">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>1.0 1.0 1.0</size>
+          </box>
+        </geometry>
+        <material>
+          <script>
+            <uri>file://media/materials/scripts/gazebo.material</uri>
+            <name>Gazebo/Blue</name>
+          </script>
+        </material>
+      </visual>
+
+    </link>
+
+<!--
+    <plugin name='robot-controller' filename='librobot-controller.so'>
+    </plugin>
+-->
+  </model>
+</sdf>

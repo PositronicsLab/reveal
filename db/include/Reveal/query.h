@@ -28,9 +28,10 @@ public:
   void trial( int scenario_id, int trial_id );
   //void solution( int scenario_id );
   void solution( int scenario_id, int trial_id );
-  //void model_solution( int scenario_id );
   void model_solution( int scenario_id, int trial_id );
 
+  void analyzer( int scenario_id );
+  void solution_set( int scenario_id, int session_id );
 };
 
 //-----------------------------------------------------------------------------

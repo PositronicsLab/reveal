@@ -8,7 +8,6 @@
 #include <Reveal/scenario.h>
 #include <Reveal/trial.h>
 #include <Reveal/solution.h>
-#include <Reveal/model_solution.h>
 
 #include <Reveal/query.h>
 //#include <Reveal/dataset.h>
@@ -46,8 +45,8 @@ int main( int argc, char* argv[] ) {
   }
 
   for( unsigned i = 0; i < scenarioptr->trials; i++ ) {
-    Reveal::Core::model_solution_ptr solutionptr;
-    db.query( solutionptr, scenarioptr->name, i );
+    Reveal::Core::solution_ptr solutionptr;
+    db.query( solutionptr, Reveal::Core::solution_c::MODEL, scenarioptr->name, i );
     solutionptr->print();
   }
 

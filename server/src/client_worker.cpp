@@ -1,4 +1,4 @@
-#include <Reveal/worker.h>
+#include <Reveal/client_worker.h>
 
 #include <stdio.h>
 #include <assert.h>
@@ -11,9 +11,10 @@
 #include <Reveal/scenario.h>
 #include <Reveal/trial.h>
 #include <Reveal/solution.h>
-#include <Reveal/model_solution.h>
 
 #include <Reveal/database.h>
+
+#include <Reveal/analytics/worker.h>
 
 //-----------------------------------------------------------------------------
 
@@ -114,6 +115,8 @@ void worker_c::work( void ) {
 
 //-----------------------------------------------------------------------------
 worker_c::error_e worker_c::service_digest_request( void ) {
+  printf( "digest requested\n" );
+
   Reveal::Core::transport_exchange_c exchange;
   Reveal::Core::digest_ptr digest;
   std::string reply;
@@ -151,6 +154,8 @@ worker_c::error_e worker_c::service_digest_request( void ) {
 
 //-----------------------------------------------------------------------------
 worker_c::error_e worker_c::service_scenario_request( int scenario_id ) {
+  printf( "scenario requested\n" );
+
   Reveal::Core::transport_exchange_c exchange;
   Reveal::Core::scenario_ptr scenario;
   std::string reply;
@@ -199,6 +204,8 @@ worker_c::error_e worker_c::service_scenario_request( int scenario_id ) {
 
 //-----------------------------------------------------------------------------
 worker_c::error_e worker_c::service_trial_request( int scenario_id, int trial_id ) {
+  printf( "trial requested\n" );
+
   Reveal::Core::transport_exchange_c exchange;
   Reveal::Core::trial_ptr trial;
   std::string reply;
@@ -248,6 +255,8 @@ worker_c::error_e worker_c::service_trial_request( int scenario_id, int trial_id
 
 //-----------------------------------------------------------------------------
 worker_c::error_e worker_c::service_solution_submission( Reveal::Core::solution_ptr solution ) {
+  printf( "solution submitted\n" );
+
   Reveal::Core::transport_exchange_c exchange;
   std::string reply;
 
@@ -271,8 +280,10 @@ worker_c::error_e worker_c::service_solution_submission( Reveal::Core::solution_
   Reveal::DB::database_c::error_e db_error = _db->insert( solution );
 
   // - Analytics -
-  Reveal::Core::model_solution_ptr model_solution;
-  _db->query( model_solution, solution->scenario_id, solution->trial_id );
+
+  Reveal::Core::solution_ptr model;
+  _db->query( model, Reveal::Core::solution_c::MODEL, solution->scenario_id, solution->trial_id );
+
 
   //if( fabs(server_solution->state.q(0) - client_solution->state.q(0)) < server_solution->epsilon.q(0) && fabs(server_solution->state.dq(0) - client_solution->state.dq(0)) < server_solution->epsilon.dq(0) ) {
 
@@ -282,6 +293,31 @@ worker_c::error_e worker_c::service_solution_submission( Reveal::Core::solution_
 //      printf( "Client failed pendulum trial[%d]: server(q[%f],dq[%f]:Eq[%f],Edq[%f]), client(q[%f],dq[%f])\n", client_solution->trial_id, server_solution->state.q(0), server_solution->state.dq(0), server_solution->epsilon.q(0), server_solution->epsilon.dq(0), client_solution->state.q(0), client_solution->state.dq(0) );
 //    }
   //}
+
+
+  // A little unsophisticated and won't handle non-conforming scenarios but 
+  // for an initial development, this is the best approach
+  // If the trial is the 'last' trial, run analytics.
+
+  int session_id = 0;
+  int scenario_id = solution->scenario_id;
+
+  if( solution->trial_id == 9 ) {
+    printf( "here\n" );
+
+    Reveal::Core::analysis_ptr       analysis;
+    Reveal::Core::solution_set_ptr   solution_set;
+
+    // need a temporary (for this mode only) contructor for passing database and
+    // the scenario data in
+    Reveal::Analytics::worker_c analytics_worker( _db, scenario_id, session_id );
+
+    analytics_worker.query();
+    analytics_worker.load();
+    analytics_worker.analyze();
+    //analytics_worker.insert();
+
+  }
 
   return ERROR_NONE;
 }

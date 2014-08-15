@@ -64,9 +64,20 @@ void query_c::model_solution( unsigned scenario_id ) {
   _query = QUERY( "scenario_id" << scenario_id );
 }
 */
+/*
 //-----------------------------------------------------------------------------
 void query_c::model_solution( int scenario_id, int trial_id ) {
   _query = QUERY( "scenario_id" << scenario_id << "trial_id" << trial_id );
+}
+*/
+//-----------------------------------------------------------------------------
+void query_c::analyzer( int scenario_id ) {
+  _query = QUERY( "scenario_id" << scenario_id );
+}
+
+//-----------------------------------------------------------------------------
+void query_c::solution_set( int scenario_id, int session_id ) {
+  _query = QUERY( "scenario_id" << scenario_id << "session_id" << session_id );
 }
 
 //-----------------------------------------------------------------------------

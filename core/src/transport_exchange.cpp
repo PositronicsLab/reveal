@@ -406,7 +406,7 @@ transport_exchange_c::error_e transport_exchange_c::parse( const std::string& me
       // read out the solution
       if( !proto.has_solution() ) return ERROR_PARSE;
 
-      _solution = solution_ptr( new solution_c() );
+      _solution = solution_ptr( new solution_c( Reveal::Core::solution_c::CLIENT ) );
 
       _solution->scenario_id = proto.solution().scenario_id();
       _solution->trial_id = proto.solution().trial_id();

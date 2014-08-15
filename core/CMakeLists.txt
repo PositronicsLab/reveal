@@ -53,7 +53,10 @@ set( REVEAL_CORE_HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/scenario.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/trial.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/solution.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/model_solution.h
+#  ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/model_solution.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/solution_set.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/analyzer.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/analysis.h
 )
 
 # source files

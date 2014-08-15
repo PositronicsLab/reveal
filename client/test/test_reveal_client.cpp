@@ -62,7 +62,7 @@ int main( int argc, char* argv[] ) {
     double tf = ti + dt;
 
     // build a solution
-    solution = scenario->get_solution( trial, tf );
+    solution = scenario->get_solution( Reveal::Core::solution_c::CLIENT, trial, tf );
 
     // finish building the solution by inserting the state data
     solution->state.append_q( 0.0 );

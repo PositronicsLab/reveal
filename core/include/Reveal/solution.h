@@ -24,14 +24,21 @@ namespace Core {
 
 class solution_c {
 public:
-  solution_c( void ) {}
+  enum type_e {
+    MODEL,
+    CLIENT
+  };  
+
+  solution_c( type_e type ) { this->type = type; }
   virtual ~solution_c( void ) {}
 
   unsigned scenario_id;
   unsigned trial_id;
-  // user identifier
   double t;
   state_c state;
+  // session identifier
+
+  type_e type;
 
   void print( void ) {
     printf( "scenario_id[%u]", scenario_id );

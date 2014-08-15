@@ -13,13 +13,12 @@
 #include <Reveal/pointers.h>
 #include <Reveal/scenario.h>
 #include <Reveal/trial.h>
-#include <Reveal/model_solution.h>
 
 //-----------------------------------------------------------------------------
 
 std::string scenario_doc = "scenario";
 std::string trial_doc = "trial";
-std::string expected_solution_doc = "model_solution";
+std::string expected_solution_doc = "model";
 
 //-----------------------------------------------------------------------------
 
@@ -79,7 +78,7 @@ void insert_test1( void ) {
 
     tf = ti + dt;
 
-    Reveal::Core::model_solution_ptr solution = Reveal::Core::model_solution_ptr( new Reveal::Core::model_solution_c() );
+    Reveal::Core::solution_ptr solution = Reveal::Core::solution_ptr( new Reveal::Core::solution_c( Reveal::Core::solution_c::MODEL ) );
 
     solution->scenario_id = scenario_id;
     solution->trial_id = i;
@@ -146,7 +145,7 @@ void insert_test2( void ) {
 
     tf = ti + dt;
 
-    Reveal::Core::model_solution_ptr solution = Reveal::Core::model_solution_ptr( new Reveal::Core::model_solution_c() );
+    Reveal::Core::solution_ptr solution = Reveal::Core::solution_ptr( new Reveal::Core::solution_c( Reveal::Core::solution_c::MODEL ) );
 
     solution->scenario_id = scenario_id;
     solution->trial_id = i;
@@ -155,7 +154,6 @@ void insert_test2( void ) {
     solution->state.append_dq( dq );
     db->insert( solution );
   }
-
 }
 
 //-----------------------------------------------------------------------------

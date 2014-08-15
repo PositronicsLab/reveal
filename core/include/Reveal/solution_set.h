@@ -3,8 +3,8 @@ James R Taylor:jrt@gwu.edu
 
 -----------------------------------------------------------------------------*/
 
-#ifndef _REVEAL_CORE_MODEL_SOLUTION_H_
-#define _REVEAL_CORE_MODEL_SOLUTION_H_
+#ifndef _REVEAL_CORE_SOLUTION_SET_H_
+#define _REVEAL_CORE_SOLUTION_SET_H_
 
 //-----------------------------------------------------------------------------
 
@@ -22,16 +22,35 @@ namespace Core {
 
 //-----------------------------------------------------------------------------
 
-class model_solution_c {
+class solution_set_c {
 public:
-  model_solution_c( void ) {}
-  virtual ~model_solution_c( void ) {}
+  solution_set_c( void ) {}
+  virtual ~solution_set_c( void ) {}
 
+  Reveal::Core::scenario_ptr 	            scenario;  // scenario data
+  std::vector< Reveal::Core::trial_ptr >    trials;    // set of trials
+  std::vector< Reveal::Core::solution_ptr > solutions; // set of solutions
+  std::vector< Reveal::Core::solution_ptr > models;    // set of model solutions
+
+  void add_trial( Reveal::Core::trial_ptr trial ) {
+    trials.push_back( trial );
+  }
+  
+  void add_solution( Reveal::Core::solution_ptr solution ) {
+    solutions.push_back( solution );
+  }
+  
+  void add_model( Reveal::Core::solution_ptr model ) {
+    models.push_back( model );
+  }
+  
+
+/*
   unsigned scenario_id;
   unsigned trial_id;
+  // user identifier
   double t;
   state_c state;
-  //state_c epsilon;
 
   void print( void ) {
     printf( "scenario_id[%u]", scenario_id );
@@ -53,25 +72,8 @@ public:
     }
     printf( "] " );
     printf( "]" );
-/*
-    printf( ", epsilon[" );
-    printf( " q[" );
-    for( unsigned i = 0; i < epsilon.size_q(); i++ ) {
-      if( i > 0 ) printf( ", " );
-      printf( "%f", epsilon.q(i) );
-    }
-    printf( "]" );
-    printf( ", dq[" );
-    for( unsigned i = 0; i < epsilon.size_dq(); i++ ) {
-      if( i > 0 ) printf( ", " );
-      printf( "%f", epsilon.dq(i) );
-    }
-    printf( "] " );
-    printf( "]" );
-*/
-    printf( "\n" );
   }
- 
+ */
 };
 
 //-----------------------------------------------------------------------------
@@ -84,4 +86,4 @@ public:
 
 //-----------------------------------------------------------------------------
 
-#endif // _REVEAL_CORE_MODEL_SOLUTION_H_
+#endif // _REVEAL_CORE_SOLUTION_SET_H_

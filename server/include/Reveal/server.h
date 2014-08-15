@@ -13,7 +13,7 @@ James R Taylor:jrt@gwu.edu
 #include <pthread.h>
 
 #include <Reveal/connection.h>
-#include <Reveal/worker.h>
+#include <Reveal/client_worker.h>
 
 //-----------------------------------------------------------------------------
 
@@ -26,7 +26,7 @@ namespace Server {
 //-----------------------------------------------------------------------------
 
 #define MAX_CLIENT_WORKERS 4
-#define MAX_ANALYTIC_WORKERS 4
+//#define MAX_ANALYTIC_WORKERS 4
 
 //-----------------------------------------------------------------------------
 

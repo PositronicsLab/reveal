@@ -8,5 +8,8 @@ SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR})
 #SET(LIBRARY_OUTPUT_PATH ${EXECUTABLE_OUTPUT_PATH})
 #SET(EXECUTABLE_OUTPUT_PATH ${EXECUTABLE_OUTPUT_PATH})
 
-#add_subdirectory( src )
 add_subdirectory( pendulum )
+add_subdirectory( block-grasp )
+#add_subdirectory( egg-grasp )
+#add_subdirectory( weasel-ball )
+

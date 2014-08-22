@@ -1,18 +1,24 @@
 <?xml version="1.0" ?>
 <sdf version="1.4">
   <model name="robot">
+    <link name="root">
+      <pose>0 0 1.0 0 0 0</pose>
+    </link>
     <link name="gripper_l">
-      <pose>0 -0.5 0 0 0 0</pose>
+      <!-- multi-block pose -->
+      <!-- <pose>0 -0.6 1.0 0 0 0</pose> -->
+      <!-- one-block pose -->
+      <pose>0 -0.1 1.0 0 0 0</pose>
       <gravity>0</gravity>
       <inertial>
         <pose>0 0 0 0 0 0</pose>
         <inertia>
-          <ixx>0.0016667</ixx>
+          <ixx>6.667</ixx>
           <ixy>0</ixy>
           <ixz>0</ixz>
-          <iyy>0.0016667</iyy>
+          <iyy>6.667</iyy>
           <iyz>0</iyz>
-          <izz>0.0016667</izz>
+          <izz>6.667</izz>
         </inertia>
         <mass>1.0</mass>
       </inertial>
@@ -23,6 +29,17 @@
             <size>0.1 0.1 0.1</size>
           </box>
         </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>10.0</mu>
+              <mu2>10.0</mu2>
+              <fdir1>0 0 0</fdir1>
+              <slip1>0.0</slip1>
+              <slip2>0.0</slip2>
+            </ode>
+          </friction>
+        </surface>
       </collision>
       <visual name="gripper_l_vis">
         <pose>0 0 0 0 0 0</pose>
@@ -39,18 +56,22 @@
         </material>
       </visual>
     </link>
+
     <link name="gripper_r">
-      <pose>0 0.5 0 0 0 0</pose>
+      <!-- multi-block pose -->
+      <!-- <pose>0 -0.6 1.0 0 0 0</pose> -->
+      <!-- one-block pose -->
+      <pose>0 0.1 1.0 0 0 0</pose>
       <gravity>0</gravity>
       <inertial>
         <pose>0 0 0 0 0 0</pose>
         <inertia>
-          <ixx>0.0016667</ixx>
+          <ixx>6.667</ixx>
           <ixy>0</ixy>
           <ixz>0</ixz>
-          <iyy>0.0016667</iyy>
+          <iyy>6.667</iyy>
           <iyz>0</iyz>
-          <izz>0.0016667</izz>
+          <izz>6.667</izz>
         </inertia>
         <mass>1.0</mass>
       </inertial>
@@ -61,6 +82,17 @@
             <size>0.1 0.1 0.1</size>
           </box>
         </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>10.0</mu>
+              <mu2>10.0</mu2>
+              <fdir1>0 0 0</fdir1>
+              <slip1>0.0</slip1>
+              <slip2>0.0</slip2>
+            </ode>
+          </friction>
+        </surface>
       </collision>
       <visual name="gripper_r_vis">
         <pose>0 0 0 0 0 0</pose>
@@ -78,8 +110,41 @@
       </visual>
     </link>
 
-    <joint name="actuator" type="prismatic"> 
-      <parent>gripper_l</parent>
+    <joint name="fixed" type="revolute">
+      <parent>world</parent>
+      <child>root</child>
+      <pose>0 0 0 0 0 0</pose>
+      <axis> 
+        <xyz>0 0 1</xyz>
+        <limit>
+          <upper>0</upper>
+          <lower>0</lower>
+        </limit>
+        <dynamics>
+          <damping>1.0</damping>
+        </dynamics>
+      </axis>
+      <physics>
+        <ode>
+          <cfm_damping>1</cfm_damping>
+        </ode>
+      </physics>
+    </joint> 
+ 
+    <joint name="actuator_l" type="prismatic"> 
+      <parent>root</parent>
+      <child>gripper_l</child>
+      <axis>
+        <dynamics>
+          <damping>0.0</damping>
+          <friction>0.0</friction>
+        </dynamics>
+        <xyz>0 1 0</xyz>
+      </axis>
+    </joint>
+
+    <joint name="actuator_r" type="prismatic"> 
+      <parent>root</parent>
       <child>gripper_r</child>
       <axis>
         <dynamics>

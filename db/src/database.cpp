@@ -368,6 +368,19 @@ database_c::error_e database_c::insert( Reveal::Core::analyzer_ptr analyzer ) {
 //-----------------------------------------------------------------------------
 database_c::error_e database_c::insert( Reveal::Core::analysis_ptr analysis ) {
 
+// TODO : Add session data
+
+  mongo::BSONObjBuilder bob_analysis;
+/*
+  bob_analysis.append( "scenario_id", analysis->scenario_id );
+  bob_analysis.append( "filename", analysis->filename );
+  bob_analysis.append( "type", (int) analysis->type );
+
+  mongo::BSONObj analysis_query = bob_analysis.obj();
+  
+  insert( "analysis", analysis_query );  
+*/
+
   return ERROR_NONE;
 }
 

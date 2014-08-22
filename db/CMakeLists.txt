@@ -10,6 +10,7 @@ project( Reveal_DB )
 set( REVEAL_DB_HEADERS 
   ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/query.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/database.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/session.h
 )
 
 # source files

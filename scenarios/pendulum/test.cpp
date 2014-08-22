@@ -10,12 +10,13 @@
 //-----------------------------------------------------------------------------
 
 #include "pendulum.h"
+#include <stdio.h>
 
 //-----------------------------------------------------------------------------
 int main( void ) {
   pendulum_c pendulum( EXPERIMENTAL_PENDULUM_L );
   state_type x( 2 );
-  double t, dt, tf;
+  double t, dt;
 #if defined( ODEINT_V1 )
   stepper_type stepper;
   stepper.adjust_size( x );
@@ -27,7 +28,7 @@ int main( void ) {
 #if defined( ODEINT_V1 )
     stepper.do_step( pendulum, x, t, dt );
 #elif defined( ODEINT_V2 )
-    tf = t + dt;
+    double tf = t + dt;
     boost::numeric::odeint::integrate_adaptive( stepper_type(), pendulum, x, t, tf, dt );
 #endif
 

@@ -11,6 +11,7 @@ James R Taylor:jrt@gwu.edu
 #include <vector>
 
 #include <Reveal/state.h>
+#include <stdio.h>
 
 //-----------------------------------------------------------------------------
 

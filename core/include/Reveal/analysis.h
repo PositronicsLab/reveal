@@ -8,6 +8,7 @@
 #include <Reveal/scenario.h>
 
 #include <boost/shared_ptr.hpp>
+#include <vector>
 
 //-----------------------------------------------------------------------------
 
@@ -27,6 +28,10 @@ class analysis_c {
 public:
   analysis_c( void ) { }
   virtual ~analysis_c( void ) { }
+
+  // TODO : add session data
+
+  std::vector<double> data;
 
 //  Reveal::Core::scenario_c 	scenario;
 //  Reveal::Core::trial_c 	trial;             // set of trials

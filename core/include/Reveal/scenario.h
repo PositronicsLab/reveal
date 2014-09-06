@@ -1,7 +1,10 @@
-/*-----------------------------------------------------------------------------
-James R Taylor:jrt@gwu.edu
+/*------------------------------------------------------------------------------
+author: James R Taylor (jrt@gwu.edu)
 
------------------------------------------------------------------------------*/
+scenario.h defines the scenario_c data-structure that contains scenario data.
+A scenario is the priniciple set of data required to interact between client
+and server
+------------------------------------------------------------------------------*/
 
 #ifndef _REVEAL_CORE_SCENARIO_H_
 #define _REVEAL_CORE_SCENARIO_H_

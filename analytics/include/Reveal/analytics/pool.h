@@ -1,3 +1,13 @@
+/*------------------------------------------------------------------------------
+author: James R Taylor (jrt@gwu.edu)
+
+pool.h defines the pool_c thread pool for analyzers distributed to remote 
+processors.  
+
+Note: this class is for future expansion as prototype development was decided
+to roll analytics processing directly into server client worker threads
+------------------------------------------------------------------------------*/
+
 #ifndef _REVEAL_ANALYTICS_POOL_H_
 #define _REVEAL_ANALYTICS_POOL_H_
 

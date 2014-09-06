@@ -1,3 +1,9 @@
+/*------------------------------------------------------------------------------
+author: James R Taylor (jrt@gwu.edu)
+
+types.h defines various types necessary for interfacing with analytics
+------------------------------------------------------------------------------*/
+
 #ifndef _REVEAL_ANALYTICS_TYPES_H_
 #define _REVEAL_ANALYTICS_TYPES_H_
 

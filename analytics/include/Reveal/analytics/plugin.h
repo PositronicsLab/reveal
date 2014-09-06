@@ -1,3 +1,11 @@
+/*------------------------------------------------------------------------------
+author: James R Taylor (jrt@gwu.edu)
+
+plugin.h defines the plugin_c implementation of the module_c interface.  Plugins
+use the DL library to dynamically link analyzers implemented in c++ and compiled
+into shared objects 
+------------------------------------------------------------------------------*/
+
 #ifndef _REVEAL_ANALYTICS_PLUGIN_H_
 #define _REVEAL_ANALYTICS_PLUGIN_H_
 

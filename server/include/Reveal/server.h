@@ -1,7 +1,9 @@
-/*-----------------------------------------------------------------------------
-James R Taylor:jrt@gwu.edu
+/*------------------------------------------------------------------------------
+author: James R Taylor (jrt@gwu.edu)
 
------------------------------------------------------------------------------*/
+server.h defines the server_c interface.  A Reveal server implementation
+uses the server interface to handle client and database interactions
+------------------------------------------------------------------------------*/
 
 #ifndef _REVEAL_SERVER_SERVER_H_
 #define _REVEAL_SERVER_SERVER_H_

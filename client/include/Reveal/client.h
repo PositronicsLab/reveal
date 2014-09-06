@@ -1,7 +1,9 @@
-/*-----------------------------------------------------------------------------
-James R Taylor:jrt@gwu.edu
+/*------------------------------------------------------------------------------
+author: James R Taylor (jrt@gwu.edu)
 
------------------------------------------------------------------------------*/
+client.h defines the client_c API.  To implement a Reveal client, the client_c
+class is the only required interface into the system. 
+------------------------------------------------------------------------------*/
 
 #ifndef _REVEAL_CLIENT_CLIENT_H_
 #define _REVEAL_CLIENT_CLIENT_H_

@@ -1,3 +1,12 @@
+/*-----------------------------------------------------------------------------
+author: James R Taylor (jrt@gwu.edu)
+
+transport_exchange.h defines the transport_exchange_c builder that encapsulates
+and manages the exchange of Reveal data across the transport protocol.  The
+exchange parses serialized protocols into class instances and builds serialized
+protocols from class instances
+-----------------------------------------------------------------------------*/
+
 #ifndef _REVEAL_CORE_TRANSPORT_EXCHANGE_
 #define _REVEAL_CORE_TRANSPORT_EXCHANGE_
 

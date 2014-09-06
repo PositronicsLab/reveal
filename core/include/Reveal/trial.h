@@ -1,7 +1,11 @@
-/*-----------------------------------------------------------------------------
-James R Taylor:jrt@gwu.edu
+/*------------------------------------------------------------------------------
+author: James R Taylor (jrt@gwu.edu)
 
------------------------------------------------------------------------------*/
+trial.h defines the trial_c data-structure that contains data provided to a 
+client for a given scenario.  For a single scenario, there may be many trials.
+A client evaluates a given trial within a scenario and submits its solution
+to the server for analysis
+------------------------------------------------------------------------------*/
 
 #ifndef _REVEAL_CORE_TRIAL_H_
 #define _REVEAL_CORE_TRIAL_H_

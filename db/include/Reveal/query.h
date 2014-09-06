@@ -1,3 +1,11 @@
+/*------------------------------------------------------------------------------
+author: James R Taylor (jrt@gwu.edu)
+
+query.h defines the query_c adapter that encapsulates the mongo query interface
+A valid query into the mongo database should be defined through this interface
+to prevent the unauthorized access of the loosely structured database
+------------------------------------------------------------------------------*/
+
 #ifndef _REVEAL_DB_QUERY_H_
 #define _REVEAL_DB_QUERY_H_
 

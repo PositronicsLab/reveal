@@ -1,3 +1,10 @@
+/*------------------------------------------------------------------------------
+author: James R Taylor (jrt@gwu.edu)
+
+script.h defines the script_c interface for analyzers implemented using 
+uncompiled scripting interfaces
+------------------------------------------------------------------------------*/
+
 #ifndef _REVEAL_ANALYTICS_SCRIPT_H_
 #define _REVEAL_ANALYTICS_SCRIPT_H_
 

@@ -1,3 +1,10 @@
+/*------------------------------------------------------------------------------
+author: James R Taylor (jrt@gwu.edu)
+
+digest.h defines the digest_c data-structure that composes sets of scenario 
+data 
+------------------------------------------------------------------------------*/
+
 #ifndef _REVEAL_CORE_DIGEST_
 #define _REVEAL_CORE_DIGEST_
 

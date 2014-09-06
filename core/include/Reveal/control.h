@@ -1,7 +1,9 @@
-/*-----------------------------------------------------------------------------
-James R Taylor:jrt@gwu.edu
+/*------------------------------------------------------------------------------
+author: James R Taylor (jrt@gwu.edu)
 
------------------------------------------------------------------------------*/
+control.h defines the control_c data-structure that contains variable length 
+control data
+------------------------------------------------------------------------------*/
 
 #ifndef _REVEAL_CORE_CONTROL_H_
 #define _REVEAL_CORE_CONTROL_H_

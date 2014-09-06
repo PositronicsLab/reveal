@@ -1,7 +1,10 @@
-/*-----------------------------------------------------------------------------
-James R Taylor:jrt@gwu.edu
+/*------------------------------------------------------------------------------
+author: James R Taylor (jrt@gwu.edu)
 
------------------------------------------------------------------------------*/
+solution_set.h defines the solution_set_c data-structure that contains the set
+of data produced for all trials attempted by a client and the model solution
+for a given scenario. The solution_set is passed to the analyzer.
+------------------------------------------------------------------------------*/
 
 #ifndef _REVEAL_CORE_SOLUTION_SET_H_
 #define _REVEAL_CORE_SOLUTION_SET_H_

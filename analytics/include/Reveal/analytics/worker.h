@@ -1,3 +1,13 @@
+/*------------------------------------------------------------------------------
+author: James R Taylor (jrt@gwu.edu)
+
+worker.h defines the worker_c thread that handles execution of an analyzer on
+a given solution_set submitted by a client
+
+Note: analyze is currently directly called by a client worker rather than run
+as a separate thread.
+------------------------------------------------------------------------------*/
+
 #ifndef _REVEAL_ANALYTICS_WORKER_H_
 #define _REVEAL_ANALYTICS_WORKER_H_
 

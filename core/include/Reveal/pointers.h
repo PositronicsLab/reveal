@@ -1,3 +1,10 @@
+/*------------------------------------------------------------------------------
+author: James R Taylor (jrt@gwu.edu)
+
+pointer.h forward declares classes required across Reveal libraries and declares
+boost shared pointers for Reveal interfaces
+------------------------------------------------------------------------------*/
+
 #ifndef _REVEAL_CORE_POINTERS_H_
 #define _REVEAL_CORE_POINTERS_H_
 

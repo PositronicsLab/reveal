@@ -1,7 +1,9 @@
-/*-----------------------------------------------------------------------------
-James R Taylor:jrt@gwu.edu
+/*------------------------------------------------------------------------------
+author: James R Taylor (jrt@gwu.edu)
 
------------------------------------------------------------------------------*/
+state.h defines the state_c data-structure that contains the variable lenght 
+state component 0f a scenario  
+------------------------------------------------------------------------------*/
 
 #ifndef _REVEAL_CORE_STATE_H_
 #define _REVEAL_CORE_STATE_H_

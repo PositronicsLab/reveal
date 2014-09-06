@@ -1,7 +1,9 @@
-/*-----------------------------------------------------------------------------
-James R Taylor:jrt@gwu.edu
+/*------------------------------------------------------------------------------
+author: James R Taylor (jrt@gwu.edu)
 
------------------------------------------------------------------------------*/
+client_worker.h defines the worker_c thread that handles the client connections
+to the server
+------------------------------------------------------------------------------*/
 
 #ifndef _REVEAL_SERVER_WORKER_H_
 #define _REVEAL_SERVER_WORKER_H_

@@ -1,7 +1,9 @@
-/*-----------------------------------------------------------------------------
-James R Taylor:jrt@gwu.edu
+/*------------------------------------------------------------------------------
+author: James R Taylor (jrt@gwu.edu)
 
------------------------------------------------------------------------------*/
+solution.h defines the solution_c data-structure that contains data produced by
+a client upon completion of a trial within a scenario
+------------------------------------------------------------------------------*/
 
 #ifndef _REVEAL_CORE_SOLUTION_H_
 #define _REVEAL_CORE_SOLUTION_H_

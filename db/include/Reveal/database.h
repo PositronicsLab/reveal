@@ -1,3 +1,11 @@
+/*------------------------------------------------------------------------------
+author: James R Taylor (jrt@gwu.edu)
+
+database.h defines the database_c adapter that encapsulates the mongo database
+driver.  All interactions with the mongo database are handled through this
+interface
+------------------------------------------------------------------------------*/
+
 #ifndef _REVEAL_DB_DATABASE_
 #define _REVEAL_DB_DATABASE_
 

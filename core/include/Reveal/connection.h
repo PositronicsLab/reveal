@@ -1,9 +1,9 @@
 /*-----------------------------------------------------------------------------
-James R Taylor:jrt@gwu.edu
+author: James R Taylor (jrt@gwu.edu)
 
-Encapsulates 0MQ (ZeroMQ) and manages the underlying connection using a general
-device interface model.  The transport behavior adheres to the request-reply 
-message paradigm.
+connection.h defines the connection_c adapter that encapsulates 0MQ (ZeroMQ) 
+and manages the underlying connection using a general device interface model.  
+The transport behavior adheres to the request-reply message paradigm.
 -----------------------------------------------------------------------------*/
 
 #ifndef _REVEAL_CORE_CONNECTION_H_

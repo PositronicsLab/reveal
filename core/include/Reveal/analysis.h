@@ -1,4 +1,11 @@
-#ifndef _REVEAL_CORE_ANALYSIS_H_
+/*------------------------------------------------------------------------------
+author: James R Taylor (jrt@gwu.edu)
+
+analysis.h defines the analysis_c data-structure that contains data produced by
+running analytics on a client's evaluation of a scenario
+------------------------------------------------------------------------------*/
+
+#ifndef _REVEAL_CORE_ANALYSIS_H_11
 #define _REVEAL_CORE_ANALYSIS_H_
 
 //-----------------------------------------------------------------------------

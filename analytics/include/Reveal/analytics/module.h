@@ -1,3 +1,10 @@
+/*------------------------------------------------------------------------------
+author: James R Taylor (jrt@gwu.edu)
+
+module.h defines the module_c abstract interface that facilitates the dynamic 
+binding of the various specialized analyzers required for a given scenario
+------------------------------------------------------------------------------*/
+
 #ifndef _REVEAL_ANALYTICS_MODULE_H_
 #define _REVEAL_ANALYTICS_MODULE_H_
 

@@ -1,3 +1,10 @@
+/*------------------------------------------------------------------------------
+author: James R Taylor (jrt@gwu.edu)
+
+analyzer.h defines the analyzer_c interface that defines custom analytic
+programs to run on a specified scenario
+------------------------------------------------------------------------------*/
+
 #ifndef _REVEAL_CORE_ANALYZER_H_
 #define _REVEAL_CORE_ANALYZER_H_
 

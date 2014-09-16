@@ -44,11 +44,13 @@ public:
 
   static void* worker_thread( void* context );
 
+
 private:
   Reveal::Core::connection_c _clientconnection;
   Reveal::Core::connection_c _workerconnection;
 
   std::vector<pthread_t> workers;
+
 };
 
 //-----------------------------------------------------------------------------

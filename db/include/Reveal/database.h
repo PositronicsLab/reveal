@@ -62,9 +62,21 @@ public:
 private:
   bool insert( const std::string& table, const mongo::BSONObj& query );
   bool fetch( std::auto_ptr<mongo::DBClientCursor>& cursor, const std::string& table, mongo::Query query );
+  bool update( const std::string& table, const mongo::BSONObj& query, const mongo::BSONObj& where );
+  //bool update( const std::string& table, const mongo::BSON& query, const mongo::BSON& where );
 
 public:
+  error_e insert( Reveal::Core::user_ptr user );
+  error_e query( Reveal::Core::user_ptr& user, const std::string& user_id );
+
+  error_e insert( Reveal::Core::session_ptr session );
+  error_e query( Reveal::Core::session_ptr& session, std::string session_id );
+
   error_e query( Reveal::Core::digest_ptr& digest );
+
+  error_e insert( Reveal::Core::experiment_ptr experiment );
+  error_e query( Reveal::Core::experiment_ptr& experiment, std::string experiment_id );
+  error_e update_increment_trial_index( Reveal::Core::experiment_ptr experiment );
 
   error_e insert( Reveal::Core::scenario_ptr scenario );
   error_e query( Reveal::Core::scenario_ptr& scenario, const std::string& name );

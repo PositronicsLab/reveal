@@ -1,21 +1,16 @@
 /*------------------------------------------------------------------------------
 author: James R Taylor (jrt@gwu.edu)
 
-analysis.h defines the analysis_c data-structure that contains data produced by
-running analytics on a client's evaluation of a scenario
+user.h defines the user_c data structure that maintains user specific 
+information for a given Reveal session
 ------------------------------------------------------------------------------*/
 
-#ifndef _REVEAL_CORE_ANALYSIS_H_
-#define _REVEAL_CORE_ANALYSIS_H_
+#ifndef _REVEAL_CORE_USER_H_
+#define _REVEAL_CORE_USER_H_
 
 //-----------------------------------------------------------------------------
 
-#include <Reveal/solution.h>
-#include <Reveal/trial.h>
-#include <Reveal/scenario.h>
-
-#include <boost/shared_ptr.hpp>
-#include <vector>
+#include <string>
 
 //-----------------------------------------------------------------------------
 
@@ -27,22 +22,13 @@ namespace Core {
 
 //-----------------------------------------------------------------------------
 
-class analysis_c;
-typedef boost::shared_ptr<Reveal::Core::analysis_c> analysis_ptr;
-//-----------------------------------------------------------------------------
-
-class analysis_c {
+class user_c {
 public:
-  analysis_c( void ) { }
-  virtual ~analysis_c( void ) { }
 
-  // TODO : add session data
+  user_c( void ) { }
+  virtual ~user_c( void ) { }
 
-  std::vector<double> data;
-
-//  Reveal::Core::scenario_c 	scenario;
-//  Reveal::Core::trial_c 	trial;             // set of trials
-//  Reveal::Core::solution_c 	solution;
+  std::string            id;
 };
 
 //-----------------------------------------------------------------------------
@@ -55,4 +41,4 @@ public:
 
 //-----------------------------------------------------------------------------
 
-#endif // _REVEAL_CORE_ANALYSIS_H_
+#endif // _REVEAL_CORE_USER_H_

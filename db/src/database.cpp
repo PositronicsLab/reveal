@@ -10,6 +10,10 @@
 #include <mongo/client/dbclient.h>
 
 #include <Reveal/query.h>
+
+#include <Reveal/user.h>
+#include <Reveal/session.h>
+#include <Reveal/experiment.h>
 #include <Reveal/digest.h>
 #include <Reveal/scenario.h>
 #include <Reveal/trial.h>
@@ -97,6 +101,177 @@ bool database_c::fetch( std::auto_ptr<mongo::DBClientCursor>& cursor, const std:
   cursor = _connection.query( document, query );
 
   return true;
+}
+
+//-----------------------------------------------------------------------------
+bool database_c::update( const std::string& table, const mongo::BSONObj& query, const mongo::BSONObj& where ) {
+  std::string document;
+
+  document = _dbname + "." + table;
+
+  _connection.update( document, where, query );
+
+  return true;
+}
+
+/*
+//-----------------------------------------------------------------------------
+bool database_c::update( const std::string& table, const mongo::BSON& query, const mongo::BSON& where ) {
+  std::string document;
+
+  document = _dbname + "." + table;
+
+  _connection.update( document, where, query );
+
+  return true;
+}
+*/
+//-----------------------------------------------------------------------------
+database_c::error_e database_c::insert( Reveal::Core::user_ptr user ) {
+  mongo::BSONObjBuilder bob_user;
+
+  bob_user.append( "user_id", user->id );
+
+  mongo::BSONObj user_query = bob_user.obj();
+
+  insert( "user", user_query );
+
+  return ERROR_NONE;
+}
+
+//-----------------------------------------------------------------------------
+database_c::error_e database_c::query( Reveal::Core::user_ptr& user, const std::string& user_id ) {
+  std::auto_ptr<mongo::DBClientCursor> cursor;
+  Reveal::DB::query_c query;
+
+  query.user( user_id );
+  fetch( cursor, "user", query() );
+
+  // if EMPTYSET returned, then user is not in the database
+  if( !cursor->more() ) return ERROR_EMPTYSET;
+
+  // TODO:add error handling
+  mongo::BSONObj record = cursor->next();
+
+  user = Reveal::Core::user_ptr( new Reveal::Core::user_c() );
+  user->id = record.getField( "user_id" ).String();
+  // TODO expand as needed
+
+  return ERROR_NONE;
+}
+
+//-----------------------------------------------------------------------------
+database_c::error_e database_c::insert( Reveal::Core::session_ptr session ) {
+  mongo::BSONObjBuilder bob_session;
+
+  bob_session.append( "session_id", session->session_id );
+  if( session->user_type == Reveal::Core::session_c::ANONYMOUS ) {
+    bob_session.append( "user_type", 0 );
+  } else {
+    bob_session.append( "user_type", 1 );
+    // may want sanity check that user_id is not empty here.
+    bob_session.append( "user_id", session->user_id );
+  }
+
+  mongo::BSONObj session_query = bob_session.obj();
+
+  insert( "session", session_query );
+
+  return ERROR_NONE;
+}
+
+//-----------------------------------------------------------------------------
+database_c::error_e database_c::query( Reveal::Core::session_ptr& session, std::string session_id ) {
+  std::auto_ptr<mongo::DBClientCursor> cursor;
+  Reveal::DB::query_c query;
+
+  query.session( session_id );
+  fetch( cursor, "session", query() );
+
+  // if EMPTYSET returned, then session is not in the database
+  if( !cursor->more() ) return ERROR_EMPTYSET;
+
+  // TODO:add error handling
+  mongo::BSONObj record = cursor->next();
+
+  session = Reveal::Core::session_ptr( new Reveal::Core::session_c() );
+
+  // TODO: TODO: TODO: determine best datatype for A) storage and B) passing
+
+  session->session_id = record.getField( "session_id" ).String();
+  int user_type = record.getField( "user_type" ).Int();
+  if( user_type == 0 ) {
+    session->user_type = Reveal::Core::session_c::ANONYMOUS;
+  } else {
+    session->user_type = Reveal::Core::session_c::IDENTIFIED;
+    session->user_id = record.getField( "user_id" ).String();
+  }
+ 
+  // TODO expand as needed
+
+  return ERROR_NONE;
+}
+
+//-----------------------------------------------------------------------------
+database_c::error_e database_c::insert( Reveal::Core::experiment_ptr experiment ) {
+
+  mongo::BSONObjBuilder bob_experiment;
+
+  bob_experiment.append( "experiment_id", experiment->experiment_id );
+  bob_experiment.append( "session_id", experiment->session_id );
+  bob_experiment.append( "scenario_id", experiment->scenario_id );
+  bob_experiment.append( "trials", experiment->number_of_trials );
+
+  // TODO: need a loop to serialize or a subdocument
+  //bob_experiment.append( "trial_prescription", experiment->trial_prescription );
+  bob_experiment.append( "current_trial_index", experiment->current_trial_index ); 
+
+  mongo::BSONObj experiment_query = bob_experiment.obj();
+
+  insert( "experiment", experiment_query );
+
+  return ERROR_NONE;
+}
+
+//-----------------------------------------------------------------------------
+database_c::error_e database_c::query( Reveal::Core::experiment_ptr& experiment, std::string experiment_id ) {
+  std::auto_ptr<mongo::DBClientCursor> cursor;
+  Reveal::DB::query_c query;
+
+  query.experiment( experiment_id );
+  fetch( cursor, "experiment", query() );
+
+  // if EMPTYSET returned, then session is not in the database
+  if( !cursor->more() ) return ERROR_EMPTYSET;
+
+  // TODO:add error handling
+  mongo::BSONObj record = cursor->next();
+
+  experiment = Reveal::Core::experiment_ptr( new Reveal::Core::experiment_c() );
+
+  // TODO: TODO: TODO: determine best datatype for A) storage and B) passing
+
+  experiment->experiment_id = record.getField( "experiment_id" ).String();
+  experiment->session_id = record.getField( "session_id" ).String();
+  experiment->scenario_id = record.getField( "scenario_id" ).Int();
+  experiment->number_of_trials = record.getField( "trials" ).Int();
+  // TODO : subdocument for trial prescription
+  experiment->current_trial_index = record.getField( "current_trial_index" ).Int();
+ 
+  // TODO expand as needed
+
+  return ERROR_NONE;
+}
+
+//-----------------------------------------------------------------------------
+database_c::error_e database_c::update_increment_trial_index( Reveal::Core::experiment_ptr experiment ) {
+
+  std::string document = _dbname + ".experiment";
+
+  _connection.update( document, BSON( "experiment_id" << experiment->experiment_id ), BSON( "$inc" << BSON( "current_trial_index" << 1 ) ) );
+  // Note: update is void return type.  Cannot know from interface if succeeded
+
+  return ERROR_NONE;
 }
 
 //-----------------------------------------------------------------------------

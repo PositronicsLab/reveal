@@ -29,16 +29,25 @@ public:
   mongo::Query operator()( void );
   void operator()( mongo::Query query );
 
+  void user( const std::string& user_id );
+
+  void session( std::string session_id );
+
   void digest( void );
+
+  void experiment( std::string experiment_id );
+
   void scenario( int scenario_id );
   void scenario( const std::string& name );
-  //void trial( int scenario_id );
+
   void trial( int scenario_id, int trial_id );
-  //void solution( int scenario_id );
+
   void solution( int scenario_id, int trial_id );
+
   void model_solution( int scenario_id, int trial_id );
 
   void analyzer( int scenario_id );
+
   void solution_set( int scenario_id, int session_id );
 };
 

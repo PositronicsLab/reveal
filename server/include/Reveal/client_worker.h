@@ -42,6 +42,14 @@ public:
   void terminate( void );
 
 private:
+  std::string generate_uuid( void );
+  error_e send_valid_handshake_response( Reveal::Core::authorization_ptr auth );
+  error_e send_invalid_handshake_response( Reveal::Core::authorization_ptr auth );
+
+
+  error_e authorize( Reveal::Core::authorization_ptr auth );
+  error_e service_failed_authorization( Reveal::Core::authorization_ptr auth );
+  error_e service_handshake_request( Reveal::Core::authorization_ptr auth );
 
   error_e service_digest_request( void );
   error_e service_scenario_request( int scenario_id );
@@ -52,6 +60,12 @@ private:
   boost::shared_ptr<Reveal::DB::database_c> _db;
   void* _context;
   Reveal::Core::connection_c _connection;
+
+  bool is_user_valid( Reveal::Core::authorization_ptr auth, Reveal::Core::user_ptr& user );
+  bool is_session_valid( Reveal::Core::authorization_ptr auth, Reveal::Core::session_ptr& session );
+  bool is_experiment_valid( Reveal::Core::authorization_ptr auth, Reveal::Core::experiment_ptr experiment_request, Reveal::Core::experiment_ptr& experiment_record );
+
+  bool create_session( Reveal::Core::authorization_ptr auth, Reveal::Core::session_ptr& session );
 };
 
 //-----------------------------------------------------------------------------

@@ -1,5 +1,6 @@
 //TCP/IP Network protocol messages for Reveal
 
+import "auth.proto";
 import "data.proto";
 
 package Reveal.Core.Messages.Net;
@@ -9,18 +10,20 @@ message Message {
   enum Type {
     UNDEFINED = 0;   // necessary? 
     ERROR = 1;      
-    DIGEST = 2;    
-    SCENARIO = 3;    
-    TRIAL = 4;      
-    SOLUTION = 5;   
+    HANDSHAKE = 2;
+    DIGEST = 3;    
+    SCENARIO = 4;    
+    TRIAL = 5;      
+    SOLUTION = 6;   
   }
 
   enum Error {
     ERROR_NONE = 0;
     ERROR_GENERAL = 1;
-    ERROR_BAD_RESPONSE = 2;
-    ERROR_BAD_SCENARIO = 3;
-    ERROR_BAD_TRIAL = 4;
+    ERROR_AUTHORIZATION = 2;
+    ERROR_BAD_RESPONSE = 3;
+    ERROR_BAD_SCENARIO = 4;
+    ERROR_BAD_TRIAL = 5;
   }
 
   enum Origin {
@@ -31,9 +34,8 @@ message Message {
   message Header {
     required Origin origin = 1;
     required Type type = 2;
-    optional Error error = 3;
-    
-    //required uint32 session_id = 4 [default = 0]; 
+    required Authorization authorization = 3; 
+    optional Error error = 4;
   }
 
   required Header header = 1;

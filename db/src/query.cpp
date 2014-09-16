@@ -1,6 +1,7 @@
 #include <Reveal/query.h>
 
-#include <assert.h>
+#include <assert.h>\
+#include <sstream>
 
 //-----------------------------------------------------------------------------
 namespace Reveal {
@@ -26,6 +27,26 @@ mongo::Query query_c::operator()( void ) {
 //-----------------------------------------------------------------------------
 void query_c::operator()( mongo::Query query ) {
   _query = query;
+}
+
+//-----------------------------------------------------------------------------
+void query_c::user( const std::string& user_id ) {
+  _query = QUERY( "user_id" << user_id );
+}
+
+//-----------------------------------------------------------------------------
+void query_c::session( std::string session_id ) {
+/*
+  std::stringstream ss;
+  ss << session_id;
+  std::string key = ss.str();
+*/
+  _query = QUERY( "session_id" << session_id );
+}
+
+//-----------------------------------------------------------------------------
+void query_c::experiment( std::string experiment_id ) {
+  _query = QUERY( "experiment_id" << experiment_id );
 }
 
 //-----------------------------------------------------------------------------

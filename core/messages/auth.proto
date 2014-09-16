@@ -1,0 +1,36 @@
+//TCP/IP Authorization protocol messages for Reveal
+
+import "data.proto";
+
+package Reveal.Core.Messages.Net;
+
+message Authorization {
+
+  enum Type {
+    ANONYMOUS = 0;
+    IDENTIFIED = 1;
+    SESSION = 2; 
+  }
+
+  enum Error {
+    ERROR_NONE = 0;
+    ERROR_INVALID_IDENTITY = 1;
+    ERROR_INVALID_SESSION = 2;
+  }
+
+  message Credential {
+    required string id = 1;
+    // TODO: add password and encryption on field.  TBD field type
+  }
+
+  message Session {
+    optional string id = 1;
+  }
+
+  required Type type = 1;
+  optional Credential user = 2;
+  optional Session session = 3;
+  optional Error error = 4;
+    
+}
+

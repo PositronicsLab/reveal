@@ -3,6 +3,9 @@
 
 #include <vector>
 
+#include <Reveal/pointers.h>
+#include <Reveal/authorization.h>
+#include <Reveal/user.h>
 #include <Reveal/client.h>
 #include <Reveal/digest.h>
 #include <Reveal/scenario.h>
@@ -10,17 +13,49 @@
 #include <Reveal/solution.h>
 
 //-----------------------------------------------------------------------------
+Reveal::Client::client_c client;
 
+//-----------------------------------------------------------------------------
+void test_identified_user( void ) {
+  Reveal::Core::user_ptr user = Reveal::Core::user_ptr(new Reveal::Core::user_c() );
+  user->id = "alice";
+
+  Reveal::Core::authorization_ptr auth = Reveal::Core::authorization_ptr(new Reveal::Core::authorization_c() );
+  auth->set_type( Reveal::Core::authorization_c::TYPE_IDENTIFIED );
+  auth->set_user( user->id );
+
+  Reveal::Client::client_c::error_e client_error;
+  client_error = client.request_authorization( auth );
+  if( client_error != Reveal::Client::client_c::ERROR_NONE ) {
+    printf( "ERROR: client failed to gain identified authorization\n" );
+  } else {
+    printf( "SUCCESS: identified client gained authorization: session[%s]\n", auth->get_session().c_str() );
+  }
+}
+
+//-----------------------------------------------------------------------------
+void test_anonymous_user( void ) {
+
+  Reveal::Core::authorization_ptr auth = Reveal::Core::authorization_ptr(new Reveal::Core::authorization_c() );
+  auth->set_type( Reveal::Core::authorization_c::TYPE_ANONYMOUS );
+
+  Reveal::Client::client_c::error_e client_error;
+  client_error = client.request_authorization( auth );
+  if( client_error != Reveal::Client::client_c::ERROR_NONE ) {
+    printf( "ERROR: client failed to gain anonymous authorization\n" );
+  } else {
+    printf( "SUCCESS: anonymous client gained authorization: session[%s]\n", auth->get_session().c_str() );
+  }
+}
+
+//-----------------------------------------------------------------------------
 int main( int argc, char* argv[] ) {
-  Reveal::Client::client_c client;
 
   if( !client.init() ) {
     printf( "ERROR: Client failed to initialize properly.\nExiting.\n" );
     client.terminate();
     exit(1);
   }
-
-  //client.go();
 
   Reveal::Core::digest_ptr digest;
   Reveal::Core::scenario_ptr scenario;
@@ -32,7 +67,10 @@ int main( int argc, char* argv[] ) {
     client.terminate();
     exit(1);
   }
-  
+
+  test_identified_user();
+  test_anonymous_user();
+/*
   // request the digest
   client.request_digest( digest );
   // TODO: error handling
@@ -72,6 +110,7 @@ int main( int argc, char* argv[] ) {
     // submit the solution to the server
     client.submit_solution( solution );
   }
+*/
 
   client.terminate();
 

@@ -4,7 +4,11 @@
 #include <assert.h>
 #include <iostream>
 #include <sstream>
+#include <uuid/uuid.h>
 
+#include <Reveal/authorization.h>
+#include <Reveal/user.h>
+#include <Reveal/session.h>
 #include <Reveal/transport_exchange.h>
 #include <Reveal/pointers.h>
 #include <Reveal/digest.h>
@@ -79,38 +83,283 @@ void worker_c::work( void ) {
     }
 
     // determine the course of action
-    if( exchange.get_type() == Reveal::Core::transport_exchange_c::TYPE_DIGEST ) {
-      service_digest_request( );
+    if( exchange.get_type() == Reveal::Core::transport_exchange_c::TYPE_HANDSHAKE ) {
+      Reveal::Core::authorization_ptr auth = exchange.get_authorization();
+
+      service_handshake_request( auth );
       // TODO : error checking
 
+    } else if( exchange.get_type() == Reveal::Core::transport_exchange_c::TYPE_DIGEST ) {
+      Reveal::Core::authorization_ptr auth = exchange.get_authorization();
+      if( authorize( auth ) == ERROR_NONE ) {
+        service_digest_request( );
+        // TODO : error checking
+      } else {
+        service_failed_authorization( auth );
+      }
     } else if( exchange.get_type() == Reveal::Core::transport_exchange_c::TYPE_SCENARIO ) {
-      // extract the scenario from the client message
-      Reveal::Core::scenario_ptr scenario = exchange.get_scenario();
+      Reveal::Core::authorization_ptr auth = exchange.get_authorization();
+      if( authorize( auth ) == ERROR_NONE ) {
+        // extract the scenario from the client message
+        Reveal::Core::scenario_ptr scenario = exchange.get_scenario();
 
-      //printf( "client_scenario:\n" );
-      //scenario->print();
+        //printf( "client_scenario:\n" );
+        //scenario->print();
 
-      service_scenario_request( scenario->id );
-      // TODO : error checking
-
+        service_scenario_request( scenario->id );
+        // TODO : error checking
+      } else {
+        service_failed_authorization( auth );
+      }
     } else if( exchange.get_type() == Reveal::Core::transport_exchange_c::TYPE_TRIAL ) {
-      // extract the trial from the client message
-      Reveal::Core::trial_ptr trial = exchange.get_trial();      
+      Reveal::Core::authorization_ptr auth = exchange.get_authorization();
+      if( authorize( auth ) == ERROR_NONE ) {
+        // extract the trial from the client message
+        Reveal::Core::trial_ptr trial = exchange.get_trial();      
 
-      service_trial_request( trial->scenario_id, trial->trial_id );
-      // TODO : error checking
-
+        service_trial_request( trial->scenario_id, trial->trial_id );
+        // TODO : error checking
+      } else {
+        service_failed_authorization( auth );
+      }
     } else if( exchange.get_type() == Reveal::Core::transport_exchange_c::TYPE_SOLUTION ) {
-      // create a solution receipt
-      Reveal::Core::solution_ptr solution = exchange.get_solution();
+      Reveal::Core::authorization_ptr auth = exchange.get_authorization();
+      if( authorize( auth ) == ERROR_NONE ) {
+        // create a solution receipt
+        Reveal::Core::solution_ptr solution = exchange.get_solution();
 
-      service_solution_submission( solution );
-      // TODO : error checking
-
+        service_solution_submission( solution );
+        // TODO : error checking
+      } else {
+        service_failed_authorization( auth );
+      }
     } else if( exchange.get_type() == Reveal::Core::transport_exchange_c::TYPE_ERROR ) {
 
     } 
   }
+}
+
+//-----------------------------------------------------------------------------
+std::string worker_c::generate_uuid( void ) {
+  uuid_t uuid;
+  uuid_generate( uuid );
+
+  char buffer[16];
+  sprintf( buffer, "%X", uuid );
+  
+  std::string result = buffer;
+  return result;
+}
+
+//-----------------------------------------------------------------------------
+bool worker_c::is_user_valid( Reveal::Core::authorization_ptr auth, Reveal::Core::user_ptr& user ) {
+  Reveal::DB::database_c::error_e db_error;
+
+  // query the database for user data
+  db_error = _db->query( user, auth->get_user() );
+
+  // Superficial validation: if the user exists in the DB, it is valid
+  if( db_error == Reveal::DB::database_c::ERROR_NONE )
+    return true;
+
+  // NOTE: deep validation will require much more considerate attention
+
+  // TODO : DEEP VALIDATION
+
+  return false;
+}
+
+//-----------------------------------------------------------------------------
+bool worker_c::is_session_valid( Reveal::Core::authorization_ptr auth, Reveal::Core::session_ptr& session ) {
+  Reveal::DB::database_c::error_e db_error;
+
+  // query the database for user data
+  db_error = _db->query( session, auth->get_session() );
+
+  // Superficial validation: if the session exists in the DB, it is valid
+  if( db_error == Reveal::DB::database_c::ERROR_NONE )
+    return true;
+
+  // NOTE: deep validation will require much more considerate attention
+  // For example we want to avoid session hijack and we want to invalidate
+  // session that have expired.
+
+  // TODO : DEEP VALIDATION
+
+  return false;
+}
+
+//-----------------------------------------------------------------------------
+bool worker_c::is_experiment_valid( Reveal::Core::authorization_ptr auth, Reveal::Core::experiment_ptr experiment_request, Reveal::Core::experiment_ptr& experiment_record ) {
+  Reveal::DB::database_c::error_e db_error;
+/*
+  // query the database for user data
+  db_error = _db->query( experiment_record, auth->get_session(), experiment_request->experiment_id, experiment_request->scenario_id );
+
+  // Superficial validation: if the session exists in the DB, it is valid
+  if( db_error == Reveal::DB::database_c::ERROR_NONE )
+    return true;
+*/
+  return false;
+}
+
+//-----------------------------------------------------------------------------
+bool worker_c::create_session( Reveal::Core::authorization_ptr auth, Reveal::Core::session_ptr& session ) {
+  Reveal::DB::database_c::error_e db_error;
+
+  session = Reveal::Core::session_ptr( new Reveal::Core::session_c() );
+  session->session_id = generate_uuid();
+
+  Reveal::Core::authorization_c::type_e type = auth->get_type();
+  if( type == Reveal::Core::authorization_c::TYPE_IDENTIFIED ) {
+    session->user_type = Reveal::Core::session_c::IDENTIFIED;
+    session->user_id = auth->get_user();
+  } else if( type == Reveal::Core::authorization_c::TYPE_ANONYMOUS ) {
+    session->user_type = Reveal::Core::session_c::ANONYMOUS;
+    session->user_id = "";
+  }
+
+  db_error = _db->insert( session );
+  if( db_error == Reveal::DB::database_c::ERROR_NONE )
+    return true;
+
+  return false;
+}
+
+//-----------------------------------------------------------------------------
+worker_c::error_e worker_c::authorize( Reveal::Core::authorization_ptr auth ) {
+  return ERROR_NONE;
+}
+
+//-----------------------------------------------------------------------------
+worker_c::error_e worker_c::service_failed_authorization( Reveal::Core::authorization_ptr auth ) {
+
+  Reveal::Core::transport_exchange_c exchange;
+  std::string reply;
+
+  // construct the digest message
+  exchange.set_origin( Reveal::Core::transport_exchange_c::ORIGIN_SERVER );
+  exchange.set_type( Reveal::Core::transport_exchange_c::TYPE_ERROR );
+  exchange.set_error( Reveal::Core::transport_exchange_c::ERROR_AUTHORIZATION );
+  // TODO: what about the type of authorization error??
+  // TODO: what about attaching the authorization pointer
+
+  // serialize the message for transmission
+  exchange.build( reply );
+
+  // broadcast the reply message back to the client
+  if( _connection.write( reply ) != Reveal::Core::connection_c::ERROR_NONE ) {
+    // TODO: trap and recover
+  }
+  
+  return ERROR_NONE;
+}
+
+//-----------------------------------------------------------------------------
+worker_c::error_e worker_c::send_valid_handshake_response( Reveal::Core::authorization_ptr auth ) { 
+  Reveal::Core::transport_exchange_c exchange;
+  std::string reply;
+
+  // construct the return handshake message
+  exchange.set_origin( Reveal::Core::transport_exchange_c::ORIGIN_SERVER );
+  exchange.set_type( Reveal::Core::transport_exchange_c::TYPE_HANDSHAKE );
+  exchange.set_authorization( auth );
+
+  // serialize the message for transmission
+  exchange.build( reply );
+
+  // broadcast the reply message back to the client
+  if( _connection.write( reply ) != Reveal::Core::connection_c::ERROR_NONE ) {
+    // TODO: trap and recover
+  }
+  return ERROR_NONE;
+}
+
+//-----------------------------------------------------------------------------
+worker_c::error_e worker_c::send_invalid_handshake_response( Reveal::Core::authorization_ptr auth ) { 
+  Reveal::Core::transport_exchange_c exchange;
+  std::string reply;
+
+  // construct the return handshake message
+  exchange.set_origin( Reveal::Core::transport_exchange_c::ORIGIN_SERVER );
+  exchange.set_type( Reveal::Core::transport_exchange_c::TYPE_HANDSHAKE );
+  // TODO: set error
+  exchange.set_authorization( auth );
+
+  // serialize the message for transmission
+  exchange.build( reply );
+
+  // broadcast the reply message back to the client
+  if( _connection.write( reply ) != Reveal::Core::connection_c::ERROR_NONE ) {
+    // TODO: trap and recover
+  }
+  return ERROR_NONE;
+}
+
+//-----------------------------------------------------------------------------
+worker_c::error_e worker_c::service_handshake_request( Reveal::Core::authorization_ptr auth ) { 
+
+  //Reveal::Core::transport_exchange_c exchange;
+  //std::string reply;
+  Reveal::Core::session_ptr session;
+  Reveal::DB::database_c::error_e db_error;
+  Reveal::Core::user_ptr user;
+ // Reveal::Core::authorization_ptr auth_reply;
+
+  Reveal::Core::authorization_c::type_e type = auth->get_type();
+  if( type == Reveal::Core::authorization_c::TYPE_IDENTIFIED ) {
+    // validate user credentials
+
+    printf( "client requested identified authorization: id[%s]\n", auth->get_user().c_str() );
+
+    // TODO : Logging
+
+    if( is_user_valid( auth, user ) ) {
+      if( create_session( auth, session ) ) {
+        printf( "created session: " ); session->print();
+
+        auth->set_error( Reveal::Core::authorization_c::ERROR_NONE );
+        auth->set_user( user->id );
+        auth->set_type( Reveal::Core::authorization_c::TYPE_SESSION );
+        auth->set_session( session->session_id );
+
+        send_valid_handshake_response( auth );
+      } else {
+        // TODO : handle failed session insert into database
+
+      }
+    } else {
+      printf( "ERROR: failed to find %s in user table\n", auth->get_user().c_str() );
+
+      // failed query and failed authentication
+      auth->set_error( Reveal::Core::authorization_c::ERROR_INVALID_IDENTITY );
+
+      send_invalid_handshake_response( auth );
+    }
+  } else if( type == Reveal::Core::authorization_c::TYPE_ANONYMOUS ) {
+
+    printf( "client requested anonymous authorization\n" );
+
+    // TODO : Logging
+
+    if( create_session( auth, session ) ) {
+      printf( "created session: " ); session->print();
+
+      auth->set_type( Reveal::Core::authorization_c::TYPE_SESSION );
+      auth->set_session( session->session_id );
+
+      send_valid_handshake_response( auth );
+    } else {
+      // TODO : handle failed session insert into database
+    }
+  } else if( type == Reveal::Core::authorization_c::TYPE_SESSION ) {
+    // this should only occur if a session was disrupted to the point that 
+    // the client is trying to resume after being completely disconnected 
+    // from the server.  This is the most suspicious case though and 
+    // probably should be denied as it is possible to session hijack if allowed.
+  }
+
+  return ERROR_NONE;
 }
 
 //-----------------------------------------------------------------------------

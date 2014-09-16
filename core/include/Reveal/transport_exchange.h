@@ -42,6 +42,7 @@ public:
     ERROR_NONE = 0,
     ERROR_PARSE,
     ERROR_BUILD,
+    ERROR_AUTHORIZATION,
     ERROR_BAD_SCENARIO_REQUEST,
     ERROR_BAD_TRIAL_REQUEST,
     ERROR_BAD_SOLUTION_SUBMISSION
@@ -50,6 +51,7 @@ public:
   enum type_e {
     TYPE_UNDEFINED = 0,
     TYPE_ERROR,
+    TYPE_HANDSHAKE,
     TYPE_DIGEST,
     TYPE_SCENARIO,
     TYPE_TRIAL,
@@ -66,6 +68,9 @@ public:
 
   void set_origin( origin_e origin );
   origin_e get_origin( void );
+
+  void set_authorization( authorization_ptr authorization );
+  authorization_ptr get_authorization( void );
 
   void set_error( error_e error );
   error_e get_error( void );
@@ -93,6 +98,7 @@ private:
   type_e _type;
   error_e _error;
 
+  authorization_ptr _authorization;
   digest_ptr _digest;
   scenario_ptr _scenario;
   trial_ptr _trial;

@@ -4,6 +4,7 @@ project( Reveal_Server )
 
 #---------------Reveal Server---------------
 find_package( Pthread REQUIRED )
+find_package( uuid REQUIRED )
 
 # header files
 set( REVEAL_SERVER_HEADERS 
@@ -28,6 +29,7 @@ set( REVEAL_SERVER_INCLUDE_DIRS
 # any libraries
 set( REVEAL_SERVER_LIBRARIES
   ${PTHREAD_LIBRARIES}
+  ${UUID_LIBRARIES}
   ${REVEAL_CORE_LIBRARY}
   ${REVEAL_CORE_LIBRARIES}
   ${REVEAL_DB_LIBRARY}

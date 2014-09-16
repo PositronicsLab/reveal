@@ -8,6 +8,7 @@ find_package( Protobuf REQUIRED )
 # add any messages to be compiled here
 set( REVEAL_MESSAGES_PROTOS
   messages/data.proto
+  messages/auth.proto
   messages/net.proto
 )
 
@@ -45,12 +46,16 @@ find_package( ZeroMQ REQUIRED )
 # header files
 set( REVEAL_CORE_HEADERS 
   ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/pointers.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/user.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/session.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/authorization.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/transport_exchange.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/connection.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/state.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/control.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/digest.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/scenario.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/experiment.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/trial.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/solution.h
 #  ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/model_solution.h

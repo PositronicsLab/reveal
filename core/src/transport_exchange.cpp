@@ -1,5 +1,6 @@
 #include <Reveal/transport_exchange.h>
 
+#include <Reveal/authorization.h>
 #include <Reveal/digest.h>
 #include <Reveal/trial.h>
 #include <Reveal/solution.h>
@@ -38,6 +39,7 @@ void transport_exchange_c::reset( void ) {
   _type = TYPE_UNDEFINED;
   _error = ERROR_NONE;
 
+  _authorization = Reveal::Core::authorization_ptr();
   _digest = Reveal::Core::digest_ptr();
   _scenario = Reveal::Core::scenario_ptr();
   _trial = Reveal::Core::trial_ptr();
@@ -72,6 +74,21 @@ void transport_exchange_c::set_type( transport_exchange_c::type_e type ) {
 //----------------------------------------------------------------------------
 transport_exchange_c::type_e transport_exchange_c::get_type( void ) {
   return _type;
+}
+
+//----------------------------------------------------------------------------
+void transport_exchange_c::set_authorization( authorization_ptr authorization ) {
+  assert( authorization );
+
+  _authorization = authorization;
+}
+
+//----------------------------------------------------------------------------
+authorization_ptr transport_exchange_c::get_authorization( void ) {
+  assert( _origin != ORIGIN_UNDEFINED );
+  assert( _authorization );
+
+  return _authorization;
 }
 
 //----------------------------------------------------------------------------
@@ -148,9 +165,54 @@ transport_exchange_c::error_e transport_exchange_c::build( std::string& message 
 
   header = proto.mutable_header();
 
+  // - build the authorization header segment -
+  Messages::Net::Authorization* proto_authorization = header->mutable_authorization();
+
+  // map the authorization type
+  Reveal::Core::authorization_c::type_e auth_type = _authorization->get_type();
+  if( auth_type == Reveal::Core::authorization_c::TYPE_ANONYMOUS )
+    proto_authorization->set_type( Messages::Net::Authorization::ANONYMOUS );
+  else if( auth_type == Reveal::Core::authorization_c::TYPE_IDENTIFIED )
+    proto_authorization->set_type( Messages::Net::Authorization::IDENTIFIED );
+  else if( auth_type == Reveal::Core::authorization_c::TYPE_SESSION )
+    proto_authorization->set_type( Messages::Net::Authorization::SESSION );
+
+  // map any authorization error
+  Reveal::Core::authorization_c::error_e auth_error = _authorization->get_error();
+  switch( auth_error ) {
+  case Reveal::Core::authorization_c::ERROR_INVALID_SESSION:
+    proto_authorization->set_error( Messages::Net::Authorization::ERROR_INVALID_SESSION );
+    break;
+  case Reveal::Core::authorization_c::ERROR_INVALID_IDENTITY:
+    proto_authorization->set_error( Messages::Net::Authorization::ERROR_INVALID_IDENTITY );
+    break;
+  case Reveal::Core::authorization_c::ERROR_NONE:
+  default:
+    proto_authorization->set_error( Messages::Net::Authorization::ERROR_NONE );
+    break;
+  }
+
+  // map the user credentials
+  if( auth_type == Reveal::Core::authorization_c::TYPE_IDENTIFIED ) {
+    Messages::Net::Authorization::Credential* proto_user = proto_authorization->mutable_user();
+    proto_user->set_id( _authorization->get_user() );
+    // TODO: password when full authorization implemented
+    printf( "type id'd\n" );
+  }
+
+  // map the session
+  if( auth_type == Reveal::Core::authorization_c::TYPE_SESSION ) {
+    Messages::Net::Authorization::Session* proto_session = proto_authorization->mutable_session();
+    proto_session->set_id( _authorization->get_session() );
+    printf( "session: %s\n", _authorization->get_session().c_str() );
+  } 
+  
+  // - build the rest of the message -
   if( _origin == ORIGIN_SERVER ) {
     header->set_origin( Messages::Net::Message::SERVER );
-    if( _type == TYPE_ERROR ) {
+    if( _type == TYPE_HANDSHAKE ) {
+      header->set_type( Messages::Net::Message::HANDSHAKE );
+    } else if( _type == TYPE_ERROR ) {
       header->set_type( Messages::Net::Message::ERROR );
       // cross reference the correct error
       error_e error = get_error();      // accessed by method to use asserts
@@ -225,7 +287,9 @@ transport_exchange_c::error_e transport_exchange_c::build( std::string& message 
     }
   } else if( _origin == ORIGIN_CLIENT ) {
     header->set_origin( Messages::Net::Message::CLIENT );
-    if( _type == TYPE_ERROR ) {
+    if( _type == TYPE_HANDSHAKE ) {
+      header->set_type( Messages::Net::Message::HANDSHAKE );
+    } else if( _type == TYPE_ERROR ) {
 
     } else if( _type == TYPE_DIGEST ) {
       // digest request
@@ -295,6 +359,8 @@ transport_exchange_c::error_e transport_exchange_c::parse( const std::string& me
 
   if( proto.header().type() == Messages::Net::Message::ERROR ) {
     _type = TYPE_ERROR;
+  } else if( proto.header().type() == Messages::Net::Message::HANDSHAKE ) {
+    _type = TYPE_HANDSHAKE;
   } else if( proto.header().type() == Messages::Net::Message::DIGEST ) {
     _type = TYPE_DIGEST;
   } else if( proto.header().type() == Messages::Net::Message::SCENARIO ) {
@@ -321,7 +387,45 @@ transport_exchange_c::error_e transport_exchange_c::parse( const std::string& me
   if( _type != TYPE_ERROR ) {
     _error = ERROR_NONE;
   }
+  
+  // - parse authorization -
+  _authorization = Reveal::Core::authorization_ptr( new Reveal::Core::authorization_c() );
 
+  // parse authorization type
+  if( proto.header().authorization().type() == Messages::Net::Authorization::ANONYMOUS ) {
+    _authorization->set_type( Reveal::Core::authorization_c::TYPE_ANONYMOUS );
+  } else if( proto.header().authorization().type() == Messages::Net::Authorization::IDENTIFIED ) {
+    _authorization->set_type( Reveal::Core::authorization_c::TYPE_IDENTIFIED );
+  } else if( proto.header().authorization().type() == Messages::Net::Authorization::SESSION ) {
+    _authorization->set_type( Reveal::Core::authorization_c::TYPE_SESSION );
+  } 
+
+  // parse authorization error
+  if( proto.header().authorization().error() == Messages::Net::Authorization::ERROR_NONE ) {
+    _authorization->set_error( Reveal::Core::authorization_c::ERROR_NONE );
+  } else if( proto.header().authorization().error() == Messages::Net::Authorization::ERROR_INVALID_SESSION ) {
+    _authorization->set_error( Reveal::Core::authorization_c::ERROR_INVALID_SESSION );
+  } else if( proto.header().authorization().error() == Messages::Net::Authorization::ERROR_INVALID_IDENTITY ) {
+    _authorization->set_error( Reveal::Core::authorization_c::ERROR_INVALID_IDENTITY );
+  } 
+
+  // parse user credentials
+  if( _authorization->get_type() == Reveal::Core::authorization_c::TYPE_IDENTIFIED ) {
+    if( proto.header().authorization().has_user() ) {
+      _authorization->set_user( proto.header().authorization().user().id() );
+      // TODO: update when any password is implemented
+    } else {
+      // TODO: ERROR : malformed message on user identity
+    }
+  } else if( _authorization->get_type() == Reveal::Core::authorization_c::TYPE_SESSION ) {
+    if( proto.header().authorization().has_session() ) {
+      _authorization->set_session( proto.header().authorization().session().id() );
+    } else {
+      // TODO: ERROR : malformed message session identity
+    }
+  }
+
+  // - parse message body -
   if( _origin == ORIGIN_SERVER ) {
     if( _type == TYPE_ERROR ) {
       // cross reference errors

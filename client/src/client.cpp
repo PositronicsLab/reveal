@@ -58,6 +58,50 @@ client_c::error_e client_c::request_reply( const std::string& request, std::stri
 }
 
 //-----------------------------------------------------------------------------
+client_c::error_e client_c::request_authorization( Reveal::Core::authorization_ptr& auth ) {
+  std::string request;
+  std::string reply;
+
+  Reveal::Core::transport_exchange_c client_exchange;
+  Reveal::Core::transport_exchange_c server_exchange;
+  Reveal::Core::transport_exchange_c::error_e exchg_err;
+
+  // create a digest request
+  client_exchange.set_origin( Reveal::Core::transport_exchange_c::ORIGIN_CLIENT );
+  client_exchange.set_type( Reveal::Core::transport_exchange_c::TYPE_HANDSHAKE );
+  client_exchange.set_error( Reveal::Core::transport_exchange_c::ERROR_NONE );
+
+  client_exchange.set_authorization( auth );
+
+  // build the request message
+  exchg_err = client_exchange.build( request );
+  if( exchg_err != Reveal::Core::transport_exchange_c::ERROR_NONE ) {
+    return ERROR_EXCHANGE_BUILD;
+  }
+
+  // send the request message and wait for reply message
+  client_c::error_e com_err = request_reply( request, reply );
+  if( com_err != ERROR_NONE ) return com_err;
+
+  // parse the reply message
+  exchg_err = server_exchange.parse( reply );
+  if( exchg_err != Reveal::Core::transport_exchange_c::ERROR_NONE ) {
+    return ERROR_EXCHANGE_PARSE;
+  }
+
+  Reveal::Core::transport_exchange_c::error_e transport_error = server_exchange.get_error();
+  if( transport_error != Reveal::Core::transport_exchange_c::ERROR_NONE ) {
+    // The server sent a general error.  Suggest retrying the request.
+    return ERROR_EXCHANGE_RESPONSE;
+    // TODO : extend validation and error handling for any new cases that emerge
+  }
+
+  // extract the digest
+  auth = server_exchange.get_authorization();
+ 
+  return ERROR_NONE;
+}
+//-----------------------------------------------------------------------------
 client_c::error_e client_c::request_digest( Reveal::Core::digest_ptr& digest ) {
   std::string request;
   std::string reply;

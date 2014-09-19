@@ -13,6 +13,8 @@ as a separate thread.
 
 //-----------------------------------------------------------------------------
 
+#include <string>
+
 #include <Reveal/connection.h>
 #include <Reveal/database.h>
 
@@ -39,8 +41,8 @@ public:
 
 private:
   boost::shared_ptr<Reveal::DB::database_c> _db;
-  int                     _scenario_id; // likely temporary
-  int                     _session_id;  // likely temporary
+  std::string                     _scenario_id; // likely temporary
+  std::string                     _session_id;  // likely temporary
 
   Reveal::Core::analyzer_ptr                        _analyzer;
   boost::shared_ptr<Reveal::Analytics::module_c>    _module;
@@ -53,7 +55,7 @@ public:
 public:
 
   worker_c( void );
-  worker_c( boost::shared_ptr<Reveal::DB::database_c> db, int scenario_id, int session_id );
+  worker_c( boost::shared_ptr<Reveal::DB::database_c> db, const std::string& scenario_id, const std::string& session_id );
   virtual ~worker_c( void );
 
   error_e init( void );

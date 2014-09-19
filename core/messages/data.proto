@@ -18,18 +18,23 @@ message Digest {
   repeated Scenario scenario = 1;
 }
 
+message Experiment {
+  optional string experiment_id = 1;
+  optional string scenario_id = 2;
+  optional int32 trials = 3;
+}
+
 // A given scenario to evaluate
 message Scenario {
-  required int32 id = 1;
-  optional string name = 2 [default = ""];
-  optional string description = 3 [default = ""];
-  optional int32 trials = 4 [default = 0];
-  repeated string uri = 5;
+  required string id = 1;
+  optional string description = 2 [default = ""];
+  optional int32 trials = 3 [default = 0];
+  repeated string uri = 4;
 }
 
 // A single trial within a scenario
 message Trial {
-  required uint32 scenario_id = 1;
+  required string scenario_id = 1;
   required uint32 trial_id = 2;
   optional double t = 3;
   optional double dt = 4;
@@ -39,7 +44,7 @@ message Trial {
 
 // A single solution for a given trial within a scenario
 message Solution {
-  required uint32 scenario_id = 1;
+  required string scenario_id = 1;
   required uint32 trial_id = 2;
   optional double t = 3;
   optional State state = 5;

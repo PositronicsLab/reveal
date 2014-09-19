@@ -31,24 +31,24 @@ public:
 
   void user( const std::string& user_id );
 
-  void session( std::string session_id );
+  void session( const std::string& session_id );
 
   void digest( void );
 
-  void experiment( std::string experiment_id );
+  void experiment( const std::string& experiment_id );
 
-  void scenario( int scenario_id );
-  void scenario( const std::string& name );
+  //void scenario( int scenario_id );
+  void scenario( const std::string& scenario_id );
 
-  void trial( int scenario_id, int trial_id );
+  void trial( const std::string& scenario_id, int trial_id );
 
-  void solution( int scenario_id, int trial_id );
+  void solution( const std::string& scenario_id, int trial_id );
 
-  void model_solution( int scenario_id, int trial_id );
+  void model_solution( const std::string& scenario_id, int trial_id );
 
-  void analyzer( int scenario_id );
+  void analyzer( const std::string& scenario_id );
 
-  void solution_set( int scenario_id, int session_id );
+  void solution_set( const std::string& scenario_id, const std::string& session_id );
 };
 
 //-----------------------------------------------------------------------------

@@ -24,11 +24,9 @@ int main( void ) {
 
   Reveal::Core::scenario_ptr scenario = Reveal::Core::scenario_ptr( new Reveal::Core::scenario_c() );
 
-  int scenario_id = 3;
   int trials = 10;
 
-  scenario->id = scenario_id;
-  scenario->name = "pendulum";
+  scenario->id = "pendulum";
   scenario->description = "simple pendulum";
   scenario->trials = trials;
   db->insert( scenario );
@@ -49,7 +47,7 @@ int main( void ) {
     Reveal::Core::trial_ptr trial = Reveal::Core::trial_ptr( new Reveal::Core::trial_c() );
 
     // insert the trial data
-    trial->scenario_id = scenario_id;
+    trial->scenario_id = scenario->id;
     trial->trial_id = i;
     trial->t = t;
     trial->dt = dt;
@@ -70,7 +68,7 @@ int main( void ) {
     // insert the model solution data
     Reveal::Core::solution_ptr solution = Reveal::Core::solution_ptr( new Reveal::Core::solution_c( Reveal::Core::solution_c::MODEL ) );
 
-    solution->scenario_id = scenario_id;
+    solution->scenario_id = scenario->id;
     solution->trial_id = i;
     solution->t = t + dt;
     solution->state.append_q( x[0] );
@@ -81,7 +79,7 @@ int main( void ) {
   }
 
   Reveal::Core::analyzer_ptr analyzer = Reveal::Core::analyzer_ptr( new Reveal::Core::analyzer_c() );
-  analyzer->scenario_id = scenario_id;
+  analyzer->scenario_id = scenario->id;
   analyzer->filename = "/home/james/osrf/Reveal/build/scenarios/libtest-pendulum-analyzer-plugin.so";
   //analyzer->filename = "test-pendulum-analytics.so";
   analyzer->type = Reveal::Core::analyzer_c::PLUGIN;

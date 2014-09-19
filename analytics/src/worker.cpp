@@ -17,7 +17,7 @@ worker_c::worker_c( void ) {
 }
 
 //-----------------------------------------------------------------------------
-worker_c::worker_c( boost::shared_ptr<Reveal::DB::database_c> db, int scenario_id, int session_id ) {
+worker_c::worker_c( boost::shared_ptr<Reveal::DB::database_c> db, const std::string& scenario_id, const std::string& session_id ) {
   _db = db;
   _scenario_id = scenario_id;
   _session_id = session_id;

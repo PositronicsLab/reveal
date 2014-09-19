@@ -296,8 +296,7 @@ database_c::error_e database_c::query( Reveal::Core::digest_ptr& digest ) {
     // Note: at summarization level not detail
     scenario = Reveal::Core::scenario_ptr( new Reveal::Core::scenario_c() );
    
-    scenario->id = record.getField( "id" ).Int();
-    scenario->name = record.getField( "name" ).String();
+    scenario->id = record.getField( "scenario_id" ).String();
     scenario->trials = record.getField( "trials" ).Int();
     scenario->description = record.getField( "description" ).String();
     // number of resources?
@@ -315,8 +314,7 @@ database_c::error_e database_c::insert( Reveal::Core::scenario_ptr scenario ) {
   mongo::BSONObjBuilder bob_scenario;
   mongo::BSONArrayBuilder bab_scenario_uris;
 
-  bob_scenario.append( "id", scenario->id );
-  bob_scenario.append( "name", scenario->name );
+  bob_scenario.append( "scenario_id", scenario->id );
   bob_scenario.append( "description", scenario->description );
   bob_scenario.append( "trials", scenario->trials );
   for( unsigned uri = 0; uri < scenario->uris.size(); uri++ )
@@ -331,34 +329,7 @@ database_c::error_e database_c::insert( Reveal::Core::scenario_ptr scenario ) {
 }
 
 //-----------------------------------------------------------------------------
-database_c::error_e database_c::query( Reveal::Core::scenario_ptr& scenario, const std::string& name ) {
-/*
-  std::auto_ptr<mongo::DBClientCursor> cursor;
-  Reveal::DB::query_c query;
-  //Reveal::Core::scenario_ptr ptr;
-
-  query.scenario( name );
-  fetch( cursor, "scenario", query() );
-
-  // add error handling
-  mongo::BSONObj record = cursor->next();
-
-  scenario = Reveal::Core::scenario_ptr( new Reveal::Core::scenario_c() );
-  scenario->name = record.getField( "name" ).String();
-  scenario->trials = record.getField( "trials" ).Int();
-
-  mongo::BSONObj bson_uris = record.getObjectField( "uris" );
-  std::vector<mongo::BSONElement> vec_uris;
-  bson_uris.elems( vec_uris );
-
-  for( unsigned i = 0; i < vec_uris.size(); i++ )
-    scenario->uris.push_back( vec_uris[i].String() );
-*/
-  return ERROR_NONE;
-}
-
-//-----------------------------------------------------------------------------
-database_c::error_e database_c::query( Reveal::Core::scenario_ptr& scenario, int scenario_id ) {
+database_c::error_e database_c::query( Reveal::Core::scenario_ptr& scenario, const std::string& scenario_id ) {
 
   std::auto_ptr<mongo::DBClientCursor> cursor;
   Reveal::DB::query_c query;
@@ -373,8 +344,7 @@ database_c::error_e database_c::query( Reveal::Core::scenario_ptr& scenario, int
   mongo::BSONObj record = cursor->next();
 
   scenario = Reveal::Core::scenario_ptr( new Reveal::Core::scenario_c() );
-  scenario->id = record.getField( "id" ).Int();
-  scenario->name = record.getField( "name" ).String();
+  scenario->id = record.getField( "scenario_id" ).String();
   scenario->description = record.getField( "description" ).String();
   scenario->trials = record.getField( "trials" ).Int();
 
@@ -413,7 +383,7 @@ database_c::error_e database_c::insert( Reveal::Core::trial_ptr trial ) {
 }
 
 //-----------------------------------------------------------------------------
-database_c::error_e database_c::query( Reveal::Core::trial_ptr& trial, int scenario_id, int trial_id ) {
+database_c::error_e database_c::query( Reveal::Core::trial_ptr& trial, const std::string& scenario_id, int trial_id ) {
 
   std::auto_ptr<mongo::DBClientCursor> cursor;
   Reveal::DB::query_c query;
@@ -428,7 +398,7 @@ database_c::error_e database_c::query( Reveal::Core::trial_ptr& trial, int scena
   mongo::BSONObj record = cursor->next();
 
   trial = Reveal::Core::trial_ptr( new Reveal::Core::trial_c() );
-  trial->scenario_id = record.getField( "scenario_id" ).Int();
+  trial->scenario_id = record.getField( "scenario_id" ).String();
   trial->trial_id = record.getField( "trial_id" ).Int();
   trial->t = record.getField( "t" ).Double();
   trial->dt = record.getField( "dt" ).Double();
@@ -485,7 +455,7 @@ database_c::error_e database_c::insert( Reveal::Core::solution_ptr solution ) {
 }
 
 //-----------------------------------------------------------------------------
-database_c::error_e database_c::query( Reveal::Core::solution_ptr& solution, Reveal::Core::solution_c::type_e type, int scenario_id, int trial_id ) {
+database_c::error_e database_c::query( Reveal::Core::solution_ptr& solution, Reveal::Core::solution_c::type_e type, const std::string& scenario_id, int trial_id ) {
 
   std::auto_ptr<mongo::DBClientCursor> cursor;
   Reveal::DB::query_c query;
@@ -506,7 +476,7 @@ database_c::error_e database_c::query( Reveal::Core::solution_ptr& solution, Rev
   mongo::BSONObj record = cursor->next();
 
   solution = Reveal::Core::solution_ptr( new Reveal::Core::solution_c( type ) );
-  solution->scenario_id = record.getField( "scenario_id" ).Int();
+  solution->scenario_id = record.getField( "scenario_id" ).String();
   solution->trial_id = record.getField( "trial_id" ).Int();
   solution->t = record.getField( "t" ).Double();
 
@@ -560,7 +530,7 @@ database_c::error_e database_c::insert( Reveal::Core::analysis_ptr analysis ) {
 }
 
 //-----------------------------------------------------------------------------
-database_c::error_e database_c::query( Reveal::Core::analyzer_ptr& analyzer, int scenario_id ) {
+database_c::error_e database_c::query( Reveal::Core::analyzer_ptr& analyzer, const std::string& scenario_id ) {
 
   std::auto_ptr<mongo::DBClientCursor> cursor;
   Reveal::DB::query_c query;
@@ -575,7 +545,7 @@ database_c::error_e database_c::query( Reveal::Core::analyzer_ptr& analyzer, int
   mongo::BSONObj record = cursor->next();
 
   analyzer = Reveal::Core::analyzer_ptr( new Reveal::Core::analyzer_c() );
-  analyzer->scenario_id = record.getField( "scenario_id" ).Int();
+  analyzer->scenario_id = record.getField( "scenario_id" ).String();
   analyzer->filename = record.getField( "filename" ).String();
   analyzer->type = (Reveal::Core::analyzer_c::type_e) record.getField( "type" ).Int();
 
@@ -583,7 +553,7 @@ database_c::error_e database_c::query( Reveal::Core::analyzer_ptr& analyzer, int
 }
 
 //-----------------------------------------------------------------------------
-database_c::error_e database_c::query( Reveal::Core::solution_set_ptr& solution_set, int scenario_id, int session_id ) {
+database_c::error_e database_c::query( Reveal::Core::solution_set_ptr& solution_set, const std::string& scenario_id, const std::string& session_id ) {
 
   // NOTE: may need to order queries such that indices match up in each query
 

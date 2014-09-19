@@ -32,15 +32,13 @@ public:
   scenario_c( void ) {}
   virtual ~scenario_c( void ) {}
  
-  unsigned id;
-  std::string name;
+  std::string id;
   std::string description;
   unsigned trials;
   std::vector<std::string> uris;
 
   void print( void ) const {
-    printf( "id[%u]", id );
-    printf( ", name[%s]", name.c_str() );
+    printf( "id[%s]", id.c_str() );
     printf( ", trials[%u]", trials );
     printf( ", uris[" );
     for( unsigned i = 0; i < uris.size(); i++ ) {

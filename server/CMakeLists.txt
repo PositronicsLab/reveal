@@ -8,6 +8,7 @@ find_package( uuid REQUIRED )
 
 # header files
 set( REVEAL_SERVER_HEADERS 
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/identity.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/server.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/client_worker.h
 )

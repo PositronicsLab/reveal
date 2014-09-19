@@ -39,7 +39,7 @@ public:
   analyzer_c( void ) { }
   virtual ~analyzer_c( void ) { }
 
-  int                    scenario_id;
+  std::string            scenario_id;
   std::string            filename;
   type_e 	         type;
 };

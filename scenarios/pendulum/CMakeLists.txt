@@ -47,8 +47,8 @@ include_directories( ${INCLUDE_DIRS} )
 add_executable( test-pendulum test.cpp ${HDRS} ${SRCS} )
 target_link_libraries( test-pendulum ${LIBS} )
 
-add_executable( test-pendulum-client client.cpp ${HDRS} ${SRCS} )
-target_link_libraries( test-pendulum-client ${LIBS} )
+#add_executable( test-pendulum-client client.cpp ${HDRS} ${SRCS} )
+#target_link_libraries( test-pendulum-client ${LIBS} )
 
 add_executable( test-pendulum-data-gen data_generator.cpp ${HDRS} ${SRCS} )
 target_link_libraries( test-pendulum-data-gen ${LIBS} )

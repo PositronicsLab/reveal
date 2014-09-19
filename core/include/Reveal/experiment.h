@@ -42,7 +42,7 @@ public:
 
   std::string       experiment_id;
   std::string       session_id;
-  int               scenario_id;
+  std::string       scenario_id;
   int               number_of_trials;
   std::vector<int>  trial_prescription;
   int               current_trial_index;

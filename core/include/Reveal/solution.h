@@ -10,6 +10,7 @@ a client upon completion of a trial within a scenario
 
 //-----------------------------------------------------------------------------
 
+#include <string>
 #include <vector>
 
 #include <Reveal/state.h>
@@ -35,7 +36,7 @@ public:
   solution_c( type_e type ) { this->type = type; }
   virtual ~solution_c( void ) {}
 
-  unsigned scenario_id;
+  std::string scenario_id;
   unsigned trial_id;
   double t;
   state_c state;
@@ -44,7 +45,7 @@ public:
   type_e type;
 
   void print( void ) {
-    printf( "scenario_id[%u]", scenario_id );
+    printf( "scenario_id[%s]", scenario_id.c_str() );
     printf( ", trial_id[%u]", trial_id );
     printf( ", t[%f]", t );
 

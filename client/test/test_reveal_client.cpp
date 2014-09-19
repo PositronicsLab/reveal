@@ -8,6 +8,7 @@
 #include <Reveal/user.h>
 #include <Reveal/client.h>
 #include <Reveal/digest.h>
+#include <Reveal/experiment.h>
 #include <Reveal/scenario.h>
 #include <Reveal/trial.h>
 #include <Reveal/solution.h>
@@ -59,6 +60,7 @@ int main( int argc, char* argv[] ) {
 
   Reveal::Core::digest_ptr digest;
   Reveal::Core::scenario_ptr scenario;
+  Reveal::Core::experiment_ptr experiment;
   Reveal::Core::trial_ptr trial;
   Reveal::Core::solution_ptr solution;
 
@@ -68,11 +70,23 @@ int main( int argc, char* argv[] ) {
     exit(1);
   }
 
-  test_identified_user();
-  test_anonymous_user();
-/*
+  Reveal::Core::user_ptr user = Reveal::Core::user_ptr(new Reveal::Core::user_c() );
+  user->id = "alice";
+
+  Reveal::Core::authorization_ptr auth = Reveal::Core::authorization_ptr(new Reveal::Core::authorization_c() );
+  auth->set_type( Reveal::Core::authorization_c::TYPE_IDENTIFIED );
+  auth->set_user( user->id );
+
+  Reveal::Client::client_c::error_e client_error;
+  client_error = client.request_authorization( auth );
+  if( client_error != Reveal::Client::client_c::ERROR_NONE ) {
+    printf( "ERROR: client failed to gain identified authorization\n" );
+  } else {
+    printf( "SUCCESS: identified client gained authorization: session[%s]\n", auth->get_session().c_str() );
+  }
+
   // request the digest
-  client.request_digest( digest );
+  client.request_digest( auth, digest );
   // TODO: error handling
 
   // for testing purposes, pick a random scenario
@@ -80,9 +94,14 @@ int main( int argc, char* argv[] ) {
   scenario = digest->get_scenario( 0 );
   scenario->print();
 
-  // request the scenario details from the server
-  client.request_scenario( scenario );
-  // TODO: error handling
+  client_error = client.request_experiment( auth, scenario, experiment );
+  if( client_error != Reveal::Client::client_c::ERROR_NONE ) {
+    printf( "ERROR: client failed to receive experiment\n" );
+  } else {
+    printf( "SUCCESS: client received: experiment[%s]\n", experiment->experiment_id.c_str() );
+    //experiment->print();
+    scenario->print();
+  }
 
   // for each trial in the scenario
   for( unsigned i = 0; i < scenario->trials; i++ ) {
@@ -91,7 +110,7 @@ int main( int argc, char* argv[] ) {
     // create a trial
     trial = scenario->get_trial( i );
 
-    client.request_trial( trial );
+    client.request_trial( auth, experiment, trial );
     // TODO: error handling
 
     // **SIMULATION WOULD BE RUN HERE**
@@ -108,9 +127,8 @@ int main( int argc, char* argv[] ) {
     solution->print();
 
     // submit the solution to the server
-    client.submit_solution( solution );
+    client.submit_solution( auth, experiment, solution );
   }
-*/
 
   client.terminate();
 

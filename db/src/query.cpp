@@ -35,7 +35,7 @@ void query_c::user( const std::string& user_id ) {
 }
 
 //-----------------------------------------------------------------------------
-void query_c::session( std::string session_id ) {
+void query_c::session( const std::string& session_id ) {
 /*
   std::stringstream ss;
   ss << session_id;
@@ -45,7 +45,7 @@ void query_c::session( std::string session_id ) {
 }
 
 //-----------------------------------------------------------------------------
-void query_c::experiment( std::string experiment_id ) {
+void query_c::experiment( const std::string& experiment_id ) {
   _query = QUERY( "experiment_id" << experiment_id );
 }
 
@@ -56,17 +56,19 @@ void query_c::digest( void ) {
 }
 
 //-----------------------------------------------------------------------------
+/*
 void query_c::scenario( int scenario_id ) {
   _query = QUERY( "id" << scenario_id );
 }
+*/
 
 //-----------------------------------------------------------------------------
-void query_c::scenario( const std::string& name ) {
-  _query = QUERY( "name" << name );
+void query_c::scenario( const std::string& scenario_id ) {
+  _query = QUERY( "scenario_id" << scenario_id );
 }
 
 //-----------------------------------------------------------------------------
-void query_c::trial( int scenario_id, int trial_id ) {
+void query_c::trial( const std::string& scenario_id, int trial_id ) {
   _query = QUERY( "scenario_id" << scenario_id << "trial_id" << trial_id);
 }
 /*
@@ -76,7 +78,7 @@ void query_c::solution( const std::string& scenario ) {
 }
 */
 //-----------------------------------------------------------------------------
-void query_c::solution( int scenario_id, int trial_id ) {
+void query_c::solution( const std::string& scenario_id, int trial_id ) {
   _query = QUERY( "scenario_id" << scenario_id << "trial_id" << trial_id );
 }
 /*
@@ -92,12 +94,12 @@ void query_c::model_solution( int scenario_id, int trial_id ) {
 }
 */
 //-----------------------------------------------------------------------------
-void query_c::analyzer( int scenario_id ) {
+void query_c::analyzer( const std::string& scenario_id ) {
   _query = QUERY( "scenario_id" << scenario_id );
 }
 
 //-----------------------------------------------------------------------------
-void query_c::solution_set( int scenario_id, int session_id ) {
+void query_c::solution_set( const std::string& scenario_id, const std::string& session_id ) {
   _query = QUERY( "scenario_id" << scenario_id << "session_id" << session_id );
 }
 

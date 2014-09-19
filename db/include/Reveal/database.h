@@ -79,18 +79,17 @@ public:
   error_e update_increment_trial_index( Reveal::Core::experiment_ptr experiment );
 
   error_e insert( Reveal::Core::scenario_ptr scenario );
-  error_e query( Reveal::Core::scenario_ptr& scenario, const std::string& name );
-  error_e query( Reveal::Core::scenario_ptr& scenario, int scenario_id );
+  error_e query( Reveal::Core::scenario_ptr& scenario, const std::string& scenario_id );
 
   error_e insert( Reveal::Core::trial_ptr trial );
-  error_e query( Reveal::Core::trial_ptr& trial, int scenario_id, int trial_id );
+  error_e query( Reveal::Core::trial_ptr& trial, const std::string& scenario_id, int trial_id );
 
   error_e insert( Reveal::Core::solution_ptr solution );
-  error_e query( Reveal::Core::solution_ptr& solution, Reveal::Core::solution_c::type_e type, int scenario_id, int trial_id );
+  error_e query( Reveal::Core::solution_ptr& solution, Reveal::Core::solution_c::type_e type, const std::string& scenario_id, int trial_id );
 
   error_e insert( Reveal::Core::analyzer_ptr analyzer );
-  error_e query( Reveal::Core::analyzer_ptr& analyzer, int scenario_id );
-  error_e query( Reveal::Core::solution_set_ptr& solution_set, int scenario_id, int session_id );
+  error_e query( Reveal::Core::analyzer_ptr& analyzer, const std::string& scenario_id );
+  error_e query( Reveal::Core::solution_set_ptr& solution_set, const std::string& scenario_id, const std::string& session_id );
   error_e insert( Reveal::Core::analysis_ptr analysis );
 };
 

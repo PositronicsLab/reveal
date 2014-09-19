@@ -46,8 +46,7 @@ public:
   void print( void ) {
     printf( "scenarios[%u]\n", _scenarios.size() );
     for( unsigned i = 0; i < _scenarios.size(); i++ ) {
-      printf( "  id[%u]", _scenarios[i]->id );
-      printf( ", name[%s]", _scenarios[i]->name.c_str() );
+      printf( "  id[%s]", _scenarios[i]->id.c_str() );
       printf( ", description[%s]", _scenarios[i]->description.c_str() );
       printf( ", trials[%u]\n", _scenarios[i]->trials );
     }

@@ -53,18 +53,10 @@ public:
 
   // API
   error_e request_authorization( Reveal::Core::authorization_ptr& auth );
-/*
   error_e request_digest( Reveal::Core::authorization_ptr& auth, Reveal::Core::digest_ptr& digest );
-  error_e request_scenario( Reveal::Core::authorization_ptr& auth, Reveal::Core::scenario_ptr& scenario );
-  error_e request_trial( Reveal::Core::authorization_ptr& auth, Reveal::Core::trial_ptr& trial );
-  error_e submit_solution( Reveal::Core::authorization_ptr& auth, Reveal::Core::solution_ptr& solution );
-*/
-
-  // TODO : Remove unauthorized interfaces
-  error_e request_digest( Reveal::Core::digest_ptr& digest );
-  error_e request_scenario( Reveal::Core::scenario_ptr& scenario );
-  error_e request_trial( Reveal::Core::trial_ptr& trial );
-  error_e submit_solution( Reveal::Core::solution_ptr& solution );
+  error_e request_experiment( Reveal::Core::authorization_ptr& auth, Reveal::Core::scenario_ptr scenario, Reveal::Core::experiment_ptr& experiment );
+  error_e request_trial( Reveal::Core::authorization_ptr& auth, Reveal::Core::experiment_ptr experiment, Reveal::Core::trial_ptr& trial );
+  error_e submit_solution( Reveal::Core::authorization_ptr& auth, Reveal::Core::experiment_ptr experiment, Reveal::Core::solution_ptr& solution );
 
 private:
   Reveal::Core::connection_c _connection;

@@ -6,12 +6,14 @@
 #include <sstream>
 #include <uuid/uuid.h>
 
+#include <Reveal/identity.h>
 #include <Reveal/authorization.h>
 #include <Reveal/user.h>
 #include <Reveal/session.h>
 #include <Reveal/transport_exchange.h>
 #include <Reveal/pointers.h>
 #include <Reveal/digest.h>
+#include <Reveal/experiment.h>
 #include <Reveal/scenario.h>
 #include <Reveal/trial.h>
 #include <Reveal/solution.h>
@@ -73,7 +75,8 @@ void worker_c::work( void ) {
     if( _connection.read( request ) != Reveal::Core::connection_c::ERROR_NONE ) {
       // read failed at connection
       printf( "ERROR: Failed to read message from client.\n" );
-      // TODO: improve error handling.  Bomb or recover here.      
+      // TODO: improve error handling.  Bomb or recover here. 
+      break;  // BOMB for DEBUGGING MODE ONLY
     }
 
     // parse the serialized request
@@ -92,43 +95,51 @@ void worker_c::work( void ) {
     } else if( exchange.get_type() == Reveal::Core::transport_exchange_c::TYPE_DIGEST ) {
       Reveal::Core::authorization_ptr auth = exchange.get_authorization();
       if( authorize( auth ) == ERROR_NONE ) {
-        service_digest_request( );
+        service_digest_request( auth );
         // TODO : error checking
       } else {
         service_failed_authorization( auth );
       }
-    } else if( exchange.get_type() == Reveal::Core::transport_exchange_c::TYPE_SCENARIO ) {
+
+    } else if( exchange.get_type() == Reveal::Core::transport_exchange_c::TYPE_EXPERIMENT ) {
       Reveal::Core::authorization_ptr auth = exchange.get_authorization();
+
       if( authorize( auth ) == ERROR_NONE ) {
-        // extract the scenario from the client message
-        Reveal::Core::scenario_ptr scenario = exchange.get_scenario();
+        // extract the experiment from the client message
+        Reveal::Core::experiment_ptr experiment = exchange.get_experiment();
+        std::string scenario_name = experiment->scenario_id;
 
         //printf( "client_scenario:\n" );
         //scenario->print();
 
-        service_scenario_request( scenario->id );
+        service_experiment_request( auth, scenario_name );
         // TODO : error checking
       } else {
         service_failed_authorization( auth );
       }
+
     } else if( exchange.get_type() == Reveal::Core::transport_exchange_c::TYPE_TRIAL ) {
       Reveal::Core::authorization_ptr auth = exchange.get_authorization();
       if( authorize( auth ) == ERROR_NONE ) {
         // extract the trial from the client message
+        Reveal::Core::experiment_ptr experiment = exchange.get_experiment();
         Reveal::Core::trial_ptr trial = exchange.get_trial();      
 
-        service_trial_request( trial->scenario_id, trial->trial_id );
+        service_trial_request( auth, experiment, trial->trial_id );
         // TODO : error checking
       } else {
         service_failed_authorization( auth );
       }
+
     } else if( exchange.get_type() == Reveal::Core::transport_exchange_c::TYPE_SOLUTION ) {
       Reveal::Core::authorization_ptr auth = exchange.get_authorization();
+  std::string generate_uuid( void );
       if( authorize( auth ) == ERROR_NONE ) {
         // create a solution receipt
+        Reveal::Core::experiment_ptr experiment = exchange.get_experiment();
         Reveal::Core::solution_ptr solution = exchange.get_solution();
 
-        service_solution_submission( solution );
+        service_solution_submission( auth, experiment, solution );
         // TODO : error checking
       } else {
         service_failed_authorization( auth );
@@ -137,18 +148,6 @@ void worker_c::work( void ) {
 
     } 
   }
-}
-
-//-----------------------------------------------------------------------------
-std::string worker_c::generate_uuid( void ) {
-  uuid_t uuid;
-  uuid_generate( uuid );
-
-  char buffer[16];
-  sprintf( buffer, "%X", uuid );
-  
-  std::string result = buffer;
-  return result;
 }
 
 //-----------------------------------------------------------------------------
@@ -208,7 +207,7 @@ bool worker_c::create_session( Reveal::Core::authorization_ptr auth, Reveal::Cor
   Reveal::DB::database_c::error_e db_error;
 
   session = Reveal::Core::session_ptr( new Reveal::Core::session_c() );
-  session->session_id = generate_uuid();
+  session->session_id = Reveal::Server::generate_uuid();
 
   Reveal::Core::authorization_c::type_e type = auth->get_type();
   if( type == Reveal::Core::authorization_c::TYPE_IDENTIFIED ) {
@@ -220,6 +219,24 @@ bool worker_c::create_session( Reveal::Core::authorization_ptr auth, Reveal::Cor
   }
 
   db_error = _db->insert( session );
+  if( db_error == Reveal::DB::database_c::ERROR_NONE )
+    return true;
+
+  return false;
+}
+
+//-----------------------------------------------------------------------------
+bool worker_c::create_experiment( Reveal::Core::authorization_ptr auth, Reveal::Core::scenario_ptr scenario, Reveal::Core::experiment_ptr& experiment ) {
+  Reveal::DB::database_c::error_e db_error;
+
+  experiment = Reveal::Core::experiment_ptr( new Reveal::Core::experiment_c() );
+  experiment->experiment_id = Reveal::Server::generate_uuid();
+  experiment->session_id = auth->get_session();
+  experiment->scenario_id = scenario->id;
+  experiment->number_of_trials = scenario->trials;
+  experiment->current_trial_index = 0;
+
+  db_error = _db->insert( experiment );
   if( db_error == Reveal::DB::database_c::ERROR_NONE )
     return true;
 
@@ -363,7 +380,7 @@ worker_c::error_e worker_c::service_handshake_request( Reveal::Core::authorizati
 }
 
 //-----------------------------------------------------------------------------
-worker_c::error_e worker_c::service_digest_request( void ) {
+worker_c::error_e worker_c::service_digest_request( Reveal::Core::authorization_ptr auth ) {
   printf( "digest requested\n" );
 
   Reveal::Core::transport_exchange_c exchange;
@@ -382,6 +399,7 @@ worker_c::error_e worker_c::service_digest_request( void ) {
     exchange.set_origin( Reveal::Core::transport_exchange_c::ORIGIN_SERVER );
     exchange.set_type( Reveal::Core::transport_exchange_c::TYPE_DIGEST );
     exchange.set_digest( digest );
+    exchange.set_authorization( auth );
 
     // serialize the message for transmission
     exchange.build( reply );
@@ -402,65 +420,54 @@ worker_c::error_e worker_c::service_digest_request( void ) {
 }
 
 //-----------------------------------------------------------------------------
-worker_c::error_e worker_c::service_scenario_request( int scenario_id ) {
-  printf( "scenario requested\n" );
+worker_c::error_e worker_c::service_experiment_request( Reveal::Core::authorization_ptr auth, std::string scenario_id ) {
+  printf( "experiment requested\n" );
 
   Reveal::Core::transport_exchange_c exchange;
   Reveal::Core::scenario_ptr scenario;
+  Reveal::Core::experiment_ptr experiment;
   std::string reply;
 
-  // query the database for scenario data
   Reveal::DB::database_c::error_e db_error = _db->query( scenario, scenario_id );
-
-  if( db_error == Reveal::DB::database_c::ERROR_NONE ) {
-    // the query was successful
-
-    // construct the scenario message
-    exchange.set_origin( Reveal::Core::transport_exchange_c::ORIGIN_SERVER );
-    exchange.set_type( Reveal::Core::transport_exchange_c::TYPE_SCENARIO );
-    exchange.set_scenario( scenario );
-
-    // serialize the message for transmission
-    exchange.build( reply );
-
-    // broadcast the reply message back to the client
-    if( _connection.write( reply ) != Reveal::Core::connection_c::ERROR_NONE ) {
-      // TODO: trap and recover
-    }
-
-    return ERROR_NONE;
+  if( db_error != Reveal::DB::database_c::ERROR_NONE ) {
+    // the query was unsuccessful
+    return ERROR_QUERY;
   }
 
-  // otherwise there was an error in the query
-  if( db_error == Reveal::DB::database_c::ERROR_EMPTYSET ) {
-    // the query returned an empty set
-
-    // construct an error message
-    exchange.set_origin( Reveal::Core::transport_exchange_c::ORIGIN_SERVER );
-    exchange.set_type( Reveal::Core::transport_exchange_c::TYPE_ERROR );
-    exchange.set_error( Reveal::Core::transport_exchange_c::ERROR_BAD_SCENARIO_REQUEST );
-
-    //serialize the message for transmission
-    exchange.build( reply );
-
-    // broadcast the reply message back to the client
-    if( _connection.write( reply ) != Reveal::Core::connection_c::ERROR_NONE ) {
-      // TODO: trap and recover
-    }
+  if( !create_experiment( auth, scenario, experiment ) ) {
+    return ERROR_CREATE;
   }
-  return ERROR_NONE;  // temporary until any error enumeration is determined
+
+  printf( "created experiment[%s], session[%s], scenario[%s]\n", experiment->experiment_id.c_str(), experiment->session_id.c_str(), experiment->scenario_id.c_str() ); 
+
+  // construct the experiment message
+  exchange.set_origin( Reveal::Core::transport_exchange_c::ORIGIN_SERVER );
+  exchange.set_type( Reveal::Core::transport_exchange_c::TYPE_EXPERIMENT );
+  exchange.set_experiment( experiment );
+  exchange.set_scenario( scenario );
+  exchange.set_authorization( auth );
+
+  // serialize the message for transmission
+  exchange.build( reply );
+
+  // broadcast the reply message back to the client
+  if( _connection.write( reply ) != Reveal::Core::connection_c::ERROR_NONE ) {
+    // TODO: trap and recover
+  }
+
+  return ERROR_NONE;
 }
 
 //-----------------------------------------------------------------------------
-worker_c::error_e worker_c::service_trial_request( int scenario_id, int trial_id ) {
-  printf( "trial requested\n" );
+worker_c::error_e worker_c::service_trial_request( Reveal::Core::authorization_ptr auth, Reveal::Core::experiment_ptr experiment, int trial_id ) {
+  printf( "trial requested scenario_id[%s], trial_id[%u]\n", experiment->scenario_id.c_str(), trial_id );
 
   Reveal::Core::transport_exchange_c exchange;
   Reveal::Core::trial_ptr trial;
   std::string reply;
 
   // query the database for trial data
-  Reveal::DB::database_c::error_e db_error = _db->query( trial, scenario_id, trial_id );
+  Reveal::DB::database_c::error_e db_error = _db->query( trial, experiment->scenario_id, trial_id );
   // TODO: Validation
 
   if( db_error == Reveal::DB::database_c::ERROR_NONE ) {
@@ -470,6 +477,8 @@ worker_c::error_e worker_c::service_trial_request( int scenario_id, int trial_id
     exchange.set_origin( Reveal::Core::transport_exchange_c::ORIGIN_SERVER );
     exchange.set_type( Reveal::Core::transport_exchange_c::TYPE_TRIAL );
     exchange.set_trial( trial );
+    exchange.set_experiment( experiment );
+    exchange.set_authorization( auth );
 
     //serialize the message for transmission
     exchange.build( reply );
@@ -484,12 +493,14 @@ worker_c::error_e worker_c::service_trial_request( int scenario_id, int trial_id
 
   // otherwise there was an error in the query
   if( db_error == Reveal::DB::database_c::ERROR_EMPTYSET ) {
+    printf( "ERROR: Failed to find trial\n" );
     // the query returned an empty set
 
     // construct an error message
     exchange.set_origin( Reveal::Core::transport_exchange_c::ORIGIN_SERVER );
     exchange.set_type( Reveal::Core::transport_exchange_c::TYPE_ERROR );
     exchange.set_error( Reveal::Core::transport_exchange_c::ERROR_BAD_TRIAL_REQUEST );
+    exchange.set_authorization( auth );
 
     //serialize the message for transmission
     exchange.build( reply );
@@ -503,7 +514,7 @@ worker_c::error_e worker_c::service_trial_request( int scenario_id, int trial_id
 }
 
 //-----------------------------------------------------------------------------
-worker_c::error_e worker_c::service_solution_submission( Reveal::Core::solution_ptr solution ) {
+worker_c::error_e worker_c::service_solution_submission( Reveal::Core::authorization_ptr auth, Reveal::Core::experiment_ptr experiment, Reveal::Core::solution_ptr solution ) {
   printf( "solution submitted\n" );
 
   Reveal::Core::transport_exchange_c exchange;
@@ -512,6 +523,8 @@ worker_c::error_e worker_c::service_solution_submission( Reveal::Core::solution_
   // construct the solution receipt message
   exchange.set_origin( Reveal::Core::transport_exchange_c::ORIGIN_SERVER );
   exchange.set_type( Reveal::Core::transport_exchange_c::TYPE_SOLUTION );
+  exchange.set_authorization( auth );
+  exchange.set_experiment( experiment );
 
   //serialize the message for transmission
   exchange.build( reply );
@@ -548,8 +561,8 @@ worker_c::error_e worker_c::service_solution_submission( Reveal::Core::solution_
   // for an initial development, this is the best approach
   // If the trial is the 'last' trial, run analytics.
 
-  int session_id = 0;
-  int scenario_id = solution->scenario_id;
+  std::string session_id = "";
+  std::string scenario_id = solution->scenario_id;
 
   if( solution->trial_id == 9 ) {
     printf( "here\n" );

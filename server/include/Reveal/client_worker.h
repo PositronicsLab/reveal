@@ -31,7 +31,9 @@ namespace Server {
 class worker_c {
 public:
   enum error_e {
-    ERROR_NONE = 0
+    ERROR_NONE = 0,
+    ERROR_QUERY,
+    ERROR_CREATE
   };
 
   worker_c( void* context );
@@ -42,19 +44,18 @@ public:
   void terminate( void );
 
 private:
-  std::string generate_uuid( void );
   error_e send_valid_handshake_response( Reveal::Core::authorization_ptr auth );
   error_e send_invalid_handshake_response( Reveal::Core::authorization_ptr auth );
-
 
   error_e authorize( Reveal::Core::authorization_ptr auth );
   error_e service_failed_authorization( Reveal::Core::authorization_ptr auth );
   error_e service_handshake_request( Reveal::Core::authorization_ptr auth );
 
-  error_e service_digest_request( void );
-  error_e service_scenario_request( int scenario_id );
-  error_e service_trial_request( int scenario_id, int trial_id );
-  error_e service_solution_submission( Reveal::Core::solution_ptr solution );
+  error_e service_digest_request( Reveal::Core::authorization_ptr auth );
+  error_e service_experiment_request( Reveal::Core::authorization_ptr auth, std::string scenario_id );
+  //error_e service_scenario_request( int scenario_id );
+  error_e service_trial_request( Reveal::Core::authorization_ptr auth, Reveal::Core::experiment_ptr experiment, int trial_id );
+  error_e service_solution_submission( Reveal::Core::authorization_ptr auth, Reveal::Core::experiment_ptr, Reveal::Core::solution_ptr solution );
 //  error_e analyze_solution( void );
 
   boost::shared_ptr<Reveal::DB::database_c> _db;
@@ -66,6 +67,7 @@ private:
   bool is_experiment_valid( Reveal::Core::authorization_ptr auth, Reveal::Core::experiment_ptr experiment_request, Reveal::Core::experiment_ptr& experiment_record );
 
   bool create_session( Reveal::Core::authorization_ptr auth, Reveal::Core::session_ptr& session );
+  bool create_experiment( Reveal::Core::authorization_ptr auth, Reveal::Core::scenario_ptr scenario, Reveal::Core::experiment_ptr& experiment );
 };
 
 //-----------------------------------------------------------------------------

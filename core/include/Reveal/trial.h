@@ -14,6 +14,7 @@ to the server for analysis
 
 #include <vector>
 #include <stdio.h>
+#include <string>
 
 //#include <Reveal/scenario.h>
 #include <Reveal/state.h>
@@ -34,9 +35,7 @@ public:
   trial_c( void ) {}
   virtual ~trial_c( void ) {}
 
-  //std::string scenario;
-  //scenario_ptr scenario;
-  unsigned scenario_id;
+  std::string scenario_id;
   unsigned trial_id;
   double t;
   double dt;
@@ -44,8 +43,7 @@ public:
   control_c control;
 
   void print( void ) {
-    //printf( "scenario[%s]", scenario->name.c_str() );
-    printf( "scenario_id[%u]", scenario_id );
+    printf( "scenario_id[%s]", scenario_id.c_str() );
     printf( ", trial_id[%u]", trial_id );
     printf( ", t[%f]", t );
     printf( ", dt[%f]", dt );

@@ -53,7 +53,7 @@ public:
     TYPE_ERROR,
     TYPE_HANDSHAKE,
     TYPE_DIGEST,
-    TYPE_SCENARIO,
+    TYPE_EXPERIMENT,
     TYPE_TRIAL,
     TYPE_SOLUTION
   };
@@ -81,6 +81,9 @@ public:
   void set_digest( digest_ptr digest );
   digest_ptr get_digest( void );
 
+  void set_experiment( experiment_ptr experiment );
+  experiment_ptr get_experiment( void );
+
   void set_scenario( scenario_ptr scenario );
   scenario_ptr get_scenario( void );
 
@@ -94,16 +97,27 @@ public:
   error_e parse( const std::string& message );
 
 private:
-  origin_e _origin;
-  type_e _type;
-  error_e _error;
+  origin_e            _origin;
+  type_e              _type;
+  error_e             _error;
 
-  authorization_ptr _authorization;
-  digest_ptr _digest;
-  scenario_ptr _scenario;
-  trial_ptr _trial;
-  solution_ptr _solution;
+  authorization_ptr   _authorization;
+  digest_ptr          _digest;
+  experiment_ptr      _experiment;
+  scenario_ptr        _scenario;
+  trial_ptr           _trial;
+  solution_ptr        _solution;
 
+
+  error_e build_authorization( Reveal::Core::Messages::Net::Message* message );
+  error_e build_client_message( Reveal::Core::Messages::Net::Message* message );
+  error_e build_server_message( Reveal::Core::Messages::Net::Message* message );
+
+  error_e map_origin( Reveal::Core::Messages::Net::Message* message );
+  error_e map_type( Reveal::Core::Messages::Net::Message* message );
+  error_e map_authorization( Reveal::Core::Messages::Net::Message* message );
+  error_e map_client_message( Reveal::Core::Messages::Net::Message* message );
+  error_e map_server_message( Reveal::Core::Messages::Net::Message* message );
 };
 
 //----------------------------------------------------------------------------

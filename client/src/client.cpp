@@ -8,6 +8,7 @@
 #include <Reveal/transport_exchange.h>
 #include <Reveal/pointers.h>
 #include <Reveal/digest.h>
+#include <Reveal/experiment.h>
 #include <Reveal/scenario.h>
 #include <Reveal/trial.h>
 #include <Reveal/solution.h>
@@ -66,7 +67,7 @@ client_c::error_e client_c::request_authorization( Reveal::Core::authorization_p
   Reveal::Core::transport_exchange_c server_exchange;
   Reveal::Core::transport_exchange_c::error_e exchg_err;
 
-  // create a digest request
+  // create a authorization request
   client_exchange.set_origin( Reveal::Core::transport_exchange_c::ORIGIN_CLIENT );
   client_exchange.set_type( Reveal::Core::transport_exchange_c::TYPE_HANDSHAKE );
   client_exchange.set_error( Reveal::Core::transport_exchange_c::ERROR_NONE );
@@ -96,13 +97,14 @@ client_c::error_e client_c::request_authorization( Reveal::Core::authorization_p
     // TODO : extend validation and error handling for any new cases that emerge
   }
 
-  // extract the digest
+  // extract the authorization
   auth = server_exchange.get_authorization();
  
   return ERROR_NONE;
 }
+
 //-----------------------------------------------------------------------------
-client_c::error_e client_c::request_digest( Reveal::Core::digest_ptr& digest ) {
+client_c::error_e client_c::request_digest( Reveal::Core::authorization_ptr& auth, Reveal::Core::digest_ptr& digest ) {
   std::string request;
   std::string reply;
 
@@ -114,6 +116,8 @@ client_c::error_e client_c::request_digest( Reveal::Core::digest_ptr& digest ) {
   client_exchange.set_origin( Reveal::Core::transport_exchange_c::ORIGIN_CLIENT );
   client_exchange.set_type( Reveal::Core::transport_exchange_c::TYPE_DIGEST );
   client_exchange.set_error( Reveal::Core::transport_exchange_c::ERROR_NONE );
+
+  client_exchange.set_authorization( auth );
 
   // build the request message
   exchg_err = client_exchange.build( request );
@@ -144,6 +148,56 @@ client_c::error_e client_c::request_digest( Reveal::Core::digest_ptr& digest ) {
   return ERROR_NONE;
 }
 
+//-----------------------------------------------------------------------------
+client_c::error_e client_c::request_experiment( Reveal::Core::authorization_ptr& auth, Reveal::Core::scenario_ptr scenario, Reveal::Core::experiment_ptr& experiment ) {
+  std::string request;
+  std::string reply;
+
+  Reveal::Core::transport_exchange_c client_exchange;
+  Reveal::Core::transport_exchange_c server_exchange;
+  Reveal::Core::transport_exchange_c::error_e exchg_err;
+
+  // create an experiment request
+  client_exchange.set_origin( Reveal::Core::transport_exchange_c::ORIGIN_CLIENT );
+  client_exchange.set_type( Reveal::Core::transport_exchange_c::TYPE_EXPERIMENT );
+  client_exchange.set_error( Reveal::Core::transport_exchange_c::ERROR_NONE );
+
+  client_exchange.set_authorization( auth );
+
+  experiment = Reveal::Core::experiment_ptr( new Reveal::Core::experiment_c() );
+  experiment->scenario_id = scenario->id;
+  client_exchange.set_experiment( experiment );
+
+  // build the request message
+  exchg_err = client_exchange.build( request );
+  if( exchg_err != Reveal::Core::transport_exchange_c::ERROR_NONE ) {
+    printf( "ERROR: failed to build experiment message\n" );
+    return ERROR_EXCHANGE_BUILD;
+  }
+
+  // send the request message and wait for reply message
+  client_c::error_e com_err = request_reply( request, reply );
+  if( com_err != ERROR_NONE ) return com_err;
+
+  // parse the reply message
+  exchg_err = server_exchange.parse( reply );
+  if( exchg_err != Reveal::Core::transport_exchange_c::ERROR_NONE ) {
+    return ERROR_EXCHANGE_PARSE;
+  }
+
+  Reveal::Core::transport_exchange_c::error_e transport_error = server_exchange.get_error();
+  if( transport_error != Reveal::Core::transport_exchange_c::ERROR_NONE ) {
+    // The server sent a general error.  Suggest retrying the request.
+    return ERROR_EXCHANGE_RESPONSE;
+    // TODO : extend validation and error handling for any new cases that emerge
+  }
+
+  // extract the experiment
+  experiment = server_exchange.get_experiment();
+ 
+  return ERROR_NONE;
+}
+/*
 //-----------------------------------------------------------------------------
 client_c::error_e client_c::request_scenario( Reveal::Core::scenario_ptr& scenario ) {
   std::string request;
@@ -194,9 +248,9 @@ client_c::error_e client_c::request_scenario( Reveal::Core::scenario_ptr& scenar
 
   return ERROR_NONE;
 }
-
+*/
 //-----------------------------------------------------------------------------
-client_c::error_e client_c::request_trial( Reveal::Core::trial_ptr& trial ) {
+client_c::error_e client_c::request_trial( Reveal::Core::authorization_ptr& auth, Reveal::Core::experiment_ptr experiment, Reveal::Core::trial_ptr& trial ) {
   std::string request;
   std::string reply;
 
@@ -204,9 +258,12 @@ client_c::error_e client_c::request_trial( Reveal::Core::trial_ptr& trial ) {
   Reveal::Core::transport_exchange_c server_exchange;
   Reveal::Core::transport_exchange_c::error_e exchg_err;
 
-  // create a trial request 
+  // create a trial request
   client_exchange.set_origin( Reveal::Core::transport_exchange_c::ORIGIN_CLIENT );
   client_exchange.set_type( Reveal::Core::transport_exchange_c::TYPE_TRIAL );
+  client_exchange.set_error( Reveal::Core::transport_exchange_c::ERROR_NONE );
+  client_exchange.set_authorization( auth );
+  client_exchange.set_experiment( experiment );
   client_exchange.set_trial( trial );
 
   // build the request message
@@ -248,7 +305,7 @@ client_c::error_e client_c::request_trial( Reveal::Core::trial_ptr& trial ) {
 }
 
 //-----------------------------------------------------------------------------
-client_c::error_e client_c::submit_solution( Reveal::Core::solution_ptr& solution ) {
+client_c::error_e client_c::submit_solution( Reveal::Core::authorization_ptr& auth, Reveal::Core::experiment_ptr experiment, Reveal::Core::solution_ptr& solution ) {
   std::string request;
   std::string reply;
 
@@ -259,6 +316,8 @@ client_c::error_e client_c::submit_solution( Reveal::Core::solution_ptr& solutio
   // create a solution 'request'
   client_exchange.set_origin( Reveal::Core::transport_exchange_c::ORIGIN_CLIENT );
   client_exchange.set_type( Reveal::Core::transport_exchange_c::TYPE_SOLUTION );
+  client_exchange.set_authorization( auth );
+  client_exchange.set_experiment( experiment );
   client_exchange.set_solution( solution );
 
   // build the 'request' message

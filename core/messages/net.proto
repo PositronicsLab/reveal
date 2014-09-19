@@ -8,13 +8,13 @@ package Reveal.Core.Messages.Net;
 message Message {
 
   enum Type {
-    UNDEFINED = 0;   // necessary? 
-    ERROR = 1;      
+    UNDEFINED = 0;   // necessary?
+    ERROR = 1;
     HANDSHAKE = 2;
-    DIGEST = 3;    
-    SCENARIO = 4;    
-    TRIAL = 5;      
-    SOLUTION = 6;   
+    DIGEST = 3;
+    EXPERIMENT = 4;
+    TRIAL = 5;
+    SOLUTION = 6;
   }
 
   enum Error {
@@ -34,15 +34,16 @@ message Message {
   message Header {
     required Origin origin = 1;
     required Type type = 2;
-    required Authorization authorization = 3; 
+    required Authorization authorization = 3;
     optional Error error = 4;
   }
 
   required Header header = 1;
-  optional Reveal.Core.Messages.Data.Digest digest = 2;    
-  optional Reveal.Core.Messages.Data.Scenario scenario = 3;    
-  optional Reveal.Core.Messages.Data.Trial trial = 4;
-  optional Reveal.Core.Messages.Data.Solution solution = 5;
+  optional Reveal.Core.Messages.Data.Digest digest = 2;
+  optional Reveal.Core.Messages.Data.Experiment experiment = 3;
+  optional Reveal.Core.Messages.Data.Scenario scenario = 4; 
+  optional Reveal.Core.Messages.Data.Trial trial = 5;
+  optional Reveal.Core.Messages.Data.Solution solution = 6;
 
 }
 

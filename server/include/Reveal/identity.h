@@ -1,16 +1,16 @@
 /*-----------------------------------------------------------------------------
 author: James R Taylor (jrt@gwu.edu)
 
-utility.h defines helper functions.  
+identity.h defines identity functions.  
 -----------------------------------------------------------------------------*/
 
-#ifndef _REVEAL_CORE_UTILITY_H_
-#define _REVEAL_CORE_UTILITY_H_
+#ifndef _REVEAL_SERVER_IDENTITY_H_
+#define _REVEAL_SERVER_IDENTITY_H_
 
 //-----------------------------------------------------------------------------
 
 #include <string>
-#include <vector>
+#include <uuid/uuid.h>
 
 //-----------------------------------------------------------------------------
 
@@ -18,31 +18,23 @@ namespace Reveal {
 
 //-----------------------------------------------------------------------------
 
-namespace Core {
+namespace Server {
 
 //-----------------------------------------------------------------------------
-void bin_to_text( std::string in, std::string& out, bool& plain_text ) {
+std::string generate_uuid( void ) {
+  uuid_t uuid;
+  uuid_generate( uuid );
 
-  char buffer[2];
-  plain_text = true;  
-
-  for( int i = 0; i < in.size(); i++ )
-    if( (unsigned char)in[i] < 32 || (unsigned char)in[i] > 127 )
-      plain_text = false;
-
-  if( plain_text ) {
-    out = in;
-  } else {
-    for( int i = 0; i < in.size(); i++ ) {
-      sprintf( buffer, "%02X", (unsigned char)in[i] );
-      out.insert( out.size(), buffer, 2 );
-    }
-  }
+  char buffer[16];
+  sprintf( buffer, "%X", uuid );
+  
+  std::string result = buffer;
+  return result;
 }
 
 //-----------------------------------------------------------------------------
 
-}  // namespace Core
+}  // namespace Server
 
 //-----------------------------------------------------------------------------
 
@@ -50,4 +42,4 @@ void bin_to_text( std::string in, std::string& out, bool& plain_text ) {
 
 //-----------------------------------------------------------------------------
 
-#endif // _REVEAL_CORE_UTILITY_H_
+#endif // _REVEAL_SERVER_IDENTITY_H_

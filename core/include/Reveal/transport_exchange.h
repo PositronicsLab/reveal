@@ -96,6 +96,16 @@ public:
   error_e build( std::string& message );
   error_e parse( const std::string& message );
 
+  error_e build_server_experiment( std::string& message, authorization_ptr auth, scenario_ptr scenario, experiment_ptr experiment );
+
+  error_e build_server_trial( std::string& message, authorization_ptr auth, experiment_ptr experiment, trial_ptr trial );
+
+  error_e build_client_solution( std::string& message, authorization_ptr auth, experiment_ptr experiment, solution_ptr solution );
+
+  error_e parse_server_experiment( const std::string& message, authorization_ptr& auth, scenario_ptr& scenario, experiment_ptr& experiment );
+
+  error_e parse_client_solution( const std::string& message, authorization_ptr& auth, experiment_ptr& experiment, solution_ptr& solution );
+
 private:
   origin_e            _origin;
   type_e              _type;

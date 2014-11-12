@@ -270,6 +270,65 @@ transport_exchange_c::error_e transport_exchange_c::parse( const std::string& se
 }
 
 //----------------------------------------------------------------------------
+transport_exchange_c::error_e transport_exchange_c::build_server_experiment( std::string& msg, Reveal::Core::authorization_ptr auth, Reveal::Core::scenario_ptr scenario, Reveal::Core::experiment_ptr experiment ) {
+  reset();
+  set_authorization( auth );
+  set_origin( Reveal::Core::transport_exchange_c::ORIGIN_SERVER );
+  set_type( Reveal::Core::transport_exchange_c::TYPE_EXPERIMENT );
+  set_scenario( scenario );
+  set_experiment( experiment );
+  return build( msg );
+}
+
+//----------------------------------------------------------------------------
+transport_exchange_c::error_e transport_exchange_c::build_server_trial( std::string& msg, Reveal::Core::authorization_ptr auth, Reveal::Core::experiment_ptr experiment, Reveal::Core::trial_ptr trial ) {
+  reset();
+  set_authorization( auth );
+  set_origin( Reveal::Core::transport_exchange_c::ORIGIN_SERVER );
+  set_type( Reveal::Core::transport_exchange_c::TYPE_TRIAL );
+  set_experiment( experiment );
+  set_trial( trial );
+  return build( msg );
+}
+
+//----------------------------------------------------------------------------
+transport_exchange_c::error_e transport_exchange_c::build_client_solution( std::string& msg, Reveal::Core::authorization_ptr auth, Reveal::Core::experiment_ptr experiment, Reveal::Core::solution_ptr solution ) {
+  reset();
+  set_authorization( auth );
+  set_origin( Reveal::Core::transport_exchange_c::ORIGIN_CLIENT );
+  set_type( Reveal::Core::transport_exchange_c::TYPE_SOLUTION );
+  set_experiment( experiment );
+  set_solution( solution );
+  return build( msg );
+}
+
+//----------------------------------------------------------------------------
+transport_exchange_c::error_e transport_exchange_c::parse_server_experiment( const std::string& msg, Reveal::Core::authorization_ptr& auth, Reveal::Core::scenario_ptr& scenario, Reveal::Core::experiment_ptr& experiment ) {
+
+  error_e ex_err = parse( msg );
+  if( ex_err != ERROR_NONE ) return ex_err;
+
+  auth = get_authorization();
+  scenario = get_scenario(); 
+  experiment = get_experiment();
+
+  return ERROR_NONE;
+}
+
+//----------------------------------------------------------------------------
+transport_exchange_c::error_e transport_exchange_c::parse_client_solution( const std::string& msg, Reveal::Core::authorization_ptr& auth, Reveal::Core::experiment_ptr& experiment, Reveal::Core::solution_ptr& solution ) {
+
+  error_e ex_err = parse( msg );
+  if( ex_err != ERROR_NONE ) return ex_err;
+
+  auth = get_authorization();
+  experiment = get_experiment();
+  solution = get_solution(); 
+
+  return ERROR_NONE;
+}
+
+//----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
 transport_exchange_c::error_e transport_exchange_c::build_authorization( Reveal::Core::Messages::Net::Message* msg ) {
 
@@ -308,14 +367,14 @@ transport_exchange_c::error_e transport_exchange_c::build_authorization( Reveal:
     Messages::Net::Authorization::Credential* msg_user = msg_authorization->mutable_user();
     msg_user->set_id( _authorization->get_user() );
     // TODO: password when full authorization implemented
-    printf( "type id'd\n" );
+//    printf( "type id'd\n" );
   }
 
   // map the session
   if( auth_type == Reveal::Core::authorization_c::TYPE_SESSION ) {
     Messages::Net::Authorization::Session* msg_session = msg_authorization->mutable_session();
     msg_session->set_id( _authorization->get_session() );
-    printf( "session: %s\n", _authorization->get_session().c_str() );
+//    printf( "session: %s\n", _authorization->get_session().c_str() );
   }
   return ERROR_NONE;
 }

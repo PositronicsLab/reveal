@@ -528,7 +528,7 @@ int main( int argc, char* argv[] ) {
   Reveal::Core::experiment_ptr experiment;
   Reveal::Core::trial_ptr trial;
   Reveal::Core::solution_ptr solution;
-  Reveal::Core::transport_exchange_c exchange;
+  Reveal::Core::transport_exchange_c ex;
 
   // Digest
   printf( "Fetching Scenario Digest\n" );
@@ -699,13 +699,9 @@ int main( int argc, char* argv[] ) {
 
     // TODO: find exception here
     // write experiment
-    exchange.set_origin( Reveal::Core::transport_exchange_c::ORIGIN_SERVER );
-    exchange.set_type( Reveal::Core::transport_exchange_c::TYPE_EXPERIMENT );
-    exchange.set_scenario( scenario );
-    exchange.set_experiment( experiment );
-    exchange.set_authorization( auth );
     std::string msg;
-    exchange.build( msg );
+
+    ex.build_server_experiment( msg, auth, scenario, experiment );
 
     printf( "writing experiment to gazebo\n" );
     if( gzipc->write( msg ) != Reveal::Core::pipe_c::ERROR_NONE ) {
@@ -727,14 +723,7 @@ int main( int argc, char* argv[] ) {
         // TODO: error handling
 
         // write trial to gzipc
-        exchange.reset();
-        exchange.set_origin( Reveal::Core::transport_exchange_c::ORIGIN_SERVER );
-        exchange.set_type( Reveal::Core::transport_exchange_c::TYPE_TRIAL );
-        exchange.set_trial( trial );
-        exchange.set_experiment( experiment );
-        exchange.set_authorization( auth );
-        std::string msg;
-        exchange.build( msg );
+        ex.build_server_trial( msg, auth, experiment, trial );
 
         printf( "writing experiment to gazebo\n" );
         if( gzipc->write( msg ) != Reveal::Core::pipe_c::ERROR_NONE ) {
@@ -763,12 +752,12 @@ int main( int argc, char* argv[] ) {
           // TODO: trap and recover
         }
 
-
         // forward solution to revealserver
-/*
+        ex.parse_client_solution( msg, auth, experiment, solution );
+
         // submit the solution to the server
         client.submit_solution( auth, experiment, solution );
-*/
+
         // increment trial
         trial_index++;
       }

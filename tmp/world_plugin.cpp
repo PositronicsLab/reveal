@@ -78,16 +78,16 @@ namespace gazebo
 
 
       // read experiment
-      Reveal::Core::transport_exchange_c exchange;
+      Reveal::Core::transport_exchange_c ex;
       std::string msg;
       // block waiting for a server msg
       if( _revealpipe->read( msg ) != Reveal::Core::pipe_c::ERROR_NONE ) {
         // TODO: error recovery
       }
-      exchange.parse( msg );
-      auth = exchange.get_authorization();
-      experiment = exchange.get_experiment();
-      scenario = exchange.get_scenario(); 
+
+      Reveal::Core::transport_exchange_c::error_e ex_err;
+      ex_err = ex.parse_server_experiment( msg, auth, scenario, experiment );
+      //TODO trap error
 
       this->updateConnection = event::Events::ConnectWorldUpdateBegin(
           boost::bind( &world_plugin_c::Update, this ) );
@@ -104,6 +104,10 @@ namespace gazebo
     }
 
     void Update( ) {
+      Reveal::Core::transport_exchange_c ex;
+      Reveal::Core::transport_exchange_c::error_e ex_err;
+      std::string msg;
+
       // if not first pass, write the previous trial state to reveal client
       if( !first_trial ) {
         double t = _world->GetSimTime().Double();
@@ -112,27 +116,19 @@ namespace gazebo
         solution = scenario->get_solution( Reveal::Core::solution_c::CLIENT, trial, t );
 
         // finish building the solution by inserting the state data
-        //solution->state.append_q( 0.0 );
-        //solution->state.append_dq( 0.0 );
+        // TODO : This is just a bogus example
+        solution->state.append_q( 0.0 );
+        solution->state.append_dq( 0.0 );
         //solution->print();
 
-        Reveal::Core::transport_exchange_c ex;
-        Reveal::Core::transport_exchange_c::error_e ex_err;
-        std::string msg;
-        
-        ex.set_authorization( auth );
-        ex.set_origin( Reveal::Core::transport_exchange_c::ORIGIN_CLIENT );
-        ex.set_type( Reveal::Core::transport_exchange_c::TYPE_SOLUTION );
-        ex.set_experiment( experiment );
-        ex.set_solution( solution );
-        ex_err = ex.build( msg );
+        ex_err = ex.build_client_solution( msg, auth, experiment, solution );
         if( ex_err != Reveal::Core::transport_exchange_c::ERROR_NONE ) {
           //TODO: error handling
         }
         if( _revealpipe->write( msg ) != Reveal::Core::pipe_c::ERROR_NONE ) {
           //TODO: error handling
         }
-     } else {
+      } else {
         first_trial = false;
       }
 
@@ -143,15 +139,15 @@ namespace gazebo
       }
 
       // read next trial state message from reveal client (block) 
-      std::string msg;
-      Reveal::Core::transport_exchange_c ex;
-      Reveal::Core::transport_exchange_c::error_e ex_err;
-      
       if( _revealpipe->read( msg ) != Reveal::Core::pipe_c::ERROR_NONE ) {
         // TODO: error recovery
       }
       ex.parse( msg );
       trial = ex.get_trial();
+
+      // if this is the last trial, flip the switch
+      if( trial->trial_id == scenario->trials - 1 )
+        last_trial = true;
 
       // overwrite gazebo state based on reveal state message
         // read the time from the message and update
@@ -162,9 +158,6 @@ namespace gazebo
        double dt = trial->dt;
        double tf = ti + dt;
 */
-
-
-
       
 /* 
       double t = sim_time.Double() + 0.1;
@@ -179,9 +172,6 @@ namespace gazebo
 
       last_time = sim_time;
 */
-
-      if( trial->trial_id == scenario->trials - 1 )
-        last_trial = true;
     }
 
   };

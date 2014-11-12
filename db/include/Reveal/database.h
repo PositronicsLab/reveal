@@ -20,6 +20,8 @@ interface
 #include <Reveal/pointers.h>
 #include <Reveal/analysis.h>
 #include <Reveal/analyzer.h>
+#include <Reveal/solution.h>
+//#include <Reveal/session.h>
 
 //-----------------------------------------------------------------------------
 

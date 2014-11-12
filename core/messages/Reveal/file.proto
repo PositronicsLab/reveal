@@ -1,0 +1,27 @@
+package Reveal.Core.Messages.Package;
+
+message Package {
+  optional File manifest = 1;
+  optional File cmakelists = 2;
+  optional File world_sdf = 3;
+  optional File world_plugin = 4;
+  repeated File model_plugin = 5;
+  repeated File model_config = 6;
+  repeated File model_sdf = 7;
+}
+
+message File {
+  optional FileMeta meta = 1;
+  repeated FileChunk chunks = 2;
+}
+
+message FileMeta {
+  optional string name = 1;
+  optional string path = 2;
+  optional int64 size = 3;
+}
+
+message FileChunk {
+  optional int64 offset = 1;
+  optional bytes data = 2;
+}

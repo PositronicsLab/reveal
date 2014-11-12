@@ -10,9 +10,9 @@ running analytics on a client's evaluation of a scenario
 
 //-----------------------------------------------------------------------------
 
-#include <Reveal/solution.h>
-#include <Reveal/trial.h>
-#include <Reveal/scenario.h>
+//#include <Reveal/solution.h>
+//#include <Reveal/trial.h>
+//#include <Reveal/scenario.h>
 
 #include <boost/shared_ptr.hpp>
 #include <vector>

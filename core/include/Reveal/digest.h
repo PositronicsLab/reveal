@@ -10,7 +10,7 @@ data
 
 //----------------------------------------------------------------------------
 
-#include <Reveal/scenario.h>
+//#include <Reveal/scenario.h>
 #include <Reveal/pointers.h>
 #include <vector>
 #include <assert.h>
@@ -42,7 +42,7 @@ public:
   void add_scenario( scenario_ptr scenario ) {
     _scenarios.push_back( scenario );
   }
-
+/*
   void print( void ) {
     printf( "scenarios[%u]\n", _scenarios.size() );
     for( unsigned i = 0; i < _scenarios.size(); i++ ) {
@@ -51,7 +51,7 @@ public:
       printf( ", trials[%u]\n", _scenarios[i]->trials );
     }
   }
-
+*/
 private:
   std::vector<scenario_ptr> _scenarios;
 };

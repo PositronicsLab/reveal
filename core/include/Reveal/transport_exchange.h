@@ -12,8 +12,8 @@ protocols from class instances
 
 //----------------------------------------------------------------------------
 
-#include "data.pb.h"
-#include "net.pb.h"
+#include <Reveal/data.pb.h>
+#include <Reveal/net.pb.h>
 
 #include <Reveal/pointers.h>
 

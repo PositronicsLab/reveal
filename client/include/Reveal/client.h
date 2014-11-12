@@ -58,9 +58,9 @@ public:
   error_e request_trial( Reveal::Core::authorization_ptr& auth, Reveal::Core::experiment_ptr experiment, Reveal::Core::trial_ptr& trial );
   error_e submit_solution( Reveal::Core::authorization_ptr& auth, Reveal::Core::experiment_ptr experiment, Reveal::Core::solution_ptr& solution );
 
-private:
   Reveal::Core::connection_c _connection;
 
+private:
   error_e request_reply( const std::string& request, std::string& reply );
 };
 

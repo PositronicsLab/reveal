@@ -1,6 +1,6 @@
 #include <Reveal/query.h>
 
-#include <assert.h>\
+#include <assert.h>
 #include <sstream>
 
 //-----------------------------------------------------------------------------

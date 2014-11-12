@@ -10,9 +10,11 @@ programs to run on a specified scenario
 
 //-----------------------------------------------------------------------------
 
-#include <Reveal/solution.h>
-#include <Reveal/trial.h>
-#include <Reveal/scenario.h>
+//#include <Reveal/solution.h>
+//#include <Reveal/trial.h>
+//#include <Reveal/scenario.h>
+
+#include <string>
 
 //-----------------------------------------------------------------------------
 

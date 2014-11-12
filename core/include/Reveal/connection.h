@@ -40,9 +40,9 @@ public:
     ROUTER,       ///< External server binding, accepts client connections.
     DEALER,       ///< Internal server binding, ipc routing server-worker.
     WORKER,       ///< Internal server connection, ipc routing endpoint, worker.
-    CLIENT,       ///< Client connection, makes connections to servers.
-    IPC_SERVER,   ///< Internal ipc connection server endpoint
-    IPC_CLIENT    ///< Internal ipc connection server endpoint
+    CLIENT        ///< Client connection, makes connections to servers.
+//    IPC_SERVER,   ///< Internal ipc connection server endpoint
+//    IPC_CLIENT    ///< Internal ipc connection client endpoint
   };
 
   enum error_e {
@@ -66,6 +66,8 @@ public:
   ///        connections on.
   connection_c( const unsigned& port );
 
+  connection_c( const unsigned& port, void* context );
+
   /// Server internal connection/binding constructor, role = DEALER or WORKER.
   /// @param role the role {DEALER, WORKER} that this internal connection will
   ///        play.
@@ -77,13 +79,14 @@ public:
   /// @param host the uri of the server that the client will connect to.
   /// @port the port that the server listens on.
   connection_c( const std::string& host, const unsigned& port );
-
+/*
   /// Server internal ipc constructor, role = IPC.
   /// @param role the role {IPC} that this internal connection will play.
   /// @param context the 0MQ context that is created by creating a ROUTER.  Must
   ///        create a ROUTER before creating any other internal connections.
   /// @param id the identifier of the port to communicate on
   connection_c( const role_e& role, void* context, std::string id );
+*/
 
   /// Default destructor.
   virtual ~connection_c( void );
@@ -115,6 +118,9 @@ public:
 
   /// The 0MQ context created either by constructing a ROUTER or a CLIENT.
   void* context( void );
+
+  /// The 0MQ socket
+  void* socket( void );
 
 private:
   /// The role of this connection.

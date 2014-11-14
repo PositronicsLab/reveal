@@ -442,8 +442,113 @@ std::string make_temp_dir( void ) {
 }
 
 //-----------------------------------------------------------------------------
-int main( int argc, char* argv[] ) {
+bool prompt_yes_no( std::string prompt, bool default_value ) {
+  char yn;
 
+  if( default_value )
+    yn = 'Y';
+  else
+    yn = 'N';
+
+  do {
+    printf( "%s ", prompt.c_str() );
+    int result = scanf( "%c", &yn );
+
+    if( yn == 'y' || yn == 'Y' ) { 
+      return true;
+    } else if( yn == 'n' || yn == 'N' ) {
+      return false;
+    }
+    
+    //if( yn != 13 && yn != 10 ) printf( "\n" );
+    printf( "ERROR: Invalid Input. Enter y or n\n" );
+    
+  } while( true );
+
+}
+
+//-----------------------------------------------------------------------------
+void print_digest_menu( Reveal::Core::digest_ptr digest ) {
+  Reveal::Core::scenario_ptr scenario;
+
+  printf( "- Scenario Menu -\n" );
+
+  for( unsigned i = 0; i < digest->scenarios(); i++ ) {
+    scenario = digest->get_scenario( i );
+
+    printf( "%d: %s\n", i, scenario->description.c_str() );
+  }
+}
+
+//-----------------------------------------------------------------------------
+unsigned prompt_digest( Reveal::Core::digest_ptr digest ) {
+  Reveal::Core::scenario_ptr scenario;
+
+  unsigned choice = 0;
+  unsigned range = digest->scenarios() - 1;
+  int result;
+
+  do {
+    printf( "Select a scenario: " );
+    result = scanf( "%u", &choice );
+    
+    if( !result || choice > range ) 
+      printf( "ERROR: Invalid Input. Enter a value in the range [0,%u]\n", range );
+  } while( !result || choice > range );
+ 
+  return choice;
+}
+
+//-----------------------------------------------------------------------------
+enum gazebo_dynamics_e {
+  DYNAMICS_ODE,
+  DYNAMICS_BULLET,
+  DYNAMICS_DART,
+  DYNAMICS_SIMBODY
+};
+
+gazebo_dynamics_e prompt_dynamics( void ) {
+  Reveal::Core::scenario_ptr scenario;
+
+  printf( "- Dynamics Menu -\n" );
+  printf( "0: ODE\n" );
+  printf( "1: Bullet\n" );
+  printf( "2: DART\n" );
+  printf( "3: Simbody\n" );
+  
+  unsigned choice = 0;
+  unsigned range = 3;
+  int result;
+
+  do {
+    printf( "Select a dynamics engine: " );
+    result = scanf( "%u", &choice );
+    
+    if( !result || choice > range ) 
+      printf( "ERROR: Invalid Input. Enter a value in the range [0,%u]\n", range );
+  } while( !result || choice > range );
+
+  if( choice == 0 ) 
+    return DYNAMICS_ODE;
+  else if( choice == 1 ) 
+    return DYNAMICS_BULLET;
+  else if( choice == 2 ) 
+    return DYNAMICS_DART;
+  else if( choice == 3 ) 
+    return DYNAMICS_SIMBODY;
+ 
+  // return a default if fall through for safety
+  return DYNAMICS_ODE;
+}
+
+//-----------------------------------------------------------------------------
+void print_tuning_menu( void ) {
+  printf( "- Tuning Menu -\n" );
+  printf( "TODO\n" );
+}
+
+//-----------------------------------------------------------------------------
+bool run_experiment( Reveal::Core::authorization_ptr auth ) {
   std::string source_path = "/home/james/osrf/Reveal/tmp";
   std::string build_path = "/home/james/osrf/Reveal/tmp/build";
 
@@ -451,84 +556,15 @@ int main( int argc, char* argv[] ) {
   std::string plugin_path = build_path;
   std::string model_path = build_path;
 
-  // Initialization
-  if( !client.init() ) {
-    printf( "ERROR: Failed to initialize properly.\nExiting.\n" );
-    client.terminate();
-    exit(1);
-  }
-
-  // Salutations
-  printf( "Welcome to Reveal\n" );
-
-  // Connect to Server
-  printf( "Connecting to Reveal Server\n" );
-
-  if( !client.connect() ) {
-    printf( "ERROR: Unable to reach Reveal Server.\nExiting.\n" );
-    client.terminate();
-    exit(1);
-  }
-
-  printf("Connected to Reveal Server\n");
-
-  // Prompt for Login
-  bool anonymous_login = false;
-  char yn = 'Y';
-  char input_buffer[512];
-
-  do {
-    printf( "Would you like to login (Y/N)?: " );
-    scanf( "%c", &yn );
-
-    if( yn == 'y' || yn == 'Y' ) { 
-      anonymous_login = false;
-    } else if( yn == 'n' || yn == 'N' ) {
-      anonymous_login = true;
-    } else {
-      if( yn != 13 && yn != 10 ) printf( "\n" );
-      printf( "ERROR: Invalid Input. Enter y or n\n" );
-    }
-  } while( yn != 'n' && yn != 'N' && yn != 'y' && yn != 'Y' );
-
-  // Authorization
-  Reveal::Core::user_ptr user = Reveal::Core::user_ptr(new Reveal::Core::user_c() );
-  Reveal::Core::authorization_ptr auth = Reveal::Core::authorization_ptr(new Reveal::Core::authorization_c() );
-
-  if( anonymous_login ) {
-    auth->set_type( Reveal::Core::authorization_c::TYPE_ANONYMOUS );
-  } else {
-    printf( "Please enter username: " );
-    scanf( "%32s", input_buffer );
-    user->id = input_buffer;
-    auth->set_type( Reveal::Core::authorization_c::TYPE_IDENTIFIED );
-    auth->set_user( user->id );
-  }  
-
-  if( anonymous_login ) 
-    printf( "Logging in and requesting anonymous authorization.\n" );
-  else
-    printf( "Logging in and requesting authorization for user %s.\n", user->id.c_str() );
-
-  // TODO: hammer on server side validation.  Noticed that authorization is
-  // granted if a bad user name is specified
-  Reveal::Client::client_c::error_e client_error;
-  client_error = client.request_authorization( auth );
-  if( client_error != Reveal::Client::client_c::ERROR_NONE ) {
-    printf( "ERROR: Failed to gain authorization\n" );
-  } else {
-    printf( "Authorization granted\n" );
-  }
-
-  // MOTD
-  printf("Message of the Day\n");
-
   Reveal::Core::digest_ptr digest;
   Reveal::Core::scenario_ptr scenario;
   Reveal::Core::experiment_ptr experiment;
   Reveal::Core::trial_ptr trial;
   Reveal::Core::solution_ptr solution;
   Reveal::Core::transport_exchange_c ex;
+  std::string msg;
+
+  Reveal::Client::client_c::error_e client_error;
 
   // Digest
   printf( "Fetching Scenario Digest\n" );
@@ -538,14 +574,13 @@ int main( int argc, char* argv[] ) {
   // TODO: error handling
 
   // print digest menu
+  print_digest_menu( digest );
 
   // user selects scenario
+  unsigned scenario_choice = prompt_digest( digest );
 
   // fetch scenario
-  // for testing purposes, pick a random scenario
-  assert( digest->scenarios() );
-  scenario = digest->get_scenario( 0 );
-  //scenario->print();
+  scenario = digest->get_scenario( scenario_choice );
 
   // request experiment
   client_error = client.request_experiment( auth, scenario, experiment );
@@ -558,14 +593,14 @@ int main( int argc, char* argv[] ) {
   }
 
   // print dynamics menu
-
   // user selects dynamics
+  gazebo_dynamics_e dynamics = prompt_dynamics();
 
   // print tuning menu
+  if( prompt_yes_no( "Would you like to tune the experiment (Y/N)?", true ) )
+    print_tuning_menu();
 
   // build scenario
-
-
   bool cmake_result = cmake_package( source_path, build_path );
   if( !cmake_result ) {
     printf( "ERROR: Failed to configure make for experiment\nExiting\n" );
@@ -583,12 +618,6 @@ int main( int argc, char* argv[] ) {
   } else {
     printf( "Built controller\n" );
   }
-//  exit( 0 );
-
-  // NOTE: The fork should only happen once the whole trial has been set up.
-  // CORRECTION: The IPC needs to be inside the while.  We don't want to 
-  // to refork gzserver repeatedly.  The while effectively gets substituted for
-  // the **SIMULATION WOULD BE RUN HERE** comment below.
 
   printf( "launching gzserver\n" );
 
@@ -613,12 +642,6 @@ int main( int argc, char* argv[] ) {
 
   printf( "ipc pipes open\n" );
 
-  //void* context = client._connection.context();
-  //unsigned int ctx = *(unsigned int*)context;
-  //printf( "Extracted context: %d\n", ctx );
-
-//  exit(0);
-
   // install sighandler to detect when the gazebo finishes
   struct sigaction action;
   memset( &action, 0, sizeof(struct sigaction) );
@@ -636,10 +659,26 @@ int main( int argc, char* argv[] ) {
     // child process
     pid = getpid();
 
+    std::string dynamics_param;
+    switch( dynamics ) {
+    case DYNAMICS_ODE:
+      dynamics_param = "ode";         break;
+    case DYNAMICS_BULLET:
+      dynamics_param = "bullet";      break;
+    case DYNAMICS_DART:
+      dynamics_param = "dart";        break;
+    case DYNAMICS_SIMBODY:
+      dynamics_param = "simbody";     break;
+    }
+
+    printf( "dyanamics: %s\n", dynamics_param.c_str() );
+
     // build the make command line arguments array
     std::vector<std::string> arg_strings;
     arg_strings.push_back( "reveal-gzserver" );
-//    arg_strings.push_back( "-u" ); 
+//    arg_strings.push_back( "-u" );  // paused
+    arg_strings.push_back( "-e" );
+    arg_strings.push_back( dynamics_param );
     arg_strings.push_back( "--verbose" ); 
     arg_strings.push_back( world_path );
     char* const* exec_argv = param_array( arg_strings );
@@ -694,12 +733,11 @@ int main( int argc, char* argv[] ) {
   } else {
     // parent process
 
+    // yield for a short while to give gazebo time to spin up
     printf( "reveal client yielding\n" );
-    sleep( 5 );
+    sleep( 1 );
 
-    // TODO: find exception here
     // write experiment
-    std::string msg;
 
     ex.build_server_experiment( msg, auth, scenario, experiment );
 
@@ -707,7 +745,6 @@ int main( int argc, char* argv[] ) {
     if( gzipc->write( msg ) != Reveal::Core::pipe_c::ERROR_NONE ) {
       // TODO: trap and recover
     }
-
 
     unsigned trial_index = 0;
 
@@ -778,6 +815,77 @@ int main( int argc, char* argv[] ) {
     gzexit_read->close();
     gzexit_write->close();
   }
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+int main( int argc, char* argv[] ) {
+
+  // Initialization
+  if( !client.init() ) {
+    printf( "ERROR: Failed to initialize properly.\nExiting.\n" );
+    client.terminate();
+    exit(1);
+  }
+
+  // Salutations
+  printf( "Welcome to Reveal\n" );
+
+  // Connect to Server
+  printf( "Connecting to Reveal Server\n" );
+
+  if( !client.connect() ) {
+    printf( "ERROR: Unable to reach Reveal Server.\nExiting.\n" );
+    client.terminate();
+    exit(1);
+  }
+
+  printf("Connected to Reveal Server\n");
+
+  // Prompt for Login
+  char input_buffer[512];
+
+  bool anonymous_login = !prompt_yes_no( "Would you like to login (Y/N)?", true );
+
+  // Authorization
+  Reveal::Core::user_ptr user = Reveal::Core::user_ptr(new Reveal::Core::user_c() );
+  Reveal::Core::authorization_ptr auth = Reveal::Core::authorization_ptr(new Reveal::Core::authorization_c() );
+
+  if( anonymous_login ) {
+    auth->set_type( Reveal::Core::authorization_c::TYPE_ANONYMOUS );
+  } else {
+    printf( "Please enter username: " );
+    scanf( "%32s", input_buffer );
+    user->id = input_buffer;
+    auth->set_type( Reveal::Core::authorization_c::TYPE_IDENTIFIED );
+    auth->set_user( user->id );
+  }  
+
+  if( anonymous_login ) 
+    printf( "Logging in and requesting anonymous authorization.\n" );
+  else
+    printf( "Logging in and requesting authorization for user %s.\n", user->id.c_str() );
+
+  // TODO: hammer on server side validation.  Noticed that authorization is
+  // granted if a bad user name is specified
+  Reveal::Client::client_c::error_e client_error;
+  client_error = client.request_authorization( auth );
+  if( client_error != Reveal::Client::client_c::ERROR_NONE ) {
+    printf( "ERROR: Failed to gain authorization\n" );
+  } else {
+    printf( "Authorization granted\n" );
+  }
+
+  // MOTD
+  printf("Message of the Day\n");
+
+  bool recycle;
+  do {
+    bool result = run_experiment( auth );
+
+    recycle = prompt_yes_no( "Would you like to run another experiment (Y/N)?", false );
+  } while( recycle );
 
   client.terminate();
 

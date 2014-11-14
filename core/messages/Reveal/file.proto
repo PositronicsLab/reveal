@@ -1,5 +1,9 @@
 package Reveal.Core.Messages.Package;
 
+// Note that this is neither abstract enough nor flexible enough
+// The package must have a manifest and a set of files.  Let validation
+// of the manifest validate the files in the package rather than
+// constraining with particular types of files in the protocol itself.
 message Package {
   optional File manifest = 1;
   optional File cmakelists = 2;

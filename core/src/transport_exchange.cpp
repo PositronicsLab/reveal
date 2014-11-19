@@ -6,6 +6,8 @@
 #include <Reveal/scenario.h>
 #include <Reveal/trial.h>
 #include <Reveal/solution.h>
+#include <Reveal/link.h>
+#include <Reveal/joint.h>
 
 //----------------------------------------------------------------------------
 
@@ -332,7 +334,7 @@ transport_exchange_c::error_e transport_exchange_c::parse_client_solution( const
 //----------------------------------------------------------------------------
 transport_exchange_c::error_e transport_exchange_c::build_authorization( Reveal::Core::Messages::Net::Message* msg ) {
 
-  transport_exchange_c::error_e error;
+//  transport_exchange_c::error_e error;
   Reveal::Core::Messages::Net::Message::Header* header = msg->mutable_header();
 
   // - build the authorization header segment -
@@ -382,7 +384,7 @@ transport_exchange_c::error_e transport_exchange_c::build_authorization( Reveal:
 //----------------------------------------------------------------------------
 transport_exchange_c::error_e transport_exchange_c::build_client_message( Reveal::Core::Messages::Net::Message* msg ) {
 
-  transport_exchange_c::error_e error;
+  //transport_exchange_c::error_e error;
   Reveal::Core::Messages::Net::Message::Header* header = msg->mutable_header();
 
   header->set_origin( Messages::Net::Message::CLIENT );
@@ -436,12 +438,25 @@ transport_exchange_c::error_e transport_exchange_c::build_client_message( Reveal
     msg_solution->set_scenario_id( solution->scenario_id );
     msg_solution->set_trial_id( solution->trial_id );
     msg_solution->set_t( solution->t );
-    Messages::Data::State* state = msg_solution->mutable_state();
-    for( unsigned i = 0; i < solution->state.size_q(); i++ ) 
-      state->add_q( solution->state.q(i) );
-    for( unsigned i = 0; i < solution->state.size_dq(); i++ )
-      state->add_dq( solution->state.dq(i) );
 
+    for( unsigned i = 0; i < solution->models.size(); i++ ) {
+      model_ptr model = solution->models[i];
+      Messages::Data::Model* msg_model = msg_solution->add_model();
+
+      msg_model->set_id( model->id );
+      for( unsigned j = 0; j < model->links.size(); j++ ) {
+        link_ptr link = model->links[j];
+        Messages::Data::Link* msg_link = msg_model->add_link();
+
+        msg_link->set_id( link->id );
+
+        Messages::Data::State* state = msg_link->mutable_state();
+        for( unsigned k = 0; k < link->state.size_q(); k++ ) 
+          state->add_q( link->state.q(k) );
+        for( unsigned k = 0; k < link->state.size_dq(); k++ )
+          state->add_dq( link->state.dq(k) );    
+      }
+    }
   } else {
     _error = ERROR_BUILD;
     return ERROR_BUILD;
@@ -452,7 +467,7 @@ transport_exchange_c::error_e transport_exchange_c::build_client_message( Reveal
 //----------------------------------------------------------------------------
 transport_exchange_c::error_e transport_exchange_c::build_server_message( Reveal::Core::Messages::Net::Message* msg ) {
 
-  transport_exchange_c::error_e error;
+  //transport_exchange_c::error_e error;
   Reveal::Core::Messages::Net::Message::Header* header = msg->mutable_header();
 
   header->set_origin( Messages::Net::Message::SERVER );
@@ -525,15 +540,35 @@ transport_exchange_c::error_e transport_exchange_c::build_server_message( Reveal
     msg_trial->set_trial_id( trial->trial_id );
     msg_trial->set_t( trial->t );
     msg_trial->set_dt( trial->dt );
-    Messages::Data::State* state = msg_trial->mutable_state();
-    for( unsigned i = 0; i < trial->state.size_q(); i++ ) 
-      state->add_q( trial->state.q(i) );
-    for( unsigned i = 0; i < trial->state.size_dq(); i++ )
-      state->add_dq( trial->state.dq(i) );
-    Messages::Data::Control* control = msg_trial->mutable_control();
-    for( unsigned i = 0; i < trial->control.size_u(); i++ )
-      control->add_u( trial->control.u(i) );
 
+    for( unsigned i = 0; i < trial->models.size(); i++ ) {
+      model_ptr model = trial->models[i];
+      Messages::Data::Model* msg_model = msg_trial->add_model();
+
+      msg_model->set_id( model->id );
+      for( unsigned j = 0; j < model->links.size(); j++ ) {
+        link_ptr link = model->links[j];
+        Messages::Data::Link* msg_link = msg_model->add_link();
+
+        msg_link->set_id( link->id );
+
+        Messages::Data::State* state = msg_link->mutable_state();
+        for( unsigned k = 0; k < link->state.size_q(); k++ ) 
+          state->add_q( link->state.q(k) );
+        for( unsigned k = 0; k < link->state.size_dq(); k++ )
+          state->add_dq( link->state.dq(k) );    
+      }
+      for( unsigned j = 0; j < model->joints.size(); j++ ) {
+        joint_ptr joint = model->joints[j];
+        Messages::Data::Joint* msg_joint = msg_model->add_joint();
+
+        msg_joint->set_id( joint->id );
+
+        Messages::Data::Control* control = msg_joint->mutable_control();
+        for( unsigned k = 0; k < joint->control.size_u(); k++ ) 
+          control->add_u( joint->control.u(k) );
+      }
+    }    
   } else if( _type == TYPE_SOLUTION ) {
     // solution receipt
     header->set_type( Messages::Net::Message::SOLUTION );
@@ -549,7 +584,7 @@ transport_exchange_c::error_e transport_exchange_c::build_server_message( Reveal
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
 transport_exchange_c::error_e transport_exchange_c::map_origin( Reveal::Core::Messages::Net::Message* msg ) {
-  transport_exchange_c::error_e error;
+  //transport_exchange_c::error_e error;
 
   if( msg->header().origin() == Messages::Net::Message::SERVER ) {
     _origin = ORIGIN_SERVER;
@@ -563,7 +598,7 @@ transport_exchange_c::error_e transport_exchange_c::map_origin( Reveal::Core::Me
 
 //----------------------------------------------------------------------------
 transport_exchange_c::error_e transport_exchange_c::map_type( Reveal::Core::Messages::Net::Message* msg ) {
-  transport_exchange_c::error_e error;
+  //transport_exchange_c::error_e error;
 
   if( msg->header().type() == Messages::Net::Message::ERROR ) {
     _type = TYPE_ERROR;
@@ -601,7 +636,7 @@ transport_exchange_c::error_e transport_exchange_c::map_type( Reveal::Core::Mess
 
 //----------------------------------------------------------------------------
 transport_exchange_c::error_e transport_exchange_c::map_authorization( Reveal::Core::Messages::Net::Message* msg ) {
-  transport_exchange_c::error_e error;
+  //transport_exchange_c::error_e error;
  
   // - parse authorization -
   _authorization = Reveal::Core::authorization_ptr( new Reveal::Core::authorization_c() );
@@ -645,7 +680,7 @@ transport_exchange_c::error_e transport_exchange_c::map_authorization( Reveal::C
 
 //----------------------------------------------------------------------------
 transport_exchange_c::error_e transport_exchange_c::map_client_message( Reveal::Core::Messages::Net::Message* msg ) {
-  transport_exchange_c::error_e error;
+  //transport_exchange_c::error_e error;
 
   if( _type == TYPE_ERROR ) {
     // TODO : cross reference errors
@@ -678,11 +713,29 @@ transport_exchange_c::error_e transport_exchange_c::map_client_message( Reveal::
     _solution->scenario_id = msg->solution().scenario_id();
     _solution->trial_id = msg->solution().trial_id();
     _solution->t = msg->solution().t();
-    for( int i = 0; i < msg->solution().state().q_size(); i++ ) {
-      _solution->state.append_q( msg->solution().state().q(i) );
-    }
-    for( int i = 0; i < msg->solution().state().dq_size(); i++ ) {
-      _solution->state.append_dq( msg->solution().state().dq(i) );
+
+    for( int i = 0; i < msg->solution().model_size(); i++ ) {
+      model_ptr model = model_ptr( new model_c() );
+      Messages::Data::Model msg_model = msg->solution().model(i);
+      
+      model->id = msg_model.id();
+
+      for( int j = 0; j < msg_model.link_size(); j++ ) {
+        link_ptr link = link_ptr( new link_c() );
+        Messages::Data::Link msg_link = msg_model.link(j);
+        link->id = msg_link.id();
+
+        for( int k = 0; k < msg_link.state().q_size(); k++ ) {
+          link->state.q( k, msg_link.state().q(k) );
+        }
+        for( int k = 0; k < msg_link.state().dq_size(); k++ ) {
+          link->state.dq( k, msg_link.state().dq(k) );
+        }
+
+        model->links.push_back( link );
+      }
+
+      _solution->models.push_back( model );
     }
 
     if( !msg->has_experiment() ) return ERROR_PARSE;
@@ -696,7 +749,7 @@ transport_exchange_c::error_e transport_exchange_c::map_client_message( Reveal::
 
 //----------------------------------------------------------------------------
 transport_exchange_c::error_e transport_exchange_c::map_server_message( Reveal::Core::Messages::Net::Message* msg ) {
-  transport_exchange_c::error_e error;
+  //transport_exchange_c::error_e error;
 
   if( _type == TYPE_ERROR ) {
     // TODO : cross reference errors
@@ -717,14 +770,14 @@ transport_exchange_c::error_e transport_exchange_c::map_server_message( Reveal::
 
     _digest = digest_ptr( new digest_c() );
     
-    for( unsigned i = 0; i < msg->digest().scenario_size(); i++ ) {
+    for( int i = 0; i < msg->digest().scenario_size(); i++ ) {
       scenario_ptr scenario = scenario_ptr( new scenario_c() );
       _digest->add_scenario( scenario );
 
       scenario->id = msg->digest().scenario(i).id();
       scenario->description = msg->digest().scenario(i).description();
       scenario->trials = msg->digest().scenario(i).trials();
-      for( unsigned j = 0; j < msg->digest().scenario(i).uri().size(); j++ ) {
+      for( int j = 0; j < msg->digest().scenario(i).uri().size(); j++ ) {
         scenario->uris.push_back( msg->digest().scenario(i).uri(j) );
       }
     }
@@ -746,7 +799,7 @@ transport_exchange_c::error_e transport_exchange_c::map_server_message( Reveal::
     _scenario->id = msg->scenario().id();
     _scenario->description = msg->scenario().description();
     _scenario->trials = msg->scenario().trials();
-    for( unsigned j = 0; j < msg->scenario().uri().size(); j++ ) {
+    for( int j = 0; j < msg->scenario().uri().size(); j++ ) {
       _scenario->uris.push_back( msg->scenario().uri(j) );
     }
 
@@ -760,16 +813,40 @@ transport_exchange_c::error_e transport_exchange_c::map_server_message( Reveal::
     _trial->trial_id = msg->trial().trial_id();
     _trial->t = msg->trial().t();
     _trial->dt = msg->trial().dt();
-    for( int i = 0; i < msg->trial().state().q_size(); i++ ) {
-      _trial->state.append_q( msg->trial().state().q(i) );
-    }
-    for( int i = 0; i < msg->trial().state().dq_size(); i++ ) {
-      _trial->state.append_dq( msg->trial().state().dq(i) );
-    }
-    for( int i = 0; i < msg->trial().control().u_size(); i++ ) {
-      _trial->control.append_u( msg->trial().control().u(i) );
-    }
+    for( int i = 0; i < msg->trial().model_size(); i++ ) {
+      model_ptr model = model_ptr( new model_c() );
+      Messages::Data::Model msg_model = msg->trial().model(i);
+      
+      model->id = msg_model.id();
 
+      for( int j = 0; j < msg_model.link_size(); j++ ) {
+        link_ptr link = link_ptr( new link_c() );
+        Messages::Data::Link msg_link = msg_model.link(j);
+        link->id = msg_link.id();
+
+        for( int k = 0; k < msg_link.state().q_size(); k++ ) {
+          link->state.q( k, msg_link.state().q(k) );
+        }
+        for( int k = 0; k < msg_link.state().dq_size(); k++ ) {
+          link->state.dq( k, msg_link.state().dq(k) );
+        }
+
+        model->links.push_back( link );
+      }
+
+      for( int j = 0; j < msg_model.joint_size(); j++ ) {
+        joint_ptr joint = joint_ptr( new joint_c() );
+        Messages::Data::Joint msg_joint = msg_model.joint(j);
+        joint->id = msg_joint.id();
+
+        for( int k = 0; k < msg_joint.control().u_size(); k++ ) {
+          joint->control.u( k, msg_joint.control().u(k) );
+        }
+
+        model->joints.push_back( joint );
+      }
+      _trial->models.push_back( model );
+    }
   } else if( _type == TYPE_SOLUTION ) {
     // accept the receipt.  Note: already handled in map_type
   }

@@ -22,6 +22,15 @@ namespace Core {
 
 //-----------------------------------------------------------------------------
 
+class link_c;
+typedef boost::shared_ptr<link_c> link_ptr;
+
+class joint_c;
+typedef boost::shared_ptr<joint_c> joint_ptr;
+
+class model_c;
+typedef boost::shared_ptr<model_c> model_ptr;
+
 class authorization_c;
 typedef boost::shared_ptr<authorization_c> authorization_ptr;
 

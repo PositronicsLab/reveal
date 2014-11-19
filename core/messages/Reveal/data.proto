@@ -13,6 +13,22 @@ message Control {
   repeated double u = 1;
 }
 
+message Link {
+  optional string id = 1;
+  optional State state = 2;
+}
+
+message Joint {
+  optional string id = 1;
+  optional Control control = 2;
+}
+
+message Model {
+  optional string id = 1;
+  repeated Link link = 2;
+  repeated Joint joint = 3;
+}
+
 // The set of all scenarios.
 message Digest {
   repeated Scenario scenario = 1;
@@ -38,8 +54,7 @@ message Trial {
   required uint32 trial_id = 2;
   optional double t = 3;
   optional double dt = 4;
-  optional State state = 5;
-  optional Control control = 6;
+  repeated Model model = 5;
 }
 
 // A single solution for a given trial within a scenario
@@ -47,8 +62,6 @@ message Solution {
   required string scenario_id = 1;
   required uint32 trial_id = 2;
   optional double t = 3;
-  optional State state = 5;
+  repeated Model model = 4;
 }
-
-// Robot protocol??
 

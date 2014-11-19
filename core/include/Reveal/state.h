@@ -25,42 +25,102 @@ namespace Core {
 
 class state_c {
 public:
-  state_c( void ) {}
+  state_c( void ) {
+    for( unsigned i = 0; i < size(); i++ ) _x[i] = 0.0;
+    _x[6] = 1.0;  // normalize w coordinate
+  }
   virtual ~state_c( void ) {}
 
-  double q( const unsigned& i ) {
-    assert( i < _q.size() );
-    return _q[i];
+private:
+  double _x[13];
+
+public:
+  double q( unsigned i ) {
+    assert( i < size_q() );
+    return _x[i];
   }
 
-  double dq( const unsigned& i ) {
-    assert( i < _dq.size() );
-    return _dq[i];
+  double dq( unsigned i ) {
+    assert( i < size_dq() );
+    return _x[i+size_q()];
   }
 
-  void append_q( const double& q ) {
-    _q.push_back( q );
+  void q( unsigned i, const double& q ) {
+    assert( i < size_q() );
+    _x[i] = q;
   }
 
-  void append_dq( const double& dq ) {
-    _dq.push_back( dq );
+  void dq( unsigned i, const double& dq ) {
+    assert( i < size_dq() );
+    _x[i+size_q()] = dq;
   }
 
   unsigned size( void ) const {
-    return _q.size() + _dq.size();
+    return size_q() + size_dq();
   }
 
   unsigned size_q( void ) const {
-    return _q.size();
+    return 7;
   }
 
   unsigned size_dq( void ) const {
-    return _dq.size();
+    return 6;
   }
 
-private:
-  std::vector<double> _q;
-  std::vector<double> _dq;
+  double linear_x( void ) { return _x[0]; }
+  double linear_y( void ) { return _x[1]; }
+  double linear_z( void ) { return _x[2]; }
+  double angular_x( void ) { return _x[3]; }
+  double angular_y( void ) { return _x[4]; }
+  double angular_z( void ) { return _x[5]; }
+  double angular_w( void ) { return _x[6]; }
+  double linear_dx( void ) { return _x[7]; }
+  double linear_dy( void ) { return _x[8]; }
+  double linear_dz( void ) { return _x[9]; }
+  double angular_dx( void ) { return _x[10]; }
+  double angular_dy( void ) { return _x[11]; }
+  double angular_dz( void ) { return _x[12]; }
+
+  void linear_x( const double& x ) { _x[0] = x; }
+  void linear_y( const double& y ) { _x[1] = y; }
+  void linear_z( const double& z ) { _x[2] = z; }
+  void angular_x( const double& x ) { _x[3] = x; }
+  void angular_y( const double& y ) { _x[4] = y; }
+  void angular_z( const double& z ) { _x[5] = z; }
+  void angular_w( const double& w ) { _x[6] = w; }
+  void linear_dx( const double& dx ) { _x[7] = dx; }
+  void linear_dy( const double& dy ) { _x[8] = dy; }
+  void linear_dz( const double& dz ) { _x[9] = dz; }
+  void angular_dx( const double& dx ) { _x[10] = dx; }
+  void angular_dy( const double& dy ) { _x[11] = dy; }
+  void angular_dz( const double& dz ) { _x[12] = dz; }
+
+  double& operator[]( unsigned i ) { 
+    assert( i < size() );
+    return _x[i];
+  }
+
+  const double& operator[]( unsigned i ) const { 
+    assert( i < size() );
+    return _x[i];
+  }
+
+  void print( void ) {
+    printf( "q{" );
+    for( unsigned i = 0; i < size_q(); i++ ) {
+      if( i > 0 ) printf( ", " );
+      printf( "%f", _x[i] );
+    }
+    printf( "}" );
+
+    printf( "dq{" );
+    for( unsigned i = 0; i < size_dq(); i++ ) {
+      if( i > 0 ) printf( ", " );
+      printf( "%f", _x[i+size_q()] );
+    }
+    printf( "}" );
+  }
+
 };
 
 //-----------------------------------------------------------------------------

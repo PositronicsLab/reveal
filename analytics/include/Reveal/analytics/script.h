@@ -29,11 +29,11 @@ public:
   virtual ~script_c( void ) { }
 
   virtual error_e load( std::string filename ) {
-
+    return ERROR_NONE;
   }
 
   virtual error_e analyze( Reveal::Core::analysis_c in, Reveal::Core::analysis_c& out ) {
-
+    return ERROR_NONE;
   }
 
 };

@@ -16,9 +16,8 @@ to the server for analysis
 #include <stdio.h>
 #include <string>
 
-//#include <Reveal/scenario.h>
-#include <Reveal/state.h>
-#include <Reveal/control.h>
+#include <Reveal/pointers.h>
+#include <Reveal/model.h>
 
 //-----------------------------------------------------------------------------
 
@@ -39,8 +38,7 @@ public:
   unsigned trial_id;
   double t;
   double dt;
-  state_c state;
-  control_c control;
+  std::vector<model_ptr> models;
 
   void print( void ) {
     printf( "scenario_id[%s]", scenario_id.c_str() );
@@ -48,33 +46,12 @@ public:
     printf( ", t[%f]", t );
     printf( ", dt[%f]", dt );
 
-    // State 
-    printf( ", state[" );
-    printf( " q[" );
-    for( unsigned i = 0; i < state.size_q(); i++ ) {
+    printf( ", models { " );
+    for( unsigned i = 0; i < models.size(); i++ ) {
       if( i > 0 ) printf( ", " );
-      printf( "%f", state.q(i) );
+      models[i]->print();
     }
-    printf( "]" );
-    printf( ", dq[" );
-    for( unsigned i = 0; i < state.size_dq(); i++ ) {
-      if( i > 0 ) printf( ", " );
-      printf( "%f", state.dq(i) );
-    }
-    printf( "] " );
-    printf( "]" );
-
-    // Control
-    printf( ", control[" );
-    printf( " u[" );
-    for( unsigned i = 0; i < control.size_u(); i++ ) {
-      if( i > 0 ) printf( ", " );
-      printf( "%f", control.u(i) );
-    }
-    printf( "] " );
-    printf( "]" );
-
-    printf( "\n" );
+    printf( " }\n" );
   }
 };
 

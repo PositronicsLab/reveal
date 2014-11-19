@@ -11,6 +11,8 @@ types.h defines various types necessary for interfacing with analytics
 
 #include <boost/shared_ptr.hpp>
 
+#include <Reveal/pointers.h>
+#include <Reveal/solution_set.h>
 #include <Reveal/analysis.h>
 
 //-----------------------------------------------------------------------------

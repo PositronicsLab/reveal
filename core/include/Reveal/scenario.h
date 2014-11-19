@@ -48,7 +48,7 @@ public:
     printf( "]\n" );
   }
 
-  trial_ptr get_trial( int trial_id ) {
+  trial_ptr get_trial( unsigned trial_id ) {
     assert( trial_id < trials );
 
     trial_ptr trial = trial_ptr( new trial_c() );

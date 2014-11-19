@@ -35,6 +35,9 @@ set( REVEAL_CORE_HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/ipc.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/state.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/control.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/link.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/joint.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/model.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/digest.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/scenario.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/experiment.h
@@ -44,6 +47,7 @@ set( REVEAL_CORE_HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/solution_set.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/analyzer.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/analysis.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/Reveal/log.h
 )
 
 # source files

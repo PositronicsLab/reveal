@@ -1,36 +1,104 @@
-
 #include <gazebo/gazebo.hh>
 #include <gazebo/common/Plugin.hh>
 #include <gazebo/common/common.hh>
 #include <gazebo/common/Events.hh>
 #include <gazebo/physics/physics.hh>
 
-#include "models.h"
+#include <Reveal/ipc.h>
+#include <Reveal/pointers.h>
+#include <Reveal/experiment.h>
+#include <Reveal/scenario.h>
+#include <Reveal/trial.h>
+#include <Reveal/solution.h>
+#include <Reveal/transport_exchange.h>
 
-#include <sstream>
+#include "models.h"
 
 #define MAX_SIM_TIME 100.0
 
+typedef double Real;
+
 //-----------------------------------------------------------------------------
-namespace gazebo 
+namespace gazebo
 {
-  class arm_controller_c : public ModelPlugin
+  class world_plugin_c : public WorldPlugin
   {
   private:
-    // the reference so that this ship is inserted into gazebo's callback system
-    event::ConnectionPtr _updateConnection;
-    // the gazebo reference to the world in which the ship is located
-    physics::WorldPtr _world;
 
+    event::ConnectionPtr updateConnection;
+
+    //physics::WorldPtr _world;
+
+    world_ptr _world;
     arm_ptr _arm;
     target_ptr _target;
 
+    common::Time start_time, last_time;
+    common::Time sim_time;
+
+    bool first_trial;
+    bool last_trial;
+
+    Reveal::Core::authorization_ptr auth;
+    Reveal::Core::scenario_ptr scenario;
+    Reveal::Core::experiment_ptr experiment;
+    Reveal::Core::trial_ptr trial;
+    Reveal::Core::solution_ptr solution;
+
+    /* Begin - Analytics */
     // left gripper energy constants
     math::Vector3 _target_c_v_l;
     math::Vector3 _target_c_omega_l;
     // right gripper energy constants
     math::Vector3 _target_c_v_r;
     math::Vector3 _target_c_omega_r;
+
+    double previous_t;
+    /* End - Analytics */
+
+
+  private:
+    Reveal::Core::pipe_ptr _revealpipe;
+
+    //-------------------------------------------------------------------------
+    bool connect( void ) {
+      //TODO: correct constructor
+      printf( "Connecting to server...\n" );
+
+      // TODO: For now, these hardcoded values are okay, but most likely needs 
+      // to be configurable through defines in cmake
+      unsigned port = GAZEBO_PORT;
+      std::string host = "localhost";
+      _revealpipe = Reveal::Core::pipe_ptr( new Reveal::Core::pipe_c( host, port ) );
+      if( _revealpipe->open() != Reveal::Core::pipe_c::ERROR_NONE ) {
+        return false;
+      }
+
+      printf( "Connected\n" );
+      return true;
+    }
+
+    /* Begin - Analytics */
+    //-------------------------------------------------------------------------
+    static math::Vector3 to_omega( math::Quaternion q, math::Quaternion qd ) {
+      math::Vector3 omega;
+      omega.x = 2 * (-q.x * qd.w + q.w * qd.x - q.z * qd.y + q.y * qd.z);
+      omega.y = 2 * (-q.y * qd.w + q.z * qd.x + q.w * qd.y - q.x * qd.z);
+      omega.z = 2 * (-q.z * qd.w - q.y * qd.x + q.x * qd.y + q.w * qd.z);
+      return omega;
+    }
+
+    //-------------------------------------------------------------------------
+    static math::Quaternion deriv( math::Quaternion q, math::Vector3 w) {
+      math::Quaternion qd;
+
+      qd.w = .5 * (-q.x * w.x - q.y * w.y - q.z * w.z);
+      qd.x = .5 * (+q.w * w.x + q.z * w.y - q.y * w.z);
+      qd.y = .5 * (-q.z * w.x + q.w * w.y + q.x * w.z);
+      qd.z = .5 * (+q.y * w.x - q.x * w.y + q.w * w.z);
+
+      return qd;
+    }
 
     //-------------------------------------------------------------------------
     static double energy( physics::LinkPtr gripper, physics::LinkPtr grip_target, math::Vector3 c_v, math::Vector3 c_omega, double target_mass, math::Matrix3 target_I_tensor, double dt ) {
@@ -69,10 +137,10 @@ namespace gazebo
       math::Vector3 xd_star = desired_linvel;
       math::Quaternion q = current_pose.rot;
       math::Quaternion q_star = desired_pose.rot;
-  
+
       math::Vector3 thetad = current_angvel;
       math::Vector3 thetad_star = desired_angvel;
-  
+
       /*
       std::cout << "m:" << m << std::endl;
       std::cout << "I:" << I << std::endl;
@@ -86,70 +154,95 @@ namespace gazebo
       std::cout << "thetad:" << thetad << std::endl;
       std::cout << "thetad_star:" << thetad_star << std::endl;
       */
-  
+
       math::Vector3 v;
       math::Vector3 omega;
-  
+
       math::Quaternion qd = (q_star - q) * (1.0 / dt);
       //  std::cout << "qd:" << qd << std::endl;
-  
+
       // assert qd not normalized
       const double EPSILON = 1e8;
       double mag = qd.x * qd.x + qd.y * qd.y + qd.z * qd.z + qd.w * qd.w;
       //std::cout << "mag:" << mag << std::endl;
       //assert( fabs( mag - 1.0 ) > EPSILON );
-  
+
       v = (x_star - x) / dt + (xd_star - xd);
       //  std::cout << "v:" << v << std::endl;
       omega = to_omega( q, qd ) + (thetad_star - thetad);
       //  std::cout << "omega:" << omega << std::endl;
-  
+
       //                 linear          +        angular
       double KE = (0.5 * v.Dot( v ) * mass) + (0.5 * omega.Dot( I_tensor * omega ));
       //  std::cout << "KE:" << KE << std::endl;
       return KE;
     }
+    /* End - Analytics */
 
-    //-------------------------------------------------------------------------
-    static math::Vector3 to_omega( math::Quaternion q, math::Quaternion qd ) {
-      math::Vector3 omega;
-      omega.x = 2 * (-q.x * qd.w + q.w * qd.x - q.z * qd.y + q.y * qd.z);
-      omega.y = 2 * (-q.y * qd.w + q.z * qd.x + q.w * qd.y - q.x * qd.z);
-      omega.z = 2 * (-q.z * qd.w - q.y * qd.x + q.x * qd.y + q.w * qd.z);
-      return omega;
-    }
-
-    //-------------------------------------------------------------------------
-    static math::Quaternion deriv( math::Quaternion q, math::Vector3 w) {
-      math::Quaternion qd;
-
-      qd.w = .5 * (-q.x * w.x - q.y * w.y - q.z * w.z); 
-      qd.x = .5 * (+q.w * w.x + q.z * w.y - q.y * w.z);
-      qd.y = .5 * (-q.z * w.x + q.w * w.y + q.x * w.z);
-      qd.z = .5 * (+q.y * w.x - q.x * w.y + q.w * w.z);
-
-      return qd;
-    }
-
-    //-------------------------------------------------------------------------
-    double previous_t;
   public:
-    //-------------------------------------------------------------------------
-    arm_controller_c( void ) { }
 
     //-------------------------------------------------------------------------
-    virtual ~arm_controller_c( void ) {
-      event::Events::DisconnectWorldUpdateBegin( _updateConnection );
+    world_plugin_c( ) {
+
     }
 
     //-------------------------------------------------------------------------
-    // Gazebo callback.  Called when the simulation is starting up
-    virtual void Load( physics::ModelPtr model, sdf::ElementPtr sdf ) {
-      // -- PRINCIPLE REFERENCES --
-      _world = model->GetWorld();
+    ~world_plugin_c( ) {
+      event::Events::DisconnectWorldUpdateBegin( this->updateConnection );
+      _revealpipe->close();
+    }
 
+  protected:
+
+    //-------------------------------------------------------------------------
+    void Load(physics::WorldPtr world, sdf::ElementPtr sdf) {
+      std::cerr << "Starting World Plugin" << std::endl;
+
+      if( !connect() ) {
+        std::cerr << "Failed to connect to Reveal Client\nExiting\n" << std::endl;
+        exit( 1 );
+      }
+      std::cerr << "Connected to Reveal Client" << std::endl;
+
+
+      // read experiment
+      Reveal::Core::transport_exchange_c ex;
+      std::string msg;
+      // block waiting for a server msg
+      if( _revealpipe->read( msg ) != Reveal::Core::pipe_c::ERROR_NONE ) {
+        // TODO: error recovery
+      }
+
+      Reveal::Core::transport_exchange_c::error_e ex_err;
+      ex_err = ex.parse_server_experiment( msg, auth, scenario, experiment );
+      //TODO trap error
+
+      this->updateConnection = event::Events::ConnectWorldUpdateBegin(
+          boost::bind( &world_plugin_c::Update, this ) );
+
+      //_world = world;
+      _world = world_ptr( new world_c( world ) );
+
+      //start_time = world->GetSimTime();
+      //last_time = start_time;
+      //sim_time = common::Time( 0.0 );
+      //_world->SetSimTime( sim_time );
+      _world->sim_time( 0.0 );
+
+      first_trial = true;
+      last_trial = false;
+
+      std::string validation_errors;
+      if( !_world->validate( validation_errors ) ) {
+        printf( "Unable to validate world in world_plugin\n%s\nERROR: Plugin failed to load\n", validation_errors.c_str() );
+        return;
+      }
+
+      _arm = _world->arm();
+      _target = _world->target();
+/*
       // create the arm model encapsulation structure and validate it 
-      _arm = arm_ptr( new arm_c( model ) );
+      _arm = arm_ptr( new arm_c( world ) );
       std::string validation_errors;
       if( !_arm->validate( validation_errors ) ) {
         printf( "Unable to validate industrial_arm model in arm_controller\n%s\nERROR: Plugin failed to load\n", validation_errors.c_str() );
@@ -157,31 +250,19 @@ namespace gazebo
       }
 
       // create the target model encapsulation structure and validate it 
-      _target = target_ptr( new target_c( model->GetWorld() ) );
+      _target = target_ptr( new target_c( world ) );
       if( !_target->validate( validation_errors ) ) {
         printf( "Unable to validate block model in arm_controller\n%s\nERROR: Plugin failed to load\n", validation_errors.c_str() );
         return;
       }
-
+*/
       // reset the world before we begin
-      _world->Reset();  
-  
-      // set the starting velocity for the joints
-      const double PERIOD = 5.0;
-      const double AMP = 0.5;
-      const double SMALL_AMP = AMP*0.1;
-      _arm->shoulder_pan_actuator()->SetVelocity(0, std::cos(0)*AMP*PERIOD);
-      _arm->shoulder_lift_actuator()->SetVelocity(0, std::cos(0)*SMALL_AMP*PERIOD*2.0);
-      _arm->elbow_actuator()->SetVelocity(0, std::cos(0)*AMP*PERIOD*2.0/3.0);
-      _arm->wrist1_actuator()->SetVelocity(0, std::cos(0)*AMP*PERIOD*1.0/7.0);
-      _arm->wrist2_actuator()->SetVelocity(0, std::cos(0)*AMP*PERIOD*2.0/11.0);
-      _arm->wrist3_actuator()->SetVelocity(0, std::cos(0)*AMP*PERIOD*3.0/13.0);
-  
-      // -- CALLBACKS --
-      _updateConnection = event::Events::ConnectWorldUpdateBegin(
-        boost::bind( &arm_controller_c::Update, this ) );
-  
+      //_world->Reset();
+      _world->reset();
+
       // Get targets
+
+      /* Begin - Analytics */
       math::Vector3 c_v, c_omega;
       // left gripper energy constants
       c_v = _arm->finger_l()->GetWorldPose().pos - _target->link()->GetWorldPose().pos;
@@ -194,48 +275,114 @@ namespace gazebo
       c_omega = to_omega( _arm->finger_r()->GetWorldPose().rot, _target->link()->GetWorldPose().rot );
       _target_c_omega_r = c_omega;
       //printf( "found block target\n" );
-  
+
       previous_t = 0.0;
-  
-      // -- FIN --
-      printf( "arm_controller has initialized\n" );
-  
+      /* End - Analytics */
     }
 
     //-------------------------------------------------------------------------
-    // Gazebo callback.  Called whenever the simulation advances a timestep
-    virtual void Update( ) {
+    void Update( ) {
+      Reveal::Core::transport_exchange_c ex;
+      Reveal::Core::transport_exchange_c::error_e ex_err;
+      std::string msg;
+
+      // if not first pass, write the previous trial state to reveal client
+      if( !first_trial ) {
+        double t = _world->sim_time();
+
+        // build a solution
+        solution = scenario->get_solution( Reveal::Core::solution_c::CLIENT, trial, t );
+
+        // finish building the solution by inserting the state data
+        // TODO : This is just a bogus example
+        solution->state.append_q( 0.0 );
+        solution->state.append_dq( 0.0 );
+        //solution->print();
+
+        ex_err = ex.build_client_solution( msg, auth, experiment, solution );
+        if( ex_err != Reveal::Core::transport_exchange_c::ERROR_NONE ) {
+          //TODO: error handling
+        }
+        if( _revealpipe->write( msg ) != Reveal::Core::pipe_c::ERROR_NONE ) {
+          //TODO: error handling
+        }
+      } else {
+        first_trial = false;
+      }
+
+      // TODO: update last trial
+      // if last trial, exit gazebo
+      if( last_trial ) {
+        exit( 0 );
+      }
+
+      // read next trial state message from reveal client (block) 
+      if( _revealpipe->read( msg ) != Reveal::Core::pipe_c::ERROR_NONE ) {
+        // TODO: error recovery
+      }
+      ex.parse( msg );
+      trial = ex.get_trial();
+
+      // if this is the last trial, flip the switch
+      if( trial->trial_id == scenario->trials - 1 )
+        last_trial = true;
+
+      // overwrite gazebo state based on reveal state message
+        // read the time from the message and update
+        // read the state of each robot from the message and map to the models
+/*
+       // **SIMULATION WOULD BE RUN HERE**
+       double ti = trial->t;
+       double dt = trial->dt;
+       double tf = ti + dt;
+*/
+      
+/* 
+      double t = sim_time.Double() + 0.1;
+      sim_time.Set( t );
+
+      _world->SetSimTime( sim_time );
+
+      t = _world->GetSimTime().Double();
+      std::cerr << "World Plugin Callback: " << t << std::endl;
+
+      common::Time sim_time = world->GetSimTime();
+
+      last_time = sim_time;
+*/
+
+      /* Begin - Analytics */
       // get the current time
-      double t = _world->GetSimTime().Double();
+      double t = _world->sim_time();
       double dt = t - previous_t;
-      double real_time = _world->GetRealTime().Double(); 
-  
+      double real_time = _world->real_time();
+
       //std::stringstream data;
       std::vector<double> avgKEs;
-  
+
       //std::cout << "t : " << t << std::endl;
       //data << t << "," << real_time;
       // compute the energy of the target
-  
+
       // get the inertial properties of the box
       physics::InertialPtr gz_inertial = _target->link()->GetInertial();
       double m = gz_inertial->GetMass();
       math::Vector3 pm = gz_inertial->GetPrincipalMoments();
       math::Matrix3 I( pm.x, 0.0, 0.0, 0.0, pm.y, 0.0, 0.0, 0.0, pm.z);
-  
+
       double KE_l = energy( _arm->finger_l(), _target->link(), _target_c_v_l, _target_c_omega_l, m, I, dt );
       double KE_r = energy( _arm->finger_r(), _target->link(), _target_c_v_r, _target_c_omega_r, m, I, dt );
-  
+
       double avg_KE = (KE_l + KE_r) / 2.0;
       //avgKEs.push_back( avg_KE );
-  
+
       //std::cout << i << " KE[l,r,avg],pos : " << KE_l<< "," << KE_r << "," << avg_KE << "," << target->GetWorldPose().pos << std::endl;
       //data << "," << "0" << "," << KE_l << "," << KE_r << "," << avg_KE << "," << target->GetWorldPose().pos;
-      
+
       //std::cout << "--------------------" << std::endl;
       //data << std::endl;
       //energy_log->write( data.str() );
-  
+
       // check for exit condition
       if( fabs(avg_KE) > 1.0e7 ) {
         printf( "Kinetic Energy of the block exceeded 1e7... Killing sim.\n" );
@@ -245,79 +392,16 @@ namespace gazebo
         printf( "Maximum simulation time exceeded... Killing sim\n" );
         exit( 0 );
       }
-  
-      // determinet the desired position and velocity for the controller 
-      const double PERIOD = 5.0;
-      const double AMP = 0.5;
-      const double SMALL_AMP = AMP*0.1;
-      double sh_pan_q_des = std::sin(t)*AMP*PERIOD;
-      double sh_pan_qd_des = std::cos(t)*AMP*PERIOD;
-      double sh_lift_q_des = std::sin(t*2.0)*SMALL_AMP*PERIOD*2.0;
-      double sh_lift_qd_des = std::cos(t*2.0)*SMALL_AMP*PERIOD*2.0;
-      double elbow_q_des = std::sin(t*2.0/3.0)*AMP*PERIOD*2.0/3.0;
-      double elbow_qd_des = std::cos(t*2.0/3.0)*AMP*PERIOD*2.0/3.0;
-      double wrist1_q_des = std::sin(t*1.0/7.0)*AMP*PERIOD*1.0/7.0;
-      double wrist1_qd_des = std::cos(t*1.0/7.0)*AMP*PERIOD*1.0/7.0;
-      double wrist2_q_des = std::sin(t*2.0/11.0)*AMP*PERIOD*2.0/11.0;
-      double wrist2_qd_des = std::cos(t*2.0/11.0)*AMP*PERIOD*2.0/11.0;
-      double wrist3_q_des = std::sin(t*3.0/13.0)*AMP*PERIOD*3.0/13.0;
-      double wrist3_qd_des = std::cos(t*3.0/13.0)*AMP*PERIOD*3.0/13.0;
-  
-      // compute the errors
-      double sh_pan_q_err = (sh_pan_q_des - _arm->shoulder_pan_actuator()->GetAngle(0).Radian());
-      double sh_pan_qd_err = (sh_pan_qd_des - _arm->shoulder_pan_actuator()->GetVelocity(0));
-      double sh_lift_q_err = (sh_lift_q_des - _arm->shoulder_lift_actuator()->GetAngle(0).Radian());
-      double sh_lift_qd_err = (sh_lift_qd_des - _arm->shoulder_lift_actuator()->GetVelocity(0));
-      double elbow_q_err = (elbow_q_des - _arm->elbow_actuator()->GetAngle(0).Radian());
-      double elbow_qd_err = (elbow_qd_des - _arm->elbow_actuator()->GetVelocity(0));
-      double wrist1_q_err = (wrist1_q_des - _arm->wrist1_actuator()->GetAngle(0).Radian());
-      double wrist1_qd_err = (wrist1_qd_des - _arm->wrist1_actuator()->GetVelocity(0));
-      double wrist2_q_err = (wrist2_q_des - _arm->wrist2_actuator()->GetAngle(0).Radian());
-      double wrist2_qd_err = (wrist2_qd_des - _arm->wrist2_actuator()->GetVelocity(0));
-      double wrist3_q_err = (wrist3_q_des - _arm->wrist3_actuator()->GetAngle(0).Radian());
-      double wrist3_qd_err = (wrist3_qd_des - _arm->wrist3_actuator()->GetVelocity(0));
-  
-      // setup gains
-      const double SH_KP = 300.0, SH_KV = 120.0;
-      const double EL_KP = 60.0, EL_KV = 24.0;
-      const double WR_KP = 15.0, WR_KV = 6.0;
-   
-      // compute the actuator forces
-      double sh_pan_f = SH_KP*sh_pan_q_err + SH_KV*sh_pan_qd_err;
-      double sh_lift_f = SH_KP*sh_lift_q_err + SH_KV*sh_lift_qd_err;
-      double elbow_f = EL_KP*elbow_q_err + EL_KV*elbow_qd_err;
-      double wrist1_f = WR_KP*wrist1_q_err + WR_KV*wrist1_qd_err;
-      double wrist2_f = WR_KP*wrist2_q_err + WR_KV*wrist2_qd_err;
-      double wrist3_f = WR_KP*wrist3_q_err + WR_KV*wrist3_qd_err;
-  
-      // set the actuator forces for the arm
-      _arm->shoulder_pan_actuator()->SetForce(0, sh_pan_f);
-      _arm->shoulder_lift_actuator()->SetForce(0, sh_lift_f);
-      _arm->elbow_actuator()->SetForce(0, elbow_f);
-      _arm->wrist1_actuator()->SetForce(0, wrist1_f);
-      _arm->wrist2_actuator()->SetForce(0, wrist2_f);
-      _arm->wrist3_actuator()->SetForce(0, wrist3_f);
-  
-      // Simple close fingers test case
-      _arm->finger_actuator_l()->SetForce(0, 100);  // close
-      //_arm->finger_actuator_l()->SetForce(0, -0.00001);  // open
-  
-      _arm->finger_actuator_r()->SetForce(0,-100); // close
-      //_arm->finger_actuator_r()->SetForce(0,0.00001);  //open
-  
+
       previous_t = t;
+      /* End - Analytics */
 
     }
 
-    //-------------------------------------------------------------------------
-    // Gazebo callback.  Called whenever the simulation is reset
-    //virtual void Reset( ) { }
-
   };
 
-  GZ_REGISTER_MODEL_PLUGIN( arm_controller_c )
+  GZ_REGISTER_WORLD_PLUGIN( world_plugin_c )
 
 } // namespace gazebo
 
-//-----------------------------------------------------------------------------
 

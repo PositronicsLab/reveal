@@ -53,6 +53,6 @@ set( REVEAL_DB_INCLUDE_DIR
 # set the variables in PARENT_SCOPE as well
 set( REVEAL_DB_INCLUDE_DIR ${REVEAL_DB_INCLUDE_DIR} PARENT_SCOPE )
 
-#add_subdirectory( test )
+add_subdirectory( test )
 
 

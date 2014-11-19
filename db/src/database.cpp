@@ -11,6 +11,7 @@
 
 #include <Reveal/query.h>
 
+#include <Reveal/pointers.h>
 #include <Reveal/user.h>
 #include <Reveal/session.h>
 #include <Reveal/experiment.h>
@@ -19,6 +20,9 @@
 #include <Reveal/trial.h>
 #include <Reveal/solution.h>
 #include <Reveal/solution_set.h>
+#include <Reveal/model.h>
+#include <Reveal/link.h>
+#include <Reveal/joint.h>
 
 //-----------------------------------------------------------------------------
 
@@ -366,14 +370,54 @@ database_c::error_e database_c::insert( Reveal::Core::trial_ptr trial ) {
   bob_trial.append( "trial_id", trial->trial_id );
   bob_trial.append( "t", trial->t );
   bob_trial.append( "dt", trial->dt );
-  mongo::BSONArrayBuilder bab_trial_state_q;
-  for( unsigned iq = 0; iq < trial->state.size_q(); iq++ ) 
-    bab_trial_state_q.append( trial->state.q(iq) );
-  bob_trial.appendArray( "state_q", bab_trial_state_q.arr() );
-  mongo::BSONArrayBuilder bab_trial_state_dq;
-  for( unsigned idq = 0; idq < trial->state.size_dq(); idq++ ) 
-    bab_trial_state_dq.append( trial->state.dq(idq) );
-  bob_trial.appendArray( "state_dq", bab_trial_state_dq.arr() );
+
+  mongo::BSONArrayBuilder bab_models;
+  for( unsigned i = 0; i < trial->models.size(); i++ ) {
+    Reveal::Core::model_ptr model = trial->models[i];
+    mongo::BSONObjBuilder bob_model;
+    bob_model.append( "id", model->id );
+
+    mongo::BSONArrayBuilder bab_links;
+    for( unsigned j = 0; j < model->links.size(); j++ ) {
+      Reveal::Core::link_ptr link = model->links[j];
+      mongo::BSONObjBuilder bob_link;
+      bob_link.append( "id", link->id );
+
+      mongo::BSONArrayBuilder bab_state_q;
+      for( unsigned k = 0; k < link->state.size_q(); k++ ) {
+        bab_state_q.append( link->state.q(k) );
+      }
+      bob_link.appendArray( "state_q", bab_state_q.arr() );
+      
+      mongo::BSONArrayBuilder bab_state_dq;
+      for( unsigned k = 0; k < link->state.size_dq(); k++ ) {
+        bab_state_dq.append( link->state.dq(k) );
+      }
+      bob_link.appendArray( "state_dq", bab_state_dq.arr() );
+
+      bab_links.append( bob_link.obj() );
+    }
+    bob_model.appendArray( "links", bab_links.arr() );
+
+    mongo::BSONArrayBuilder bab_joints;
+    for( unsigned j = 0; j < model->joints.size(); j++ ) {
+      Reveal::Core::joint_ptr joint = model->joints[j];
+      mongo::BSONObjBuilder bob_joint;
+      bob_joint.append( "id", joint->id );
+
+      mongo::BSONArrayBuilder bab_control_u;
+      for( unsigned k = 0; k < joint->control.size_u(); k++ ) {
+        bab_control_u.append( joint->control.u(k) );
+      }
+      bob_joint.appendArray( "control_u", bab_control_u.arr() );
+
+      bab_joints.append( bob_joint.obj() );
+    }
+    bob_model.appendArray( "joints", bab_joints.arr() );
+
+    bab_models.append( bob_model.obj() );
+  }
+  bob_trial.appendArray( "models", bab_models.arr() );
 
   mongo::BSONObj trial_query = bob_trial.obj();
   
@@ -403,6 +447,60 @@ database_c::error_e database_c::query( Reveal::Core::trial_ptr& trial, const std
   trial->t = record.getField( "t" ).Double();
   trial->dt = record.getField( "dt" ).Double();
 
+  // TODO : replace the below with parsing the models
+
+  mongo::BSONObj bson_models = record.getObjectField( "models" );
+  std::vector<mongo::BSONElement> vec_models;
+  bson_models.elems( vec_models );
+  for( unsigned i = 0; i < vec_models.size(); i++ ) {
+    Reveal::Core::model_ptr model = Reveal::Core::model_ptr( new Reveal::Core::model_c() );
+    //mongo::BSONObj bson_model = vec_models[i].Obj().getObjectField( "model" );
+    mongo::BSONObj bson_model = vec_models[i].Obj();
+    model->id = bson_model.getField( "id" ).String();
+
+    mongo::BSONObj bson_links = bson_model.getObjectField( "links" );
+    std::vector<mongo::BSONElement> vec_links;
+    bson_links.elems( vec_links );
+    for( unsigned j = 0; j < vec_links.size(); j++ ) {
+      Reveal::Core::link_ptr link = Reveal::Core::link_ptr( new Reveal::Core::link_c() );
+      link->id = vec_links[j].Obj().getField( "id" ).String();
+
+      mongo::BSONObj bson_state_q = vec_links[j].Obj().getObjectField( "state_q" );
+      std::vector<mongo::BSONElement> vec_state_q;
+      bson_state_q.elems( vec_state_q );
+      for( unsigned k = 0; k < vec_state_q.size(); k++ )
+        link->state.q( k, vec_state_q[k].Double() );
+
+      mongo::BSONObj bson_state_dq = vec_links[j].Obj().getObjectField( "state_dq" );
+      std::vector<mongo::BSONElement> vec_state_dq;
+      bson_state_dq.elems( vec_state_dq );
+      for( unsigned k = 0; k < vec_state_dq.size(); k++ )
+        link->state.dq( k, vec_state_dq[k].Double() );
+
+      model->links.push_back( link );
+    }
+
+    mongo::BSONObj bson_joints = bson_model.getObjectField( "joints" );
+    std::vector<mongo::BSONElement> vec_joints;
+    bson_joints.elems( vec_joints );
+    for( unsigned j = 0; j < vec_joints.size(); j++ ) {
+      Reveal::Core::joint_ptr joint = Reveal::Core::joint_ptr( new Reveal::Core::joint_c() );
+      joint->id = vec_joints[j].Obj().getField( "id" ).String();
+
+      mongo::BSONObj bson_control_u = vec_joints[j].Obj().getObjectField( "control_u" );
+      std::vector<mongo::BSONElement> vec_control_u;
+      bson_control_u.elems( vec_control_u );
+      for( unsigned k = 0; k < vec_control_u.size(); k++ )
+        joint->control.u( k, vec_control_u[k].Double() );
+
+      model->joints.push_back( joint );
+    }
+
+    trial->models.push_back( model );
+  }
+
+
+/*
   mongo::BSONObj bson_state_q = record.getObjectField( "state_q" );
   std::vector<mongo::BSONElement> vec_state_q;
   bson_state_q.elems( vec_state_q );
@@ -420,7 +518,7 @@ database_c::error_e database_c::query( Reveal::Core::trial_ptr& trial, const std
   bson_control_u.elems( vec_control_u );
   for( unsigned i = 0; i < vec_control_u.size(); i++ )
     trial->control.append_u( vec_control_u[i].Double() );
-
+*/
   return ERROR_NONE;
 }
 
@@ -433,14 +531,38 @@ database_c::error_e database_c::insert( Reveal::Core::solution_ptr solution ) {
   bob_solution.append( "scenario_id", solution->scenario_id );
   bob_solution.append( "trial_id", solution->trial_id );
   bob_solution.append( "t", solution->t );
-  mongo::BSONArrayBuilder bab_solution_state_q;
-  for( unsigned iq = 0; iq < solution->state.size_q(); iq++ ) 
-    bab_solution_state_q.append( solution->state.q(iq) );
-  bob_solution.appendArray( "state_q", bab_solution_state_q.arr() );
-  mongo::BSONArrayBuilder bab_solution_state_dq;
-  for( unsigned idq = 0; idq < solution->state.size_dq(); idq++ ) 
-    bab_solution_state_dq.append( solution->state.dq(idq) );
-  bob_solution.appendArray( "state_dq", bab_solution_state_dq.arr() );
+
+  mongo::BSONArrayBuilder bab_models;
+  for( unsigned i = 0; i < solution->models.size(); i++ ) {
+    Reveal::Core::model_ptr model = solution->models[i];
+    mongo::BSONObjBuilder bob_model;
+    bob_model.append( "id", model->id );
+
+    mongo::BSONArrayBuilder bab_links;
+    for( unsigned j = 0; j < model->links.size(); j++ ) {
+      Reveal::Core::link_ptr link = model->links[j];
+      mongo::BSONObjBuilder bob_link;
+      bob_link.append( "id", link->id );
+
+      mongo::BSONArrayBuilder bab_state_q;
+      for( unsigned k = 0; k < link->state.size_q(); k++ ) {
+        bab_state_q.append( link->state.q(k) );
+      }
+      bob_link.appendArray( "state_q", bab_state_q.arr() );
+      
+      mongo::BSONArrayBuilder bab_state_dq;
+      for( unsigned k = 0; k < link->state.size_dq(); k++ ) {
+        bab_state_dq.append( link->state.dq(k) );
+      }
+      bob_link.appendArray( "state_dq", bab_state_dq.arr() );
+
+      bab_links.append( bob_link.obj() );
+    }
+    bob_model.appendArray( "links", bab_links.arr() );
+
+    bab_models.append( bob_model.obj() );
+  }
+  bob_solution.appendArray( "models", bab_models.arr() );
 
   mongo::BSONObj solution_query = bob_solution.obj();
   
@@ -480,6 +602,40 @@ database_c::error_e database_c::query( Reveal::Core::solution_ptr& solution, Rev
   solution->trial_id = record.getField( "trial_id" ).Int();
   solution->t = record.getField( "t" ).Double();
 
+  mongo::BSONObj bson_models = record.getObjectField( "models" );
+  std::vector<mongo::BSONElement> vec_models;
+  bson_models.elems( vec_models );
+  for( unsigned i = 0; i < vec_models.size(); i++ ) {
+    Reveal::Core::model_ptr model = Reveal::Core::model_ptr( new Reveal::Core::model_c() );
+    mongo::BSONObj bson_model = vec_models[i].Obj();
+    model->id = bson_model.getField( "id" ).String();
+
+    mongo::BSONObj bson_links = bson_model.getObjectField( "links" );
+    std::vector<mongo::BSONElement> vec_links;
+    bson_links.elems( vec_links );
+    for( unsigned j = 0; j < vec_links.size(); j++ ) {
+      Reveal::Core::link_ptr link = Reveal::Core::link_ptr( new Reveal::Core::link_c() );
+      link->id = vec_links[j].Obj().getField( "id" ).String();
+
+      mongo::BSONObj bson_state_q = vec_links[j].Obj().getObjectField( "state_q" );
+      std::vector<mongo::BSONElement> vec_state_q;
+      bson_state_q.elems( vec_state_q );
+      for( unsigned k = 0; k < vec_state_q.size(); k++ )
+        link->state.q( k, vec_state_q[k].Double() );
+
+      mongo::BSONObj bson_state_dq = vec_links[j].Obj().getObjectField( "state_dq" );
+      std::vector<mongo::BSONElement> vec_state_dq;
+      bson_state_dq.elems( vec_state_dq );
+      for( unsigned k = 0; k < vec_state_dq.size(); k++ )
+        link->state.dq( k, vec_state_dq[k].Double() );
+
+      model->links.push_back( link );
+    }
+    solution->models.push_back( model );
+  }
+
+  // TODO : replace the below with parsing the models
+/*
   mongo::BSONObj bson_state_q = record.getObjectField( "state_q" );
   std::vector<mongo::BSONElement> vec_state_q;
   bson_state_q.elems( vec_state_q );
@@ -491,7 +647,7 @@ database_c::error_e database_c::query( Reveal::Core::solution_ptr& solution, Rev
   bson_state_dq.elems( vec_state_dq );
   for( unsigned i = 0; i < vec_state_dq.size(); i++ )
     solution->state.append_dq( vec_state_dq[i].Double() );
-
+*/
   return ERROR_NONE;
 }
 
@@ -565,6 +721,7 @@ database_c::error_e database_c::query( Reveal::Core::solution_set_ptr& solution_
   solution_set = Reveal::Core::solution_set_ptr( new Reveal::Core::solution_set_c() );
 
   error = query( scenario, scenario_id );
+  if( error != ERROR_NONE ) return error;
   // TODO : error check and handle
   // If above succeeds or recovers then proceed else bomb out
 

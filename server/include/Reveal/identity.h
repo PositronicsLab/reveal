@@ -26,7 +26,8 @@ std::string generate_uuid( void ) {
   uuid_generate( uuid );
 
   char buffer[16];
-  sprintf( buffer, "%X", uuid );
+  //sprintf( buffer, "%X", uuid );
+  sprintf( buffer, "%s", uuid );
   
   std::string result = buffer;
   return result;

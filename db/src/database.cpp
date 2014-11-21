@@ -225,6 +225,7 @@ database_c::error_e database_c::insert( Reveal::Core::experiment_ptr experiment 
   bob_experiment.append( "session_id", experiment->session_id );
   bob_experiment.append( "scenario_id", experiment->scenario_id );
   bob_experiment.append( "trials", experiment->number_of_trials );
+  bob_experiment.append( "steps_per_trial", experiment->steps_per_trial );
 
   // TODO: need a loop to serialize or a subdocument
   //bob_experiment.append( "trial_prescription", experiment->trial_prescription );
@@ -259,6 +260,7 @@ database_c::error_e database_c::query( Reveal::Core::experiment_ptr& experiment,
   experiment->session_id = record.getField( "session_id" ).String();
   experiment->scenario_id = record.getField( "scenario_id" ).Int();
   experiment->number_of_trials = record.getField( "trials" ).Int();
+  experiment->steps_per_trial = record.getField( "steps_pre_trial" ).Int();
   // TODO : subdocument for trial prescription
   experiment->current_trial_index = record.getField( "current_trial_index" ).Int();
  
@@ -302,6 +304,7 @@ database_c::error_e database_c::query( Reveal::Core::digest_ptr& digest ) {
    
     scenario->id = record.getField( "scenario_id" ).String();
     scenario->trials = record.getField( "trials" ).Int();
+    scenario->steps_per_trial = record.getField( "steps_per_trial" ).Int();
     scenario->description = record.getField( "description" ).String();
     // number of resources?
 
@@ -321,6 +324,7 @@ database_c::error_e database_c::insert( Reveal::Core::scenario_ptr scenario ) {
   bob_scenario.append( "scenario_id", scenario->id );
   bob_scenario.append( "description", scenario->description );
   bob_scenario.append( "trials", scenario->trials );
+  bob_scenario.append( "steps_per_trial", scenario->steps_per_trial );
   for( unsigned uri = 0; uri < scenario->uris.size(); uri++ )
     bab_scenario_uris.append( scenario->uris[uri] );
   bob_scenario.appendArray( "uris", bab_scenario_uris.arr() );
@@ -351,6 +355,7 @@ database_c::error_e database_c::query( Reveal::Core::scenario_ptr& scenario, con
   scenario->id = record.getField( "scenario_id" ).String();
   scenario->description = record.getField( "description" ).String();
   scenario->trials = record.getField( "trials" ).Int();
+  scenario->steps_per_trial = record.getField( "steps_per_trial" ).Int();
 
   mongo::BSONObj bson_uris = record.getObjectField( "uris" );
   std::vector<mongo::BSONElement> vec_uris;

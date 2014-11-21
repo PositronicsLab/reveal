@@ -38,6 +38,7 @@ message Experiment {
   optional string experiment_id = 1;
   optional string scenario_id = 2;
   optional int32 trials = 3;
+  optional int32 steps_per_trial = 4;
 }
 
 // A given scenario to evaluate
@@ -45,7 +46,8 @@ message Scenario {
   required string id = 1;
   optional string description = 2 [default = ""];
   optional int32 trials = 3 [default = 0];
-  repeated string uri = 4;
+  optional int32 steps_per_trial = 4 [default = 1];
+  repeated string uri = 5;
 }
 
 // A single trial within a scenario

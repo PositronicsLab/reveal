@@ -35,11 +35,13 @@ public:
   std::string id;
   std::string description;
   unsigned trials;
+  unsigned steps_per_trial;
   std::vector<std::string> uris;
 
   void print( void ) const {
     printf( "id[%s]", id.c_str() );
     printf( ", trials[%u]", trials );
+    printf( ", steps_per_trial[%u]", steps_per_trial );
     printf( ", uris[" );
     for( unsigned i = 0; i < uris.size(); i++ ) {
       if( i > 0 ) printf( ", " );

@@ -11,6 +11,7 @@ by a client to solve a scenario.
 
 //----------------------------------------------------------------------------
 
+#include <stdio.h>
 #include <string>
 #include <Reveal/pointers.h>
 
@@ -44,10 +45,19 @@ public:
   std::string       session_id;
   std::string       scenario_id;
   int               number_of_trials;
+  int               steps_per_trial;
   std::vector<int>  trial_prescription;
   int               current_trial_index;
   
   //                creation_timestamp;
+
+  void print( void ) const {
+    printf( "experiment_id[%s]", experiment_id.c_str() );
+    printf( ", session_id[%s]", session_id.c_str() );
+    printf( ", scenario_id[%s]", scenario_id.c_str() );
+    printf( ", number_of_trials[%u]", number_of_trials );
+    printf( ", steps_per_trial[%u]", steps_per_trial );
+  }
 };
 
 //----------------------------------------------------------------------------

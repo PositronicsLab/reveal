@@ -58,9 +58,6 @@ include_directories( /usr/local/include )
 
 #include_directories( ${INCLUDE_DIRS} )
 
-add_executable( industrial-arm-data-gen data_generator.cpp )
-target_link_libraries( industrial-arm-data-gen ${LIBS} )
-
-add_library( industrial-arm-analyzer "MODULE" plugin.cpp )
+add_library( industrial-arm-analyzer "MODULE" analyzer.cpp )
 target_link_libraries( industrial-arm-analyzer ${LIBS} )
 

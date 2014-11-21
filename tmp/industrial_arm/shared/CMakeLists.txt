@@ -20,7 +20,7 @@ link_directories( ${GAZEBO_LIBRARY_DIRS} )
 set( LIBS 
   ${GAZEBO_LIBRARIES} 
   /usr/local/lib/librevealcore.so
-  /usr/local/lib/librevealdb.so     # include only for data generation
+#  /usr/local/lib/librevealdb.so     # include only for data generation
 ) 
 
 include_directories( /usr/local/include )

@@ -27,7 +27,7 @@ namespace Core {
 /// The server's external connection port
 #define PORT            20700
 /// The size of the send buffer.  Messages are sent in chunks.
-#define SND_BUFFER_SZ   64        // Small for validation. TODO:Increase
+#define SND_BUFFER_SZ   1024      // Small for validation. TODO:Increase
 /// The size of the receive buffer.  Must be larger than the send buffer.
 #define RCV_BUFFER_SZ   SND_BUFFER_SZ + 1 
 

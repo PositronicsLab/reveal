@@ -152,9 +152,17 @@ void* make_worker( void* args ) {
   // NOTE: paths need to be programatic
   std::string build_path = *((char* const*)args);
 
-  std::string file_name = "libcontroller.so";
-  std::string file_path = build_path + '/' + file_name;
+  //std::string file_name = "libcontroller.so";
+  //std::string file_path = build_path + '/' + file_name;
   // NOTE: may be multiple libraries built by process
+
+  // needs to be determined from manifest
+  std::string file_name = "libarm-controller.so";
+  std::string file_path = build_path + '/' + file_name;
+
+  // And also
+  //std::string file_name = "libworld-plugin.so";
+  //std::string file_path = build_path + '/' + file_name;
 
   if( pid == 0 ) {
     // CHILD PROCESS
@@ -549,12 +557,15 @@ void print_tuning_menu( void ) {
 
 //-----------------------------------------------------------------------------
 bool run_experiment( Reveal::Core::authorization_ptr auth ) {
-  std::string source_path = "/home/james/osrf/Reveal/tmp";
-  std::string build_path = "/home/james/osrf/Reveal/tmp/build";
+  //std::string source_path = "/home/james/osrf/Reveal/tmp";
+  //std::string build_path = "/home/james/osrf/Reveal/tmp/build";
+  std::string source_path = "/home/james/osrf/Reveal/tmp/industrial_arm/shared";
+  std::string build_path = "/home/james/osrf/Reveal/tmp/industrial_arm/shared/build";
 
-  std::string world_path = build_path + '/' + "test.world";
+  //std::string world_path = build_path + '/' + "test.world";
+  std::string world_path = build_path + '/' + "reveal.world";
   std::string plugin_path = build_path;
-  std::string model_path = build_path;
+  std::string model_path = build_path + '/' + "models";
 
   Reveal::Core::digest_ptr digest;
   Reveal::Core::scenario_ptr scenario;
@@ -588,7 +599,8 @@ bool run_experiment( Reveal::Core::authorization_ptr auth ) {
     printf( "ERROR: client failed to receive experiment\n" );
   } else {
     printf( "SUCCESS: client received: experiment[%s]\n", experiment->experiment_id.c_str() );
-    //experiment->print();
+    experiment->print();
+    //printf( "experiment->number_of_trials: %d\n", experiment->number_of_trials );
     scenario->print();
   }
 
@@ -725,6 +737,8 @@ bool run_experiment( Reveal::Core::authorization_ptr auth ) {
 
     char* const* exec_envars = param_array( env_strings );
 
+    printf( "gazebo_executable: %s\n", GZSERVER_BIN );
+
     execve( GZSERVER_BIN, exec_argv, exec_envars );
 
     perror( "execve" );
@@ -738,10 +752,10 @@ bool run_experiment( Reveal::Core::authorization_ptr auth ) {
     sleep( 1 );
 
     // write experiment
-
     ex.build_server_experiment( msg, auth, scenario, experiment );
 
     printf( "writing experiment to gazebo\n" );
+    //printf( "experiment->number_of_trials: %d\n", experiment->number_of_trials );
     if( gzipc->write( msg ) != Reveal::Core::pipe_c::ERROR_NONE ) {
       // TODO: trap and recover
     }
@@ -763,6 +777,7 @@ bool run_experiment( Reveal::Core::authorization_ptr auth ) {
         ex.build_server_trial( msg, auth, experiment, trial );
 
         printf( "writing experiment to gazebo\n" );
+        //printf( "experiment->number_of_trials: %d\n", experiment->number_of_trials );
         if( gzipc->write( msg ) != Reveal::Core::pipe_c::ERROR_NONE ) {
           // TODO: trap and recover
         }

@@ -27,7 +27,7 @@ class state_c {
 public:
   state_c( void ) {
     for( unsigned i = 0; i < size(); i++ ) _x[i] = 0.0;
-    _x[6] = 1.0;  // normalize w coordinate
+    _x[3] = 1.0;  // normalize w coordinate
   }
   virtual ~state_c( void ) {}
 

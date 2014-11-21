@@ -378,6 +378,7 @@ transport_exchange_c::error_e transport_exchange_c::build_authorization( Reveal:
     msg_session->set_id( _authorization->get_session() );
 //    printf( "session: %s\n", _authorization->get_session().c_str() );
   }
+
   return ERROR_NONE;
 }
 
@@ -403,64 +404,30 @@ transport_exchange_c::error_e transport_exchange_c::build_client_message( Reveal
     // scenario request
     header->set_type( Messages::Net::Message::EXPERIMENT );
     header->set_error( Messages::Net::Message::ERROR_NONE );
-    experiment_ptr experiment = get_experiment();    // accessed by method to use asserts
 
-    Messages::Data::Experiment* msg_experiment = msg->mutable_experiment();
-    msg_experiment->set_scenario_id( experiment->scenario_id );
-    //msg_experiment->set_trials( experiment->number_of_trials );
+    write_experiment( msg );
 
   } else if( _type == TYPE_TRIAL ) {
     // trial request
     header->set_type( Messages::Net::Message::TRIAL );
     header->set_error( Messages::Net::Message::ERROR_NONE );
-    trial_ptr trial = get_trial();    // accessed by method to use asserts
 
-    experiment_ptr experiment = get_experiment();    // accessed by method to use asserts
-
-    Messages::Data::Experiment* msg_experiment = msg->mutable_experiment();
-    msg_experiment->set_scenario_id( experiment->scenario_id );
-
-    Messages::Data::Trial* msg_trial = msg->mutable_trial();
-    msg_trial->set_scenario_id( trial->scenario_id );
-    msg_trial->set_trial_id( trial->trial_id );
+    write_experiment( msg );
+    write_trial( msg );
 
   } else if( _type == TYPE_SOLUTION ) {
     // solution publication
     header->set_type( Messages::Net::Message::SOLUTION );
     header->set_error( Messages::Net::Message::ERROR_NONE );
-    solution_ptr solution = get_solution();    // accessed by method to use asserts
 
-    experiment_ptr experiment = get_experiment();    // accessed by method to use asserts
-    Messages::Data::Experiment* msg_experiment = msg->mutable_experiment();
-    msg_experiment->set_scenario_id( experiment->scenario_id );
+    write_experiment( msg );
+    write_solution( msg );
 
-    Messages::Data::Solution* msg_solution = msg->mutable_solution();
-    msg_solution->set_scenario_id( solution->scenario_id );
-    msg_solution->set_trial_id( solution->trial_id );
-    msg_solution->set_t( solution->t );
-
-    for( unsigned i = 0; i < solution->models.size(); i++ ) {
-      model_ptr model = solution->models[i];
-      Messages::Data::Model* msg_model = msg_solution->add_model();
-
-      msg_model->set_id( model->id );
-      for( unsigned j = 0; j < model->links.size(); j++ ) {
-        link_ptr link = model->links[j];
-        Messages::Data::Link* msg_link = msg_model->add_link();
-
-        msg_link->set_id( link->id );
-
-        Messages::Data::State* state = msg_link->mutable_state();
-        for( unsigned k = 0; k < link->state.size_q(); k++ ) 
-          state->add_q( link->state.q(k) );
-        for( unsigned k = 0; k < link->state.size_dq(); k++ )
-          state->add_dq( link->state.dq(k) );    
-      }
-    }
   } else {
     _error = ERROR_BUILD;
     return ERROR_BUILD;
   }
+
   return ERROR_NONE;
 }
 
@@ -492,83 +459,25 @@ transport_exchange_c::error_e transport_exchange_c::build_server_message( Reveal
     // digest response
     header->set_type( Messages::Net::Message::DIGEST );
     header->set_error( Messages::Net::Message::ERROR_NONE );
-    digest_ptr digest = get_digest(); // accessed by method to use asserts
 
-    Messages::Data::Digest* msg_digest = msg->mutable_digest();
-    for( unsigned i = 0; i < digest->scenarios(); i++ ) {
-      scenario_ptr scenario = digest->get_scenario( i );
-      Messages::Data::Scenario* msg_scenario = msg_digest->add_scenario();
-      msg_scenario->set_id( scenario->id );
-      msg_scenario->set_description( scenario->description );
-      msg_scenario->set_trials( scenario->trials );
-      for( unsigned j = 0; j < scenario->uris.size(); j++ ) {
-        msg_scenario->add_uri( scenario->uris.at(j) );
-      }
-    }
+    write_digest( msg );
 
   } else if( _type == TYPE_EXPERIMENT ) {
     // experiment response
     header->set_type( Messages::Net::Message::EXPERIMENT );
     header->set_error( Messages::Net::Message::ERROR_NONE );
-    experiment_ptr experiment = get_experiment(); // accessed by method to use asserts
 
-    Messages::Data::Experiment* msg_experiment = msg->mutable_experiment();
-
-    msg_experiment->set_experiment_id( experiment->experiment_id );
-    msg_experiment->set_scenario_id( experiment->scenario_id );
-    msg_experiment->set_trials( experiment->number_of_trials );
-
-    scenario_ptr scenario = get_scenario(); // accessed by method to use asserts
-
-    Messages::Data::Scenario* msg_scenario = msg->mutable_scenario();
-
-    msg_scenario->set_id( scenario->id );
-    msg_scenario->set_description( scenario->description );
-    msg_scenario->set_trials( scenario->trials );
-    for( unsigned j = 0; j < scenario->uris.size(); j++ ) {
-      msg_scenario->add_uri( scenario->uris.at(j) );
-    }
+    write_experiment( msg );
+    write_scenario( msg );
 
   } else if( _type == TYPE_TRIAL ) {
     // trial response
     header->set_type( Messages::Net::Message::TRIAL );
     header->set_error( Messages::Net::Message::ERROR_NONE );
-    trial_ptr trial = get_trial();    // accessed by method to use asserts
 
-    Messages::Data::Trial* msg_trial = msg->mutable_trial();
-    msg_trial->set_scenario_id( trial->scenario_id );
-    msg_trial->set_trial_id( trial->trial_id );
-    msg_trial->set_t( trial->t );
-    msg_trial->set_dt( trial->dt );
+    write_experiment( msg );
+    write_trial( msg );
 
-    for( unsigned i = 0; i < trial->models.size(); i++ ) {
-      model_ptr model = trial->models[i];
-      Messages::Data::Model* msg_model = msg_trial->add_model();
-
-      msg_model->set_id( model->id );
-      for( unsigned j = 0; j < model->links.size(); j++ ) {
-        link_ptr link = model->links[j];
-        Messages::Data::Link* msg_link = msg_model->add_link();
-
-        msg_link->set_id( link->id );
-
-        Messages::Data::State* state = msg_link->mutable_state();
-        for( unsigned k = 0; k < link->state.size_q(); k++ ) 
-          state->add_q( link->state.q(k) );
-        for( unsigned k = 0; k < link->state.size_dq(); k++ )
-          state->add_dq( link->state.dq(k) );    
-      }
-      for( unsigned j = 0; j < model->joints.size(); j++ ) {
-        joint_ptr joint = model->joints[j];
-        Messages::Data::Joint* msg_joint = msg_model->add_joint();
-
-        msg_joint->set_id( joint->id );
-
-        Messages::Data::Control* control = msg_joint->mutable_control();
-        for( unsigned k = 0; k < joint->control.size_u(); k++ ) 
-          control->add_u( joint->control.u(k) );
-      }
-    }    
   } else if( _type == TYPE_SOLUTION ) {
     // solution receipt
     header->set_type( Messages::Net::Message::SOLUTION );
@@ -578,6 +487,7 @@ transport_exchange_c::error_e transport_exchange_c::build_server_message( Reveal
     _error = ERROR_BUILD;
     return ERROR_BUILD;
   }
+
   return ERROR_NONE;
 }
 
@@ -689,59 +599,26 @@ transport_exchange_c::error_e transport_exchange_c::map_client_message( Reveal::
     // flag as digest request.  Note: already handled in map_type 
 
   } else if( _type == TYPE_EXPERIMENT ) {
-    if( !msg->has_experiment() ) return ERROR_PARSE;
 
-    _experiment = experiment_ptr( new experiment_c() );
-    _experiment->scenario_id = msg->experiment().scenario_id();
+    if( !msg->has_experiment() ) return ERROR_PARSE;
+    read_experiment( msg );
 
   } else if( _type == TYPE_TRIAL ) {
+
     if( !msg->has_trial() ) return ERROR_PARSE;
-    _trial = trial_ptr( new trial_c() );
-    _trial->scenario_id = msg->trial().scenario_id();
-    _trial->trial_id = msg->trial().trial_id();
+    read_trial( msg );
 
     if( !msg->has_experiment() ) return ERROR_PARSE;
-    _experiment = experiment_ptr( new experiment_c() );
-    _experiment->scenario_id = msg->experiment().scenario_id();
+    read_experiment( msg );
 
   } else if( _type == TYPE_SOLUTION ) {
+
     // read out the solution
     if( !msg->has_solution() ) return ERROR_PARSE;
-
-    _solution = solution_ptr( new solution_c( Reveal::Core::solution_c::CLIENT ) );
-
-    _solution->scenario_id = msg->solution().scenario_id();
-    _solution->trial_id = msg->solution().trial_id();
-    _solution->t = msg->solution().t();
-
-    for( int i = 0; i < msg->solution().model_size(); i++ ) {
-      model_ptr model = model_ptr( new model_c() );
-      Messages::Data::Model msg_model = msg->solution().model(i);
-      
-      model->id = msg_model.id();
-
-      for( int j = 0; j < msg_model.link_size(); j++ ) {
-        link_ptr link = link_ptr( new link_c() );
-        Messages::Data::Link msg_link = msg_model.link(j);
-        link->id = msg_link.id();
-
-        for( int k = 0; k < msg_link.state().q_size(); k++ ) {
-          link->state.q( k, msg_link.state().q(k) );
-        }
-        for( int k = 0; k < msg_link.state().dq_size(); k++ ) {
-          link->state.dq( k, msg_link.state().dq(k) );
-        }
-
-        model->links.push_back( link );
-      }
-
-      _solution->models.push_back( model );
-    }
+    read_solution( msg );
 
     if( !msg->has_experiment() ) return ERROR_PARSE;
-    _experiment = experiment_ptr( new experiment_c() );
-    _experiment->scenario_id = msg->experiment().scenario_id();
-
+    read_experiment( msg );
   }
 
   return ERROR_NONE;
@@ -764,91 +641,285 @@ transport_exchange_c::error_e transport_exchange_c::map_server_message( Reveal::
     printf( "detected error\n" );
 
   } else if( _type == TYPE_DIGEST ) {
+
     // read out the digest
     // TODO: enumerate a specific error
     if( !msg->has_digest() ) return ERROR_PARSE;
-
-    _digest = digest_ptr( new digest_c() );
-    
-    for( int i = 0; i < msg->digest().scenario_size(); i++ ) {
-      scenario_ptr scenario = scenario_ptr( new scenario_c() );
-      _digest->add_scenario( scenario );
-
-      scenario->id = msg->digest().scenario(i).id();
-      scenario->description = msg->digest().scenario(i).description();
-      scenario->trials = msg->digest().scenario(i).trials();
-      for( int j = 0; j < msg->digest().scenario(i).uri().size(); j++ ) {
-        scenario->uris.push_back( msg->digest().scenario(i).uri(j) );
-      }
-    }
+    read_digest( msg );
 
   } else if( _type == TYPE_EXPERIMENT ) {
+
     // TODO: enumerate a specific error
     if( !msg->has_experiment() ) return ERROR_PARSE;
-
-    _experiment = experiment_ptr( new experiment_c() );
-    
-    _experiment->experiment_id = msg->experiment().experiment_id();
-    _experiment->scenario_id = msg->experiment().scenario_id();
-    _experiment->number_of_trials = msg->experiment().trials();
+    read_experiment( msg );
 
     if( !msg->has_scenario() ) return ERROR_PARSE;
-
-    _scenario = scenario_ptr( new scenario_c() );
-    
-    _scenario->id = msg->scenario().id();
-    _scenario->description = msg->scenario().description();
-    _scenario->trials = msg->scenario().trials();
-    for( int j = 0; j < msg->scenario().uri().size(); j++ ) {
-      _scenario->uris.push_back( msg->scenario().uri(j) );
-    }
+    read_scenario( msg );
 
   } else if( _type == TYPE_TRIAL ) {
+
     // read out the trial
     if( !msg->has_trial() ) return ERROR_PARSE;
+    read_trial( msg );
 
-    _trial = trial_ptr( new trial_c() );
-
-    _trial->scenario_id = msg->trial().scenario_id();
-    _trial->trial_id = msg->trial().trial_id();
-    _trial->t = msg->trial().t();
-    _trial->dt = msg->trial().dt();
-    for( int i = 0; i < msg->trial().model_size(); i++ ) {
-      model_ptr model = model_ptr( new model_c() );
-      Messages::Data::Model msg_model = msg->trial().model(i);
-      
-      model->id = msg_model.id();
-
-      for( int j = 0; j < msg_model.link_size(); j++ ) {
-        link_ptr link = link_ptr( new link_c() );
-        Messages::Data::Link msg_link = msg_model.link(j);
-        link->id = msg_link.id();
-
-        for( int k = 0; k < msg_link.state().q_size(); k++ ) {
-          link->state.q( k, msg_link.state().q(k) );
-        }
-        for( int k = 0; k < msg_link.state().dq_size(); k++ ) {
-          link->state.dq( k, msg_link.state().dq(k) );
-        }
-
-        model->links.push_back( link );
-      }
-
-      for( int j = 0; j < msg_model.joint_size(); j++ ) {
-        joint_ptr joint = joint_ptr( new joint_c() );
-        Messages::Data::Joint msg_joint = msg_model.joint(j);
-        joint->id = msg_joint.id();
-
-        for( int k = 0; k < msg_joint.control().u_size(); k++ ) {
-          joint->control.u( k, msg_joint.control().u(k) );
-        }
-
-        model->joints.push_back( joint );
-      }
-      _trial->models.push_back( model );
-    }
   } else if( _type == TYPE_SOLUTION ) {
     // accept the receipt.  Note: already handled in map_type
+  }
+
+  return ERROR_NONE;
+}
+
+//----------------------------------------------------------------------------
+transport_exchange_c::error_e transport_exchange_c::write_digest( Reveal::Core::Messages::Net::Message* msg ) {
+
+  digest_ptr digest = get_digest(); // accessed by method to use asserts
+
+  Messages::Data::Digest* msg_digest = msg->mutable_digest();
+  for( unsigned i = 0; i < digest->scenarios(); i++ ) {
+    scenario_ptr scenario = digest->get_scenario( i );
+    Messages::Data::Scenario* msg_scenario = msg_digest->add_scenario();
+    msg_scenario->set_id( scenario->id );
+    msg_scenario->set_description( scenario->description );
+    msg_scenario->set_trials( scenario->trials );
+    for( unsigned j = 0; j < scenario->uris.size(); j++ ) {
+      msg_scenario->add_uri( scenario->uris.at(j) );
+    }
+  }
+
+  return ERROR_NONE;
+}
+
+//----------------------------------------------------------------------------
+transport_exchange_c::error_e transport_exchange_c::read_digest( Reveal::Core::Messages::Net::Message* msg ) {
+
+  _digest = digest_ptr( new digest_c() );
+  
+  for( int i = 0; i < msg->digest().scenario_size(); i++ ) {
+    scenario_ptr scenario = scenario_ptr( new scenario_c() );
+    _digest->add_scenario( scenario );
+
+    scenario->id = msg->digest().scenario(i).id();
+    scenario->description = msg->digest().scenario(i).description();
+    scenario->trials = msg->digest().scenario(i).trials();
+    for( int j = 0; j < msg->digest().scenario(i).uri().size(); j++ ) {
+      scenario->uris.push_back( msg->digest().scenario(i).uri(j) );
+    }
+  }
+
+  return ERROR_NONE;
+}
+
+//----------------------------------------------------------------------------
+transport_exchange_c::error_e transport_exchange_c::write_scenario( Reveal::Core::Messages::Net::Message* msg ) {
+
+  scenario_ptr scenario = get_scenario(); // accessed by method to use asserts
+
+  Messages::Data::Scenario* msg_scenario = msg->mutable_scenario();
+
+  msg_scenario->set_id( scenario->id );
+  msg_scenario->set_description( scenario->description );
+  msg_scenario->set_trials( scenario->trials );
+  msg_scenario->set_steps_per_trial( scenario->steps_per_trial );
+  for( unsigned j = 0; j < scenario->uris.size(); j++ ) {
+    msg_scenario->add_uri( scenario->uris.at(j) );
+  }
+
+  return ERROR_NONE;
+}
+
+//----------------------------------------------------------------------------
+transport_exchange_c::error_e transport_exchange_c::read_scenario( Reveal::Core::Messages::Net::Message* msg ) {
+
+  _scenario = scenario_ptr( new scenario_c() );
+  
+  _scenario->id = msg->scenario().id();
+  _scenario->description = msg->scenario().description();
+  _scenario->trials = msg->scenario().trials();
+  _scenario->steps_per_trial = msg->scenario().steps_per_trial();
+  for( int j = 0; j < msg->scenario().uri().size(); j++ ) {
+    _scenario->uris.push_back( msg->scenario().uri(j) );
+  }
+
+  return ERROR_NONE;
+}
+
+//----------------------------------------------------------------------------
+transport_exchange_c::error_e transport_exchange_c::write_experiment( Reveal::Core::Messages::Net::Message* msg ) {
+  experiment_ptr experiment = get_experiment(); // accessed by method to use asserts
+  Messages::Data::Experiment* msg_experiment = msg->mutable_experiment();
+
+  msg_experiment->set_experiment_id( experiment->experiment_id );
+  msg_experiment->set_scenario_id( experiment->scenario_id );
+  msg_experiment->set_trials( experiment->number_of_trials );
+  msg_experiment->set_steps_per_trial( experiment->steps_per_trial );
+
+  return ERROR_NONE;
+}
+
+//----------------------------------------------------------------------------
+transport_exchange_c::error_e transport_exchange_c::read_experiment( Reveal::Core::Messages::Net::Message* msg ) {
+  _experiment = experiment_ptr( new experiment_c() );
+    
+  _experiment->scenario_id = msg->experiment().scenario_id();
+  _experiment->experiment_id = msg->experiment().experiment_id();
+  _experiment->number_of_trials = msg->experiment().trials();
+  _experiment->steps_per_trial = msg->experiment().steps_per_trial();
+
+  return ERROR_NONE;
+}
+
+//----------------------------------------------------------------------------
+transport_exchange_c::error_e transport_exchange_c::write_trial( Reveal::Core::Messages::Net::Message* msg ) {
+
+  trial_ptr trial = get_trial();    // accessed by method to use asserts
+
+  Messages::Data::Trial* msg_trial = msg->mutable_trial();
+  msg_trial->set_scenario_id( trial->scenario_id );
+  msg_trial->set_trial_id( trial->trial_id );
+  msg_trial->set_t( trial->t );
+  msg_trial->set_dt( trial->dt );
+
+  for( unsigned i = 0; i < trial->models.size(); i++ ) {
+    model_ptr model = trial->models[i];
+    Messages::Data::Model* msg_model = msg_trial->add_model();
+
+    msg_model->set_id( model->id );
+    for( unsigned j = 0; j < model->links.size(); j++ ) {
+      link_ptr link = model->links[j];
+      Messages::Data::Link* msg_link = msg_model->add_link();
+
+      msg_link->set_id( link->id );
+
+      Messages::Data::State* state = msg_link->mutable_state();
+      for( unsigned k = 0; k < link->state.size_q(); k++ ) 
+        state->add_q( link->state.q(k) );
+      for( unsigned k = 0; k < link->state.size_dq(); k++ )
+        state->add_dq( link->state.dq(k) );    
+    }
+    for( unsigned j = 0; j < model->joints.size(); j++ ) {
+      joint_ptr joint = model->joints[j];
+      Messages::Data::Joint* msg_joint = msg_model->add_joint();
+
+      msg_joint->set_id( joint->id );
+
+      Messages::Data::Control* control = msg_joint->mutable_control();
+      for( unsigned k = 0; k < joint->control.size_u(); k++ ) 
+        control->add_u( joint->control.u(k) );
+    }
+  }
+
+  return ERROR_NONE;
+}
+
+//----------------------------------------------------------------------------
+transport_exchange_c::error_e transport_exchange_c::read_trial( Reveal::Core::Messages::Net::Message* msg ) {
+
+  _trial = trial_ptr( new trial_c() );
+
+  _trial->scenario_id = msg->trial().scenario_id();
+  _trial->trial_id = msg->trial().trial_id();
+  _trial->t = msg->trial().t();
+  _trial->dt = msg->trial().dt();
+  for( int i = 0; i < msg->trial().model_size(); i++ ) {
+    model_ptr model = model_ptr( new model_c() );
+    Messages::Data::Model msg_model = msg->trial().model(i);
+    
+    model->id = msg_model.id();
+
+    for( int j = 0; j < msg_model.link_size(); j++ ) {
+      link_ptr link = link_ptr( new link_c() );
+      Messages::Data::Link msg_link = msg_model.link(j);
+      link->id = msg_link.id();
+
+      for( int k = 0; k < msg_link.state().q_size(); k++ ) {
+        link->state.q( k, msg_link.state().q(k) );
+      }
+      for( int k = 0; k < msg_link.state().dq_size(); k++ ) {
+        link->state.dq( k, msg_link.state().dq(k) );
+      }
+
+      model->links.push_back( link );
+    }
+
+    for( int j = 0; j < msg_model.joint_size(); j++ ) {
+      joint_ptr joint = joint_ptr( new joint_c() );
+      Messages::Data::Joint msg_joint = msg_model.joint(j);
+      joint->id = msg_joint.id();
+
+      for( int k = 0; k < msg_joint.control().u_size(); k++ ) {
+        joint->control.u( k, msg_joint.control().u(k) );
+      }
+
+      model->joints.push_back( joint );
+    }
+    _trial->models.push_back( model );
+  }
+
+  return ERROR_NONE;
+}
+
+//----------------------------------------------------------------------------
+transport_exchange_c::error_e transport_exchange_c::write_solution( Reveal::Core::Messages::Net::Message* msg ) {
+
+  solution_ptr solution = get_solution();    // accessed by method to use asserts
+  Messages::Data::Solution* msg_solution = msg->mutable_solution();
+  msg_solution->set_scenario_id( solution->scenario_id );
+  msg_solution->set_trial_id( solution->trial_id );
+  msg_solution->set_t( solution->t );
+
+  for( unsigned i = 0; i < solution->models.size(); i++ ) {
+    model_ptr model = solution->models[i];
+    Messages::Data::Model* msg_model = msg_solution->add_model();
+
+    msg_model->set_id( model->id );
+    for( unsigned j = 0; j < model->links.size(); j++ ) {
+      link_ptr link = model->links[j];
+      Messages::Data::Link* msg_link = msg_model->add_link();
+
+      msg_link->set_id( link->id );
+
+      Messages::Data::State* state = msg_link->mutable_state();
+      for( unsigned k = 0; k < link->state.size_q(); k++ ) 
+        state->add_q( link->state.q(k) );
+      for( unsigned k = 0; k < link->state.size_dq(); k++ )
+        state->add_dq( link->state.dq(k) );    
+    }
+  }
+
+  return ERROR_NONE;
+}
+
+//----------------------------------------------------------------------------
+transport_exchange_c::error_e transport_exchange_c::read_solution( Reveal::Core::Messages::Net::Message* msg ) {
+
+  _solution = solution_ptr( new solution_c( Reveal::Core::solution_c::CLIENT ) );
+
+  _solution->scenario_id = msg->solution().scenario_id();
+  _solution->trial_id = msg->solution().trial_id();
+  _solution->t = msg->solution().t();
+
+  for( int i = 0; i < msg->solution().model_size(); i++ ) {
+    model_ptr model = model_ptr( new model_c() );
+    Messages::Data::Model msg_model = msg->solution().model(i);
+    
+    model->id = msg_model.id();
+
+    for( int j = 0; j < msg_model.link_size(); j++ ) {
+      link_ptr link = link_ptr( new link_c() );
+      Messages::Data::Link msg_link = msg_model.link(j);
+      link->id = msg_link.id();
+
+      for( int k = 0; k < msg_link.state().q_size(); k++ ) {
+        link->state.q( k, msg_link.state().q(k) );
+      }
+      for( int k = 0; k < msg_link.state().dq_size(); k++ ) {
+        link->state.dq( k, msg_link.state().dq(k) );
+      }
+
+      model->links.push_back( link );
+    }
+
+    _solution->models.push_back( model );
   }
 
   return ERROR_NONE;

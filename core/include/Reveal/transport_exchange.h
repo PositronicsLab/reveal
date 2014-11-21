@@ -128,6 +128,17 @@ private:
   error_e map_authorization( Reveal::Core::Messages::Net::Message* message );
   error_e map_client_message( Reveal::Core::Messages::Net::Message* message );
   error_e map_server_message( Reveal::Core::Messages::Net::Message* message );
+
+  error_e write_digest( Reveal::Core::Messages::Net::Message* message );
+  error_e read_digest( Reveal::Core::Messages::Net::Message* message );
+  error_e write_scenario( Reveal::Core::Messages::Net::Message* message );
+  error_e read_scenario( Reveal::Core::Messages::Net::Message* message );
+  error_e write_experiment( Reveal::Core::Messages::Net::Message* message );
+  error_e read_experiment( Reveal::Core::Messages::Net::Message* message );
+  error_e write_trial( Reveal::Core::Messages::Net::Message* message );
+  error_e read_trial( Reveal::Core::Messages::Net::Message* message );
+  error_e write_solution( Reveal::Core::Messages::Net::Message* message );
+  error_e read_solution( Reveal::Core::Messages::Net::Message* message );
 };
 
 //----------------------------------------------------------------------------

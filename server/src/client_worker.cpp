@@ -133,7 +133,7 @@ void worker_c::work( void ) {
 
     } else if( exchange.get_type() == Reveal::Core::transport_exchange_c::TYPE_SOLUTION ) {
       Reveal::Core::authorization_ptr auth = exchange.get_authorization();
-  std::string generate_uuid( void );
+
       if( authorize( auth ) == ERROR_NONE ) {
         // create a solution receipt
         Reveal::Core::experiment_ptr experiment = exchange.get_experiment();
@@ -234,6 +234,7 @@ bool worker_c::create_experiment( Reveal::Core::authorization_ptr auth, Reveal::
   experiment->session_id = auth->get_session();
   experiment->scenario_id = scenario->id;
   experiment->number_of_trials = scenario->trials;
+  experiment->steps_per_trial = scenario->steps_per_trial;
   experiment->current_trial_index = 0;
 
   db_error = _db->insert( experiment );
@@ -564,8 +565,12 @@ worker_c::error_e worker_c::service_solution_submission( Reveal::Core::authoriza
   std::string session_id = "";
   std::string scenario_id = solution->scenario_id;
 
-  if( solution->trial_id == 9 ) {
-    printf( "here\n" );
+  // TODO : check anaylitics and check that experiment->number_of_trials is set
+
+  printf( "experiment->number_of_trials: %d\n", experiment->number_of_trials );
+
+  if( solution->trial_id == experiment->number_of_trials - 1 ) {
+    printf( "hit analytics\n" );
 
     Reveal::Core::analysis_ptr       analysis;
     Reveal::Core::solution_set_ptr   solution_set;

@@ -10,7 +10,8 @@ add_definitions( -DMAKE_BIN="${CMAKE_MAKE_PROGRAM}")
 add_definitions( -DCMAKE_BIN="${CMAKE_COMMAND}")
 
 find_path( GZSERVER_BIN gzserver )
-add_definitions( -DGZSERVER_BIN="${GZSERVER_PATH}/gzserver")
+#add_definitions( -DGZSERVER_BIN="${GZSERVER_PATH}/gzserver")
+add_definitions( -DGZSERVER_BIN="/usr/local/bin/gzserver")
 
 include_directories( 
   ${REVEAL_CORE_INCLUDE_DIR}

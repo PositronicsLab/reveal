@@ -278,6 +278,8 @@ namespace gazebo
       _target_c_omega_r = c_omega;
       //printf( "found block target\n" );
 
+      printf( "hello\n" );
+ 
       previous_t = 0.0;
       /* End - Analytics */
     }

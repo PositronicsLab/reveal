@@ -47,7 +47,8 @@ namespace gazebo
     Reveal::Core::trial_ptr trial;
     Reveal::Core::solution_ptr solution;
 
-    /* Begin - Analytics */
+/*
+    // Begin - Analytics
     // left gripper energy constants
     math::Vector3 _target_c_v_l;
     math::Vector3 _target_c_omega_l;
@@ -56,8 +57,8 @@ namespace gazebo
     math::Vector3 _target_c_omega_r;
 
     double previous_t;
-    /* End - Analytics */
-
+    // End - Analytics
+*/
 
   private:
     Reveal::Core::pipe_ptr _revealpipe;
@@ -79,8 +80,8 @@ namespace gazebo
       printf( "Connected\n" );
       return true;
     }
-
-    /* Begin - Analytics */
+/*
+    // Begin - Analytics 
     //-------------------------------------------------------------------------
     static math::Vector3 to_omega( math::Quaternion q, math::Quaternion qd ) {
       math::Vector3 omega;
@@ -143,19 +144,19 @@ namespace gazebo
       math::Vector3 thetad = current_angvel;
       math::Vector3 thetad_star = desired_angvel;
 
-      /*
-      std::cout << "m:" << m << std::endl;
-      std::cout << "I:" << I << std::endl;
-      std::cout << "dt:" << dt << std::endl;
-      std::cout << "x:" << x << std::endl;
-      std::cout << "x_star:" << x_star << std::endl;
-      std::cout << "xd:" << xd << std::endl;
-      std::cout << "xd_star:" << xd_star << std::endl;
-      std::cout << "q:" << q << std::endl;
-      std::cout << "q_star:" << q_star << std::endl;
-      std::cout << "thetad:" << thetad << std::endl;
-      std::cout << "thetad_star:" << thetad_star << std::endl;
-      */
+      
+      //std::cout << "m:" << m << std::endl;
+      //std::cout << "I:" << I << std::endl;
+      //std::cout << "dt:" << dt << std::endl;
+      //std::cout << "x:" << x << std::endl;
+      //std::cout << "x_star:" << x_star << std::endl;
+      //std::cout << "xd:" << xd << std::endl;
+      //std::cout << "xd_star:" << xd_star << std::endl;
+      //std::cout << "q:" << q << std::endl;
+      //std::cout << "q_star:" << q_star << std::endl;
+      //std::cout << "thetad:" << thetad << std::endl;
+      //std::cout << "thetad_star:" << thetad_star << std::endl;
+      
 
       math::Vector3 v;
       math::Vector3 omega;
@@ -179,7 +180,8 @@ namespace gazebo
       //  std::cout << "KE:" << KE << std::endl;
       return KE;
     }
-    /* End - Analytics */
+    // End - Analytics
+*/
 
   public:
 
@@ -263,8 +265,8 @@ namespace gazebo
       _world->reset();
 
       // Get targets
-
-      /* Begin - Analytics */
+/*
+      // Begin - Analytics
       math::Vector3 c_v, c_omega;
       // left gripper energy constants
       c_v = _arm->finger_l()->GetWorldPose().pos - _target->link()->GetWorldPose().pos;
@@ -279,7 +281,8 @@ namespace gazebo
       //printf( "found block target\n" );
 
       previous_t = 0.0;
-      /* End - Analytics */
+      // End - Analytics
+*/
     }
 
     //-------------------------------------------------------------------------
@@ -347,14 +350,14 @@ namespace gazebo
         _world->apply_trial( trial );
 
       }
-
-      /* Begin - Analytics */
-      // get the current time
 /*
-      double t = _world->sim_time();
-      double dt = _world->step_size();
-      double real_time = _world->real_time();
-*/
+      // Begin - Analytics
+      // get the current time
+
+//      double t = _world->sim_time();
+//      double dt = _world->step_size();
+//      double real_time = _world->real_time();
+
 
       //std::stringstream data;
       std::vector<double> avgKEs;
@@ -393,8 +396,8 @@ namespace gazebo
       }
 
       previous_t = t;
-      /* End - Analytics */
-
+      // End - Analytics
+*/
     }
 
   };

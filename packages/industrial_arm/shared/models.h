@@ -318,15 +318,24 @@ public:
 
     trial_index = 0;
 
+    // create and insert the scenario record
     scenario = Reveal::Core::scenario_ptr( new Reveal::Core::scenario_c() );
 
     scenario->id = "industrial_arm";
     scenario->description = "grasping a block with an industrial arm";
     scenario->trials = 100;  // NOTE: we don't know this in advance and we don't know when it will exit at this point!.
    // number of trials is arbitrary at this point
-    scenario->steps_per_trial = 10;
+    scenario->steps_per_trial = 1;
 
     db->insert( scenario );
+
+    // create and insert the analyzer record
+    Reveal::Core::analyzer_ptr analyzer = Reveal::Core::analyzer_ptr( new Reveal::Core::analyzer_c() );
+   
+    analyzer->scenario_id = scenario->id;
+    analyzer->filename = ANALYZER_PATH;
+    analyzer->type = Reveal::Core::analyzer_c::PLUGIN;
+    db->insert( analyzer );
 #endif
 
     reset();
@@ -493,6 +502,7 @@ public:
 #ifdef DATA_GENERATION
   void write_solution( void ) {
     double t = sim_time();
+    double dt = step_size();
 
     // build a model solution
     solution = Reveal::Core::solution_ptr( new Reveal::Core::solution_c( Reveal::Core::solution_c::MODEL ) );
@@ -500,6 +510,7 @@ public:
     solution->scenario_id = scenario->id;
     solution->trial_id = trial->trial_id;
     solution->t = t;
+    solution->dt = t;
 
     // arm data
     {

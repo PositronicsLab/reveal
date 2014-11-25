@@ -866,6 +866,7 @@ transport_exchange_c::error_e transport_exchange_c::write_solution( Reveal::Core
   msg_solution->set_scenario_id( solution->scenario_id );
   msg_solution->set_trial_id( solution->trial_id );
   msg_solution->set_t( solution->t );
+  msg_solution->set_dt( solution->dt );
 
   for( unsigned i = 0; i < solution->models.size(); i++ ) {
     model_ptr model = solution->models[i];
@@ -897,6 +898,7 @@ transport_exchange_c::error_e transport_exchange_c::read_solution( Reveal::Core:
   _solution->scenario_id = msg->solution().scenario_id();
   _solution->trial_id = msg->solution().trial_id();
   _solution->t = msg->solution().t();
+  _solution->dt = msg->solution().dt();
 
   for( int i = 0; i < msg->solution().model_size(); i++ ) {
     model_ptr model = model_ptr( new model_c() );

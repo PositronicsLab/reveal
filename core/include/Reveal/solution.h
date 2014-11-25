@@ -40,6 +40,7 @@ public:
   std::string scenario_id;
   unsigned trial_id;
   double t;
+  double dt;
   // session identifier
 
   std::vector<model_ptr> models;

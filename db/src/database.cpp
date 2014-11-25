@@ -536,6 +536,7 @@ database_c::error_e database_c::insert( Reveal::Core::solution_ptr solution ) {
   bob_solution.append( "scenario_id", solution->scenario_id );
   bob_solution.append( "trial_id", solution->trial_id );
   bob_solution.append( "t", solution->t );
+  bob_solution.append( "dt", solution->dt );
 
   mongo::BSONArrayBuilder bab_models;
   for( unsigned i = 0; i < solution->models.size(); i++ ) {
@@ -606,6 +607,7 @@ database_c::error_e database_c::query( Reveal::Core::solution_ptr& solution, Rev
   solution->scenario_id = record.getField( "scenario_id" ).String();
   solution->trial_id = record.getField( "trial_id" ).Int();
   solution->t = record.getField( "t" ).Double();
+  solution->dt = record.getField( "dt" ).Double();
 
   mongo::BSONObj bson_models = record.getObjectField( "models" );
   std::vector<mongo::BSONElement> vec_models;

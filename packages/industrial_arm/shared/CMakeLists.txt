@@ -1,6 +1,16 @@
 project( Reveal-Scenario-Industrial-Arm )
 cmake_minimum_required(VERSION 2.8.7)
 
+#------------------------------------------------------------------------------
+option( SERVER_SIDE "compile package as server side" OFF )
+
+#------------------------------------------------------------------------------
+#server only
+#add_definitions( -DANALYZER_PATH="${CMAKE_CURRENT_BUILD_DIR}" )
+add_definitions( -DANALYZER_PATH="/home/james/osrf/Reveal/packages/industrial_arm/server/build/libindustrial-arm-analyzer.so" )
+
+#------------------------------------------------------------------------------
+
 #SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -g")
 #SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -g ")
 
@@ -20,8 +30,14 @@ link_directories( ${GAZEBO_LIBRARY_DIRS} )
 set( LIBS 
   ${GAZEBO_LIBRARIES} 
   /usr/local/lib/librevealcore.so
-  /usr/local/lib/librevealdb.so     # include only for data generation
 ) 
+
+if( ${SERVER_SIDE} )
+set( LIBS
+  ${LIBS}
+  /usr/local/lib/librevealdb.so     # include only for data generation
+)
+endif( ${SERVER_SIDE} )
 
 include_directories( /usr/local/include )
 

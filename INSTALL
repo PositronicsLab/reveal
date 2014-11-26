@@ -2,7 +2,7 @@ Dependencies:
  Client:
   protobuf (2.4.1 [default Ubuntu 12.04 distro])
   zeromq (4.0.3)
-  boost (1.46 minimum)
+  boost (1.46.1 minimum)
  Server (in addition to client dependencies)
   mongodb c++ driver (branch 26compat)
  Database (to be installed on server system at this time)

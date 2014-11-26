@@ -63,6 +63,11 @@ namespace gazebo
       // -- CALLBACKS --
       _updateConnection = event::Events::ConnectWorldUpdateBegin(
         boost::bind( &arm_controller_c::Update, this ) );
+
+#ifdef DATA_GENERATION
+      // write the initial trial.  State at t = 0 and no controls
+      _world->write_trial( 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 );
+#endif
  
       // -- FIN --
       printf( "arm_controller has initialized\n" );
@@ -73,12 +78,15 @@ namespace gazebo
     // Gazebo callback.  Called whenever the simulation advances a timestep
     virtual void Update( ) {
 #ifdef DATA_GENERATION
+/*
       static bool first_trial = true;
 
       if( first_trial ) 
         first_trial = false;
       else 
         _world->write_solution();
+*/
+      _world->write_solution();
 #endif
 
       // get the current time

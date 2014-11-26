@@ -305,7 +305,7 @@ namespace gazebo
 
       if( first_trial ) {
         first_trial = false;
-        // Note: have not taken a step yet.
+        // Note: have not taken a step yet that we want to record.
       } else {
         steps_this_trial++;
       }

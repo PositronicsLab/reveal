@@ -416,7 +416,8 @@ public:
         Reveal::Core::link_ptr link = Reveal::Core::link_ptr( new Reveal::Core::link_c() );
         link->id = gzlinks[i]->GetName();
 
-        math::Pose pose = gzlinks[i]->GetWorldCoGPose();
+        //math::Pose pose = gzlinks[i]->GetWorldCoGPose();
+        math::Pose pose = gzlinks[i]->GetWorldPose();
         math::Vector3 linv = gzlinks[i]->GetWorldLinearVel();
         math::Vector3 angv = gzlinks[i]->GetWorldAngularVel();
 
@@ -577,7 +578,7 @@ public:
 
 #ifdef REVEAL_SERVICE
   void extract_solution( Reveal::Core::solution_ptr& solution ) {
-
+    solution->dt = step_size();
     // arm data
     {
       Reveal::Core::model_ptr model = Reveal::Core::model_ptr( new Reveal::Core::model_c() );

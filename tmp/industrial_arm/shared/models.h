@@ -325,7 +325,7 @@ public:
     scenario->description = "grasping a block with an industrial arm";
     scenario->trials = 100;  // NOTE: we don't know this in advance and we don't know when it will exit at this point!.
    // number of trials is arbitrary at this point
-    scenario->steps_per_trial = 10;
+    scenario->steps_per_trial = 1;
 
     db->insert( scenario );
 
@@ -416,7 +416,8 @@ public:
         Reveal::Core::link_ptr link = Reveal::Core::link_ptr( new Reveal::Core::link_c() );
         link->id = gzlinks[i]->GetName();
 
-        math::Pose pose = gzlinks[i]->GetWorldCoGPose();
+        //math::Pose pose = gzlinks[i]->GetWorldCoGPose();
+        math::Pose pose = gzlinks[i]->GetWorldPose();
         math::Vector3 linv = gzlinks[i]->GetWorldLinearVel();
         math::Vector3 angv = gzlinks[i]->GetWorldAngularVel();
 
@@ -577,7 +578,7 @@ public:
 
 #ifdef REVEAL_SERVICE
   void extract_solution( Reveal::Core::solution_ptr& solution ) {
-
+    solution->dt = step_size();
     // arm data
     {
       Reveal::Core::model_ptr model = Reveal::Core::model_ptr( new Reveal::Core::model_c() );

@@ -688,7 +688,7 @@ bool run_experiment( Reveal::Core::authorization_ptr auth ) {
     // build the make command line arguments array
     std::vector<std::string> arg_strings;
     arg_strings.push_back( "reveal-gzserver" );
-//    arg_strings.push_back( "-u" );  // paused
+    arg_strings.push_back( "-u" );  // paused
     arg_strings.push_back( "-e" );
     arg_strings.push_back( dynamics_param );
     arg_strings.push_back( "--verbose" ); 

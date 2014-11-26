@@ -1,11 +1,5 @@
-//#define ODEINT_V1                  // odeint versioning
-//#define ODEINT_RUNGEKUTTA_STEPPER  // which stepper to use
-
-//-----------------------------------------------------------------------------
-
 #include <stdio.h>
 
-//#include "pendulum.h"
 #include <Reveal/types.h>
 #include <Reveal/pointers.h>
 #include <Reveal/solution_set.h>
@@ -13,6 +7,8 @@
 #include <Reveal/scenario.h>
 #include <Reveal/trial.h>
 
+//TODO: will replace gazebo math with a more universal linalg library
+// so there is no requirement that gazebo be installed on the data server
 #include <gazebo/gazebo.hh>
 #include <gazebo/math/gzmath.hh>
 
@@ -20,13 +16,6 @@
 
 using namespace Reveal::Analytics;
 using namespace gazebo;
-
-// left gripper energy constants
-static math::Vector3 _target_c_v_l;
-static math::Vector3 _target_c_omega_l;
-// right gripper energy constants
-static math::Vector3 _target_c_v_r;
-static math::Vector3 _target_c_omega_r;
 
 //-------------------------------------------------------------------------
 Reveal::Core::model_ptr arm_model( Reveal::Core::trial_ptr trial ) {
@@ -125,18 +114,19 @@ math::Vector3 angular_velocity( const Reveal::Core::state_c& state ) {
 
 }
 
-/* Begin - Analytics */
 //-------------------------------------------------------------------------
 math::Vector3 to_omega( math::Quaternion q, math::Quaternion qd ) {
   math::Vector3 omega;
+
   omega.x = 2 * (-q.x * qd.w + q.w * qd.x - q.z * qd.y + q.y * qd.z);
   omega.y = 2 * (-q.y * qd.w + q.z * qd.x + q.w * qd.y - q.x * qd.z);
   omega.z = 2 * (-q.z * qd.w - q.y * qd.x + q.x * qd.y + q.w * qd.z);
+
   return omega;
 }
 
 //-------------------------------------------------------------------------
-math::Quaternion deriv( math::Quaternion q, math::Vector3 w) {
+math::Quaternion deriv( math::Quaternion q, math::Vector3 w ) {
   math::Quaternion qd;
 
   qd.w = .5 * (-q.x * w.x - q.y * w.y - q.z * w.z);
@@ -161,8 +151,8 @@ double energy( double mass, math::Matrix3 I_tensor, double dt, math::Pose curren
   math::Vector3 thetad_star = desired_angvel;
 
   /*
-  std::cout << "m:" << m << std::endl;
-  std::cout << "I:" << I << std::endl;
+  std::cout << "mass:" << mass << std::endl;
+  std::cout << "I:" << I_tensor << std::endl;
   std::cout << "dt:" << dt << std::endl;
   std::cout << "x:" << x << std::endl;
   std::cout << "x_star:" << x_star << std::endl;
@@ -199,17 +189,20 @@ double energy( double mass, math::Matrix3 I_tensor, double dt, math::Pose curren
 //-------------------------------------------------------------------------
 //double energy( physics::LinkPtr gripper, physics::LinkPtr grip_target, math::Vector3 c_v, math::Vector3 c_omega, double target_mass, math::Matrix3 target_I_tensor, double dt ) {
 
-double energy( Reveal::Core::link_ptr gripper, Reveal::Core::link_ptr grip_target, math::Vector3 c_v, math::Vector3 c_omega, double target_mass, math::Matrix3 target_I_tensor, double dt ) {
+double energy( Reveal::Core::link_ptr gripper, Reveal::Core::link_ptr target, math::Vector3 c_v, math::Vector3 c_omega, double mass, math::Matrix3 I, double dt ) {
 
-  math::Vector3 target_pos = position( grip_target->state );
-  math::Quaternion target_rot = rotation( grip_target->state );
-  math::Vector3 target_lvel = linear_velocity( grip_target->state );
-  math::Vector3 target_avel = angular_velocity( grip_target->state );
+  math::Vector3 target_pos = position( target->state );
+  math::Quaternion target_rot = rotation( target->state );
+  math::Vector3 target_lvel = linear_velocity( target->state );
+  math::Vector3 target_avel = angular_velocity( target->state );
 
   math::Vector3 gripper_pos = position( gripper->state );
   math::Quaternion gripper_rot = rotation( gripper->state );
   math::Vector3 gripper_lvel = linear_velocity( gripper->state );
   math::Vector3 gripper_avel = angular_velocity( gripper->state );
+
+  target_rot.Normalize();
+  gripper_rot.Normalize();
 
   math::Pose x( target_pos, target_rot );
 
@@ -217,19 +210,19 @@ double energy( Reveal::Core::link_ptr gripper, Reveal::Core::link_ptr grip_targe
   math::Pose x_des;
 
   math::Vector3 delta = gripper_pos - target_pos;
-  c_v = target_rot.RotateVector( c_v );
-  x_des.pos = target_pos + (delta - c_v);
+  math::Vector3 v = x.rot.RotateVector( c_v );
+  x_des.pos = target_pos + (delta - v);
 
   math::Quaternion dq = deriv( target_rot, c_omega );
   x_des.rot = target_rot + dq;
   x_des.rot.Normalize();
 
-  return energy( target_mass, target_I_tensor, dt, x, x_des, target_lvel, gripper_lvel, target_avel, gripper_avel );
+  return energy( mass, I, dt, x, x_des, target_lvel, gripper_lvel, target_avel, gripper_avel );
 }
 
 //-------------------------------------------------------------------------
-//TODO: fix due to changes from extraction
-void get_initial_config( Reveal::Core::model_ptr arm, Reveal::Core::model_ptr target ) {
+void get_initial_config( Reveal::Core::model_ptr arm, Reveal::Core::model_ptr target, math::Vector3& c_v_l, math::Vector3& c_v_r, math::Vector3& c_omega_l, math::Vector3& c_omega_r ) {
+
   math::Vector3 finger_l_pos, finger_r_pos, block_pos;
   math::Quaternion finger_l_rot, finger_r_rot, block_rot;
 
@@ -240,11 +233,11 @@ void get_initial_config( Reveal::Core::model_ptr arm, Reveal::Core::model_ptr ta
 
   // initial desired velocities
   // left gripper energy constants
-  _target_c_v_l = position( finger_l->state ) - position( block->state );
-  _target_c_omega_l = to_omega( rotation( finger_l->state ), rotation( block->state ) );
+  c_v_l = position( finger_l->state ) - position( block->state );
+  c_omega_l = to_omega( rotation( finger_l->state ), rotation( block->state ) );
   // right gripper energy constants
-  _target_c_v_r = position( finger_r->state ) - position( block->state );
-  _target_c_omega_r = to_omega( rotation( finger_r->state ), rotation( block->state ) );
+  c_v_r = position( finger_r->state ) - position( block->state );
+  c_omega_r = to_omega( rotation( finger_r->state ), rotation( block->state ) );
 
 }
 
@@ -268,7 +261,9 @@ error_e analyze( Reveal::Core::solution_set_ptr input, Reveal::Core::analysis_pt
 */
   // this may need to be in a header for the experiment or read from the sdf
   double m = 0.12;
-  math::Matrix3 I( 0.00001568, 0.0, 0.0, 0.0, 0.00001568, 0.0, 0.0, 0.0, 0.00001568 );
+  math::Matrix3 I( 0.00001568, 0.0, 0.0, 
+                   0.0, 0.00001568, 0.0, 
+                   0.0, 0.0, 0.00001568 );
 
   unsigned trial0_idx = 0;
   double min_t = std::numeric_limits<double>::infinity();
@@ -281,14 +276,23 @@ error_e analyze( Reveal::Core::solution_set_ptr input, Reveal::Core::analysis_pt
     }
   }
 
-  printf( "trial0[%u]\n", trial0_idx );
+  printf( "trial0[%u]: ", trial0_idx );
+  trial0->print();
+  printf( "\n\n" );
 
   // get the initial state.  Drawn from the trial data.
   arm_t0 = arm_model( trial0 );
   target_t0 = target_model( trial0 );
 
+  // left gripper energy constants
+  math::Vector3 c_v_l;
+  math::Vector3 c_omega_l;
+  // right gripper energy constants
+  math::Vector3 c_v_r;
+  math::Vector3 c_omega_r;
+
   // compute the initial energy from initial state.
-  get_initial_config( arm_t0, target_t0 );
+  get_initial_config( arm_t0, target_t0, c_v_l, c_v_r, c_omega_l, c_omega_r );
 
   // iterate over the client solutions and compute the energy for each sample
   for( unsigned i = 0; i < input->solutions.size(); i++ ) {
@@ -296,7 +300,11 @@ error_e analyze( Reveal::Core::solution_set_ptr input, Reveal::Core::analysis_pt
     double t = solution->t;
     double dt = solution->dt;
 
-    std::vector<double> avgKEs;
+    if( i == 0 ) {
+      solution->print();
+      printf( "\n\n" );
+    }
+    //std::vector<double> avgKEs;
 
     Reveal::Core::model_ptr arm = arm_model( solution );
     Reveal::Core::model_ptr target = target_model( solution );
@@ -307,12 +315,12 @@ error_e analyze( Reveal::Core::solution_set_ptr input, Reveal::Core::analysis_pt
     Reveal::Core::link_ptr block = block_link( target );
     assert( finger_l && finger_r && block );
 
-    double KE_l = energy( finger_l, block, _target_c_v_l, _target_c_omega_l, m, I, dt );
-    double KE_r = energy( finger_r, block, _target_c_v_r, _target_c_omega_r, m, I, dt );
+    double KE_l = energy( finger_l, block, c_v_l, c_omega_l, m, I, dt );
+    double KE_r = energy( finger_r, block, c_v_r, c_omega_r, m, I, dt );
 
     double avg_KE = (KE_l + KE_r) / 2.0;
 
-    printf( "t[%f], avgKE[%f]\n", t, avg_KE );
+    printf( "t[%f], avgKE[%f], KE_l[%f], KE_r[%f]\n", t, avg_KE, KE_l, KE_r );
   }
 
       /* Begin - Analytics */

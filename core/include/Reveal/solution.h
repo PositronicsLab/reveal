@@ -50,6 +50,7 @@ public:
     printf( "scenario_id[%s]", scenario_id.c_str() );
     printf( ", trial_id[%u]", trial_id );
     printf( ", t[%f]", t );
+    printf( ", dt[%f]", dt );
 
     printf( ", models { " );
     for( unsigned i = 0; i < models.size(); i++ ) {

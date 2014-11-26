@@ -1,6 +1,43 @@
+Dependencies:
+ Client:
+  protobuf (2.4.1 [default Ubuntu 12.04 distro])
+  zeromq (4.0.3)
+  boost (1.46 minimum)
+ Server (in addition to client dependencies)
+  mongodb c++ driver (branch 26compat)
+ Database (to be installed on server system at this time)
+  mongodb-2.6.0 (branch v2.6) [32-bit for local testing, 64-bit for deployment]
 
-MongoDB 2.6.0
-Boost 1.55
+Installation:
+ Database:
+  1.
+   Install mongo (branch v2.6) https://github.com/mongodb/mongo.git
+   32-bit ok for testing.  64-bit for deployment as 32-bit has 2.4 GB limit
+   refer to mongo/docs/building.md.
+   To install mongo:
+    ~> sudo scons core --prefix=/opt/mongo install
+  2.
+   Create a mongo user, e.g. mongodb, to limit access rights
+   Create directory /data/db and give the mongo user ownership
+   If --prefix was set to something outside the system path, e.g. /opt/mongo, 
+    export that path to the system PATH variable in the mongo user bash script
 
--- Mongo DB Client --
-sudo scons --32 --sharedclient --release --full --use-system-boost --cpppath=/usr/include install-mongoclient
+ Server:
+  1.
+   Install mongo-cxx-driver (branch 26compat) https://github.com/mongodb/mongo-cxx-driver.git
+    ~> sudo scons --full --use-system-boost --prefix=/usr/local --sharedclient --install-mongoclient
+    - or -
+    ~> sudo scons --32 --sharedclient --release --full --use-system-boost --cpppath=/usr/include install-mongoclient
+   Note: I've used both methods to install, but you pretty much have to specify 
+   everything in the first example at a minimum.
+  2.
+   Make and Install Reveal
+    Currently, there is no cmake configuration to differentiate between client
+    only, server only and full install.  To make and install, in the top level
+    Reveal directory:
+     ~> mkdir build
+     ~> cd build
+     ~> cmake ..
+     ~> make
+     ~> sudo make install
+     

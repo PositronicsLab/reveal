@@ -1,37 +1,37 @@
-See INSTALL for dependencies and installation instructions
+See INSTALL for dependencies and installation instructions  
 
-Database:
- Start the Database service
-  In a terminal instance, log into the mongo user and run 
-   ~> mongod
-  Note: this terminal instance must remain open while running Reveal or when
-  executing data operations.  Ctrl-C in this terminal safely closes the db; 
-  otherwise, the db will require the repair parameter to fix.
+Database:  
+ Start the Database service  
+  In a terminal instance, log into the mongo user and run  
+   ~> mongod  
+  Note: this terminal instance must remain open while running Reveal or when  
+  executing data operations.  Ctrl-C in this terminal safely closes the db;  
+  otherwise, the db will require the repair parameter to fix.  
 
- Create a Database
-  In a terminal instance, log into the mongo user and run mongo
-   In the subsequent data session, create a database at the prompt
-    > use test
-   Note: you may want to keep this terminal instance up for issuing commands
-   directly on the database.  Useful commands are.
-    > use <dbname>           # creates a database and sets it as active
-    > db.dbDropDatabase()    # drops a db.  Pair with 'use' above to purge a db.
-    > db.scenario.find( {} ) # lists all the scenarios in the db
-    > db.trial.find( {} )    # lists all the trials in the db
-    > db.solution.find( {} ) # lists all the user solutions in the db
+ Create a Database  
+  In a terminal instance, log into the mongo user and run mongo  
+   In the subsequent data session, create a database at the prompt  
+    > use test  
+   Note: you may want to keep this terminal instance up for issuing commands  
+   directly on the database.  Useful commands are.  
+    > use <dbname>           # creates a database and sets it as active  
+    > db.dbDropDatabase()    # drops a db.  Pair with 'use' above to purge a db.  
+    > db.scenario.find( {} ) # lists all the scenarios in the db  
+    > db.trial.find( {} )    # lists all the trials in the db  
+    > db.solution.find( {} ) # lists all the user solutions in the db  
    
-Reveal Server:
- The Reveal Server connects to the mongo supported database.  The Reveal Server
- communicates with the database via the mongo-cxx-driver.  All references to
- mongo are encapsulated within the revealdb library.  The revealdb library is
- only necessary on the server as all db transactions are managed server side.
- Once Reveal is installed, the server is run at the command line by
-  ~> revealserver
- Note: this terminal instance must remain open while running Reveal
+Reveal Server:  
+ The Reveal Server connects to the mongo supported database.  The Reveal Server  
+ communicates with the database via the mongo-cxx-driver.  All references to  
+ mongo are encapsulated within the revealdb library.  The revealdb library is  
+ only necessary on the server as all db transactions are managed server side.  
+ Once Reveal is installed, the server is run at the command line by  
+  ~> revealserver  
+ Note: this terminal instance must remain open while running Reveal  
 
-Reveal Client:
- The Reveal Client connects to the Reveal Server.  Currently, this is all 
- hardcoded to localhost but the transport will easily work across networks.
- At the command line
-  ~> revealclient
+Reveal Client:  
+ The Reveal Client connects to the Reveal Server.  Currently, this is all   
+ hardcoded to localhost but the transport will easily work across networks.  
+ At the command line  
+  ~> revealclient  
 

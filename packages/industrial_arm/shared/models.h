@@ -323,7 +323,7 @@ public:
 
     scenario->id = "industrial_arm";
     scenario->description = "grasping a block with an industrial arm";
-    scenario->trials = 100;  // NOTE: we don't know this in advance and we don't know when it will exit at this point!.
+    scenario->trials = 1000;  // NOTE: we don't know this in advance and we don't know when it will exit at this point!.
    // number of trials is arbitrary at this point
     scenario->steps_per_trial = 1;
 
@@ -474,7 +474,8 @@ public:
         Reveal::Core::link_ptr link = Reveal::Core::link_ptr( new Reveal::Core::link_c() );
         link->id = gzlinks[i]->GetName();
 
-        math::Pose pose = gzlinks[i]->GetWorldCoGPose();
+        //math::Pose pose = gzlinks[i]->GetWorldCoGPose();
+        math::Pose pose = gzlinks[i]->GetWorldPose();
         math::Vector3 linv = gzlinks[i]->GetWorldLinearVel();
         math::Vector3 angv = gzlinks[i]->GetWorldAngularVel();
 
@@ -523,7 +524,8 @@ public:
         Reveal::Core::link_ptr link = Reveal::Core::link_ptr( new Reveal::Core::link_c() );
         link->id = gzlinks[i]->GetName();
 
-        math::Pose pose = gzlinks[i]->GetWorldCoGPose();
+        //math::Pose pose = gzlinks[i]->GetWorldCoGPose();
+        math::Pose pose = gzlinks[i]->GetWorldPose();
         math::Vector3 linv = gzlinks[i]->GetWorldLinearVel();
         math::Vector3 angv = gzlinks[i]->GetWorldAngularVel();
 
@@ -552,7 +554,8 @@ public:
         Reveal::Core::link_ptr link = Reveal::Core::link_ptr( new Reveal::Core::link_c() );
         link->id = gzlinks[i]->GetName();
 
-        math::Pose pose = gzlinks[i]->GetWorldCoGPose();
+        //math::Pose pose = gzlinks[i]->GetWorldCoGPose();
+        math::Pose pose = gzlinks[i]->GetWorldPose();
         math::Vector3 linv = gzlinks[i]->GetWorldLinearVel();
         math::Vector3 angv = gzlinks[i]->GetWorldAngularVel();
 
@@ -589,7 +592,8 @@ public:
         Reveal::Core::link_ptr link = Reveal::Core::link_ptr( new Reveal::Core::link_c() );
         link->id = gzlinks[i]->GetName();
 
-        math::Pose pose = gzlinks[i]->GetWorldCoGPose();
+        //math::Pose pose = gzlinks[i]->GetWorldCoGPose();
+        math::Pose pose = gzlinks[i]->GetWorldPose();
         math::Vector3 linv = gzlinks[i]->GetWorldLinearVel();
         math::Vector3 angv = gzlinks[i]->GetWorldAngularVel();
 
@@ -619,7 +623,8 @@ public:
         Reveal::Core::link_ptr link = Reveal::Core::link_ptr( new Reveal::Core::link_c() );
         link->id = gzlinks[i]->GetName();
 
-        math::Pose pose = gzlinks[i]->GetWorldCoGPose();
+        //math::Pose pose = gzlinks[i]->GetWorldCoGPose();
+        math::Pose pose = gzlinks[i]->GetWorldPose();
         math::Vector3 linv = gzlinks[i]->GetWorldLinearVel();
         math::Vector3 angv = gzlinks[i]->GetWorldAngularVel();
 

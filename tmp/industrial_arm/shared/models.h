@@ -474,7 +474,8 @@ public:
         Reveal::Core::link_ptr link = Reveal::Core::link_ptr( new Reveal::Core::link_c() );
         link->id = gzlinks[i]->GetName();
 
-        math::Pose pose = gzlinks[i]->GetWorldCoGPose();
+        //math::Pose pose = gzlinks[i]->GetWorldCoGPose();
+        math::Pose pose = gzlinks[i]->GetWorldPose();
         math::Vector3 linv = gzlinks[i]->GetWorldLinearVel();
         math::Vector3 angv = gzlinks[i]->GetWorldAngularVel();
 
@@ -523,7 +524,8 @@ public:
         Reveal::Core::link_ptr link = Reveal::Core::link_ptr( new Reveal::Core::link_c() );
         link->id = gzlinks[i]->GetName();
 
-        math::Pose pose = gzlinks[i]->GetWorldCoGPose();
+        //math::Pose pose = gzlinks[i]->GetWorldCoGPose();
+        math::Pose pose = gzlinks[i]->GetWorldPose();
         math::Vector3 linv = gzlinks[i]->GetWorldLinearVel();
         math::Vector3 angv = gzlinks[i]->GetWorldAngularVel();
 
@@ -552,7 +554,8 @@ public:
         Reveal::Core::link_ptr link = Reveal::Core::link_ptr( new Reveal::Core::link_c() );
         link->id = gzlinks[i]->GetName();
 
-        math::Pose pose = gzlinks[i]->GetWorldCoGPose();
+        //math::Pose pose = gzlinks[i]->GetWorldCoGPose();
+        math::Pose pose = gzlinks[i]->GetWorldPose();
         math::Vector3 linv = gzlinks[i]->GetWorldLinearVel();
         math::Vector3 angv = gzlinks[i]->GetWorldAngularVel();
 
@@ -589,7 +592,8 @@ public:
         Reveal::Core::link_ptr link = Reveal::Core::link_ptr( new Reveal::Core::link_c() );
         link->id = gzlinks[i]->GetName();
 
-        math::Pose pose = gzlinks[i]->GetWorldCoGPose();
+        //math::Pose pose = gzlinks[i]->GetWorldCoGPose();
+        math::Pose pose = gzlinks[i]->GetWorldPose();
         math::Vector3 linv = gzlinks[i]->GetWorldLinearVel();
         math::Vector3 angv = gzlinks[i]->GetWorldAngularVel();
 
@@ -619,7 +623,8 @@ public:
         Reveal::Core::link_ptr link = Reveal::Core::link_ptr( new Reveal::Core::link_c() );
         link->id = gzlinks[i]->GetName();
 
-        math::Pose pose = gzlinks[i]->GetWorldCoGPose();
+        //math::Pose pose = gzlinks[i]->GetWorldCoGPose();
+        math::Pose pose = gzlinks[i]->GetWorldPose();
         math::Vector3 linv = gzlinks[i]->GetWorldLinearVel();
         math::Vector3 angv = gzlinks[i]->GetWorldAngularVel();
 

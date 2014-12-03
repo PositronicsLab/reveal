@@ -2,176 +2,86 @@
 <sdf version="1.4">
   <model name="weazelball">
     <link name="shell">
-      <!-- shell -->
-      <pose>0 -0.5 0 0 0 0</pose>
-      <gravity>0</gravity>
+      <self_collide>false</self_collide>
       <inertial>
         <pose>0 0 0 0 0 0</pose>
         <inertia>
-          <ixx>0.0016667</ixx>
-          <ixy>0</ixy>
-          <ixz>0</ixz>
-          <iyy>0.0016667</iyy>
-          <iyz>0</iyz>
-          <izz>0.0016667</izz>
+          <ixx>0.00000682197</ixx>
+          <ixy>-0.0000000006</ixy>
+          <ixz>0.0000000003</ixz>
+          <iyy>0.00000728564</iyy>
+          <iyz>0.0000000005</iyz>
+          <izz>0.00000682695</izz>
         </inertia>
-        <mass>1.0</mass>  <!-- (g) -->
+        <mass>0.0067</mass>
       </inertial>
-      <collision name="shell_col">
+      <visual name="shell_1_geom_visual">
         <pose>0 0 0 0 0 0</pose>
         <geometry>
-          <box>
-            <size>0.1 0.1 0.1</size>
-          </box>
+          <mesh>
+            <uri>model://weazelball/meshes/visual/shell_ctl_side.dae</uri>
+          </mesh>
         </geometry>
-      </collision>
-      <visual name="shell_vis">
-        <pose>0 0 0 0 0 0</pose>
-        <geometry>
-          <box>
-            <size>0.1 0.1 0.1</size>
-          </box>
-        </geometry>
-        <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Blue</name>
-          </script>
-        </material>
       </visual>
-    </link>
-    <link name="axel">
-      <!-- cylinder -->
-      <pose>0 -0.5 0 0 0 0</pose>
-      <gravity>0</gravity>
-      <inertial>
-        <pose>0 0 0 0 0 0</pose>
-        <inertia>
-          <ixx>0.0016667</ixx>
-          <ixy>0</ixy>
-          <ixz>0</ixz>
-          <iyy>0.0016667</iyy>
-          <iyz>0</iyz>
-          <izz>0.0016667</izz>
-        </inertia>
-        <mass>1.0</mass>  <!-- (g) --> 
-      </inertial>
-      <collision name="axel_col">
+      <visual name="shell_2_geom_visual">
         <pose>0 0 0 0 0 0</pose>
         <geometry>
-          <box>
-            <size>0.1 0.1 0.1</size>
-          </box>
+          <mesh>
+            <uri>model://weazelball/meshes/visual/shell_joint_side.dae</uri>
+          </mesh>
         </geometry>
-      </collision>
-      <visual name="axel_vis">
-        <pose>0 0 0 0 0 0</pose>
-        <geometry>
-          <box>
-            <size>0.1 0.1 0.1</size>
-          </box>
-        </geometry>
-        <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Blue</name>
-          </script>
-        </material>
       </visual>
+      <collision name="base_geom_collision">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <sphere>
+            <radius>0.041</radius>
+          </sphere>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>2.0</mu>
+              <mu2>2.0</mu2>
+              <fdir1>0 0 1</fdir1>
+              <slip1>0.0</slip1>
+              <slip2>0.0</slip2>
+            </ode>
+            <bullet>
+              <friction>2.0</friction>
+              <friction2>2.0</friction2>
+              <fdir1>0 0 0</fdir1>
+              <rolling_friction>2.0</rolling_friction>
+            </bullet>
+          </friction>
+        </surface>
+      </collision>
     </link>
     <link name="motor">
-      <pose>-16.81 1.36 -1.70 0 0 0</pose>  <!-- com of motor (mm) -->
-      <gravity>0</gravity>
-      <!-- com and aligned with output coordinate system (g * mm^2) -->
+      <self_collide>false</self_collide>
       <inertial>
         <pose>0 0 0 0 0 0</pose>
         <inertia>
-          <ixx>21496.76</ixx>
-          <ixy>2244.48</ixy>
-          <ixz>-1273.49</ixz>
-          <iyy>21121.72</iyy>
-          <iyz>418.27</iyz>
-          <izz>25313.89</izz>
+          <ixx>0.00002149676</ixx>
+          <ixy>0.00000224448</ixy>
+          <ixz>-0.00000127349</ixz>
+          <iyy>0.00002112172</iyy>
+          <iyz>0.00000041827</iyz>
+          <izz>0.00002531389</izz>
         </inertia>
-      <!-- at output coordinate system (g * mm^2) -->
-<!--
-        <inertia>
-          <ixx>21599.96</ixx>
-          <ixy>300.72</ixy>
-          <ixz>1156.60</ixz>
-          <iyy>45384.67</iyy>
-          <iyz>221.60</iyz>
-          <izz>49488.27</izz>
-        </inertia>
--->
-        <mass>85</mass>  <!-- (g) -->
+        <mass>0.085</mass>
       </inertial>
-      <collision name="motor_col">
+      <visual name="motor_geom_visual">
         <pose>0 0 0 0 0 0</pose>
         <geometry>
-          <box>
-            <size>0.1 0.1 0.1</size>
-          </box>
+          <mesh>
+            <uri>model://weazelball/meshes/visual/motor.dae</uri>
+          </mesh>
         </geometry>
-      </collision>
-      <visual name="motor_vis">
-        <pose>0 0 0 0 0 0</pose>
-        <geometry>
-          <box>
-            <size>0.1 0.1 0.1</size>
-          </box>
-        </geometry>
-        <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Blue</name>
-          </script>
-        </material>
-      </visual>
-    </link>
-    <link name="gasket">
-      <!-- torus -->
-      <pose>0 0 0 0 0 0</pose>
-      <gravity>0</gravity>
-      <inertial>
-        <pose>0 0 0 0 0 0</pose>
-        <inertia>
-          <ixx>0</ixx>
-          <ixy>0</ixy>
-          <ixz>0</ixz>
-          <iyy>0</iyy>
-          <iyz>0</iyz>
-          <izz>0</izz>
-        </inertia>
-        <mass>0</mass>  <!-- (g) -->
-      </inertial>
-      <collision name="gasket_col">
-        <pose>0 0 0 0 0 0</pose>
-        <geometry>
-          <box>
-            <size>0.1 0.1 0.1</size>
-          </box>
-        </geometry>
-      </collision>
-      <visual name="gasket_vis">
-        <pose>0 0 0 0 0 0</pose>
-        <geometry>
-          <box>
-            <size>0.1 0.1 0.1</size>
-          </box>
-        </geometry>
-        <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Black</name>
-          </script>
-        </material>
       </visual>
     </link>
 
-    <!-- fixed joint joining axel to shell -->
-    <!-- fixed joint joining gasket to shell -->
-    <joint name="actuator" type="revolute"> 
+    <joint name="motor_actuator" type="revolute"> 
       <parent>shell</parent>
       <child>motor</child>
       <axis>
@@ -180,8 +90,35 @@
           <friction>0.0</friction>
         </dynamics>
         <xyz>0 1 0</xyz>
+<!--
+        <limit>
+          <lower>0</lower>
+          <upper>0</upper>
+        </limit>
+-->
+<!--
+        <limit>
+          <lower>0</lower>
+          <upper>0.014</upper>
+        </limit>
+-->
       </axis>
     </joint>
+
+    <!-- Fixed base -->
+<!--
+    <joint name="fixed_joint" type="revolute"> 
+      <parent>world</parent>
+      <child>shell</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>0</lower>
+          <upper>0</upper>
+        </limit>
+      </axis>
+    </joint>
+-->
 
     <plugin name='controller' filename='libcontroller.so'>
     </plugin>

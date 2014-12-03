@@ -60,11 +60,11 @@
     </include>
     <include>
       <uri>model://weazelball</uri>
-      <pose>0 0 0 0 0 0</pose>
+      <pose>0 0 0.041 0 0 0</pose>
     </include>
     <gui>
       <camera name='user_camera'>
-        <pose>2.40589 1.41487 2.42008 -1.63904e-18 0.551643 -2.54699</pose>
+        <pose>0.678385 0.573406 0.58442 -1.63904e-18 0.551643 -2.54699</pose>
         <view_controller>orbit</view_controller>
       </camera>
     </gui>

@@ -113,18 +113,14 @@ class weazelball_c : public model_c
 private:
   
   physics::LinkPtr _shell; 
-  physics::LinkPtr _axel;
   physics::LinkPtr _motor;
-  physics::LinkPtr _gasket;
   
   physics::JointPtr _actuator;
 
 public:
 
   physics::LinkPtr shell( void ) { return _shell; }
-  physics::LinkPtr axel( void ) { return _axel; }
   physics::LinkPtr motor( void ) { return _motor; }
-  physics::LinkPtr gasket( void ) { return _gasket; }
   
   physics::JointPtr actuator( void ) { return _actuator; }
 
@@ -146,14 +142,11 @@ public:
       return false;
     }
 
-    // ur10 arm
     _shell = link( "shell", errors );
-    _axel = link( "axel", errors );
     _motor = link( "motor", errors );
-    _gasket = link( "gasket", errors );
-    _actuator = joint( "actuator", errors );
+    _actuator = joint( "motor_actuator", errors );
 
-    if( !( _world && _model && _shell && _axel && _motor && _gasket && _actuator ) ) 
+    if( !( _world && _model && _shell && _motor && _actuator ) ) 
       return false;
     return true;
   }

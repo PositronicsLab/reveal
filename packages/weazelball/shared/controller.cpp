@@ -86,9 +86,10 @@ namespace gazebo
       // setup gains
    
       // compute the actuator forces
-      double f = 0.0;  
+      double f = 0.000001;  
 
       // set the actuator forces for the weazelball
+      _weazelball->actuator()->SetForce( 0, f );
 
 #ifdef DATA_GENERATION
       _world->write_trial( f );

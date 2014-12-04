@@ -8,6 +8,13 @@
 
 #include <sstream>
 
+#define PI 3.14159265359
+
+#define MOTOR_HZ 2.2
+
+// will want to parameterize gains
+#define MOTOR_CONTROLLER_KD 0.01
+
 //-----------------------------------------------------------------------------
 namespace gazebo 
 {
@@ -52,6 +59,7 @@ namespace gazebo
         boost::bind( &controller_c::Update, this ) );
 
 #ifdef DATA_GENERATION
+      //double desired_angpos;
       // write the initial trial.  State at t = 0 and no controls
       _world->write_trial( 0.0 );
 #endif
@@ -78,15 +86,11 @@ namespace gazebo
 
       // get the current time
       double t = _world->sim_time();
+      double angvel = _weazelball->actuator()->GetVelocity( 0 );
+      double desired_angvel = MOTOR_HZ * ( 2.0 * PI );
 
-      // determine the desired position and velocity for the controller 
-  
-      // compute the errors
-  
-      // setup gains
-   
       // compute the actuator forces
-      double f = 0.000001;  
+      double f = MOTOR_CONTROLLER_KD * ( desired_angvel - angvel );
 
       // set the actuator forces for the weazelball
       _weazelball->actuator()->SetForce( 0, f );

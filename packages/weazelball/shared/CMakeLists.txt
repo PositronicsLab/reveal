@@ -3,6 +3,11 @@ cmake_minimum_required(VERSION 2.8.7)
 
 #------------------------------------------------------------------------------
 option( SERVER_SIDE "compile package as server side" OFF )
+option( VISUALIZE_REAL_DATA "load real data file and visualize" OFF )
+
+if( VISUALIZE_REAL_DATA )
+  add_definitions( -DVISUALIZE_REAL_DATA )
+endif()
 
 #------------------------------------------------------------------------------
 #server only

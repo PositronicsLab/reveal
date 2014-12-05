@@ -4,13 +4,13 @@
 #include <gazebo/common/Events.hh>
 #include <gazebo/physics/physics.hh>
 
-#include <Reveal/ipc.h>
-#include <Reveal/pointers.h>
-#include <Reveal/experiment.h>
-#include <Reveal/scenario.h>
-#include <Reveal/trial.h>
-#include <Reveal/solution.h>
-#include <Reveal/transport_exchange.h>
+#include <Reveal/core/ipc.h>
+#include <Reveal/core/pointers.h>
+#include <Reveal/core/experiment.h>
+#include <Reveal/core/scenario.h>
+#include <Reveal/core/trial.h>
+#include <Reveal/core/solution.h>
+#include <Reveal/core/transport_exchange.h>
 
 #define REVEAL_SERVICE
 

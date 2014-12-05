@@ -8,7 +8,7 @@
 #include <gazebo/common/Events.hh>
 #include <gazebo/physics/physics.hh>
 
-#include <Reveal/state.h>
+#include <Reveal/core/state.h>
 
 //#define DATA_GENERATION
 
@@ -18,30 +18,30 @@
 #define _REVEAL_SERVER_SERVER_H_
 #endif
 
-#include <Reveal/ipc.h>
-#include <Reveal/pointers.h>
-#include <Reveal/experiment.h>
-#include <Reveal/scenario.h>
-#include <Reveal/trial.h>
-#include <Reveal/solution.h>
-#include <Reveal/transport_exchange.h>
-#include <Reveal/model.h>
-#include <Reveal/link.h>
-#include <Reveal/joint.h>
-#include <Reveal/database.h>
+#include <Reveal/core/ipc.h>
+#include <Reveal/core/pointers.h>
+#include <Reveal/core/experiment.h>
+#include <Reveal/core/scenario.h>
+#include <Reveal/core/trial.h>
+#include <Reveal/core/solution.h>
+#include <Reveal/core/transport_exchange.h>
+#include <Reveal/core/model.h>
+#include <Reveal/core/link.h>
+#include <Reveal/core/joint.h>
+#include <Reveal/db/database.h>
 #endif
 
 #ifdef REVEAL_SERVICE
-#include <Reveal/ipc.h>
-#include <Reveal/pointers.h>
-#include <Reveal/experiment.h>
-#include <Reveal/scenario.h>
-#include <Reveal/trial.h>
-#include <Reveal/solution.h>
-#include <Reveal/transport_exchange.h>
-#include <Reveal/model.h>
-#include <Reveal/link.h>
-#include <Reveal/joint.h>
+#include <Reveal/core/ipc.h>
+#include <Reveal/core/pointers.h>
+#include <Reveal/core/experiment.h>
+#include <Reveal/core/scenario.h>
+#include <Reveal/core/trial.h>
+#include <Reveal/core/solution.h>
+#include <Reveal/core/transport_exchange.h>
+#include <Reveal/core/model.h>
+#include <Reveal/core/link.h>
+#include <Reveal/core/joint.h>
 #endif
 
 //-----------------------------------------------------------------------------

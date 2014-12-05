@@ -104,25 +104,7 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -g ")
 #SET(CMAKE_SHARED_LINKER_FLAGS "-z defs")
 
 
-set( REVEAL_MESSAGES_INCLUDE_DIR )
-set( REVEAL_MESSAGES_LIBRARY )
-set( REVEAL_CORE_INCLUDE_DIR )
-set( REVEAL_CORE_LIBRARY )
-set( REVEAL_CORE_LIBRARIES )
-set( REVEAL_ANALYTICS_INCLUDE_DIR )
-set( REVEAL_ANALYTICS_LIBRARY )
-set( REVEAL_ANALYTICS_LIBRARIES )
-set( REVEAL_DB_INCLUDE_DIR )
-set( REVEAL_DB_LIBRARY )
-set( REVEAL_DB_LIBRARIES )
-set( REVEAL_CLIENT_INCLUDE_DIR )
-set( REVEAL_CLIENT_SOURCES )
-
-add_subdirectory( core )
-add_subdirectory( db )
-add_subdirectory( analytics )
-add_subdirectory( server )
-add_subdirectory( client )
+add_subdirectory( Reveal )
 #add_subdirectory( scenarios )
 
 #------------------------------------------------------

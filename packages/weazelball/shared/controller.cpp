@@ -11,8 +11,8 @@
 #include <fstream>
 #include <string>
 #include <stdlib.h>
-#include <Reveal/pointers.h>
-#include <Reveal/state.h>
+#include <Reveal/core/pointers.h>
+#include <Reveal/core/state.h>
 #undef DATA_GENERATION   // TODO: remove when debugged
 #endif
 #include <sstream>

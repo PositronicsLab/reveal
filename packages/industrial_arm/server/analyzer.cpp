@@ -1,11 +1,11 @@
 #include <stdio.h>
 
-#include <Reveal/types.h>
-#include <Reveal/pointers.h>
-#include <Reveal/solution_set.h>
-#include <Reveal/solution.h>
-#include <Reveal/scenario.h>
-#include <Reveal/trial.h>
+#include <Reveal/analytics/types.h>
+#include <Reveal/core/pointers.h>
+#include <Reveal/core/solution_set.h>
+#include <Reveal/core/solution.h>
+#include <Reveal/core/scenario.h>
+#include <Reveal/core/trial.h>
 
 //TODO: will replace gazebo math with a more universal linalg library
 // so there is no requirement that gazebo be installed on the data server

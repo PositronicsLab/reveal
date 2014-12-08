@@ -8,6 +8,9 @@
 project( Reveal )
 cmake_minimum_required( VERSION 2.8.7 )
 
+option( INSTALL_REVEAL_CLIENT "compile and install the Reveal client" ON )
+option( INSTALL_REVEAL_SERVER "compile and install the Reveal server" ON )
+
 string( TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER )
 string( TOUPPER ${PROJECT_NAME} PROJECT_NAME_UPPER )
 
@@ -115,9 +118,15 @@ set( PKG_NAME ${PROJECT_NAME_UPPER} )
 set( PKG_LIBRARIES
   revealmessages
   revealcore
-  revealdb
-  revealanalytics )
+)
 
+if( ${INSTALL_REVEAL_SERVER} )
+  set( PKG_LIBRARIES
+    ${PKG_LIBRARIES}
+    revealdb
+    revealanalytics
+  )
+endif( ${INSTALL_REVEAL_SERVER} )
 set(PKG_DEPENDS Boost Protobuf ZeroMQ)
 
 set(cmake_conf_file "cmake_modules/reveal-config.cmake")

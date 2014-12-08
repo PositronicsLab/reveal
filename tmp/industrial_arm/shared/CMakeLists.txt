@@ -11,16 +11,13 @@ endif()
 include_directories( ${GAZEBO_INCLUDE_DIRS} )
 link_directories( ${GAZEBO_LIBRARY_DIRS} )
 
-#if( PKG_CONFIG_FOUND )
-#  pkg_check_modules( REVEAL_CORE REQUIRED reveal )
-#endif()
-#include_directories( ${REVEAL_CORE_INCLUDE_DIRS} )
-#link_directories( ${REVEAL_CORE_LIBRARY_DIRS} )
+find_package( Reveal REQUIRED )
+include_directories( ${REVEAL_INCLUDE_DIRS} )
+link_directories( ${REVEAL_LIBRARY_DIRS} )
 
 set( LIBS 
   ${GAZEBO_LIBRARIES} 
-  /usr/local/lib/librevealcore.so
-#  /usr/local/lib/librevealdb.so     # include only for data generation
+  ${REVEAL_LIBRARIES}
 ) 
 
 include_directories( /usr/local/include )

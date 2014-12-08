@@ -9,6 +9,7 @@ list(APPEND @PKG_NAME@_LIBRARY_DIRS @CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_LIBDIR
 
 list(APPEND @PKG_NAME@_CFLAGS -I@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_INCLUDEDIR@)
 
+#will need different modes for client, server and full installs
 foreach(lib @PKG_LIBRARIES@)
   set(onelib "${lib}-NOTFOUND")
   find_library(onelib ${lib}
@@ -21,21 +22,22 @@ foreach(lib @PKG_LIBRARIES@)
   list(APPEND @PKG_NAME@_LIBRARIES ${onelib})
 endforeach()
 
-foreach(dep @PKG_DEPENDS@)
-  if(NOT ${dep}_FOUND)
-    find_package(${dep} REQUIRED)
-  endif()
-  list(APPEND @PKG_NAME@_INCLUDE_DIRS ${${dep}_INCLUDE_DIRS})
+## Removed because linking to these libraries should be done through Reveal
+#foreach(dep @PKG_DEPENDS@)
+#  if(NOT ${dep}_FOUND)
+#    find_package(${dep} REQUIRED)
+#  endif()
+#  list(APPEND @PKG_NAME@_INCLUDE_DIRS ${${dep}_INCLUDE_DIRS})
 
-  # Protobuf needs to be capitalized to match PROTOBUF_LIBRARIES
-  if (${dep} STREQUAL "Protobuf")
-    string (TOUPPER ${dep} dep_lib)
-  else()
-    set (dep_lib ${dep})
-  endif()
+#  # Protobuf needs to be capitalized to match PROTOBUF_LIBRARIES
+#  if (${dep} STREQUAL "Protobuf")
+#    string (TOUPPER ${dep} dep_lib)
+#  else()
+#    set (dep_lib ${dep})
+#  endif()
     
-  list(APPEND @PKG_NAME@_LIBRARIES ${${dep_lib}_LIBRARIES})
-endforeach()
+#  list(APPEND @PKG_NAME@_LIBRARIES ${${dep_lib}_LIBRARIES})
+#endforeach()
 
 #list(APPEND @PKG_NAME@_LDFLAGS -Wl,-rpath,@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_LIBDIR@/gazebo-@GAZEBO_VERSION@/plugins)
 list(APPEND @PKG_NAME@_LDFLAGS -L@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_LIBDIR@)

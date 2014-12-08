@@ -1,5 +1,5 @@
-project( Reveal-Package-Weazelball )
 cmake_minimum_required(VERSION 2.8.7)
+project( Reveal-Analyzer-Weazelball )
 
 #------------------------------------------------------------------------------
 option( SERVER_SIDE "compile package as server side" OFF )
@@ -21,25 +21,22 @@ endif()
 include_directories( ${GAZEBO_INCLUDE_DIRS} )
 link_directories( ${GAZEBO_LIBRARY_DIRS} )
 
-#if( PKG_CONFIG_FOUND )
-#  pkg_check_modules( REVEAL_CORE REQUIRED reveal )
-#endif()
-#include_directories( ${REVEAL_CORE_INCLUDE_DIRS} )
-#link_directories( ${REVEAL_CORE_LIBRARY_DIRS} )
+find_package( Reveal REQUIRED )
+include_directories( ${REVEAL_INCLUDE_DIRS} )
+link_directories( ${REVEAL_LIBRARY_DIRS} )
 
 set( LIBS 
   ${GAZEBO_LIBRARIES} 
-  /usr/local/lib/librevealcore.so
+  ${REVEAL_LIBRARIES}
 ) 
 
-if( ${SERVER_SIDE} )
-set( LIBS
-  ${LIBS}
-  /usr/local/lib/librevealdb.so     # include only for data generation
-)
-endif( ${SERVER_SIDE} )
+#if( ${SERVER_SIDE} )
+#set( LIBS
+#  ${LIBS}
+#)
+#endif( ${SERVER_SIDE} )
 
-include_directories( /usr/local/include )
+#include_directories( /usr/local/include )
 
 set( HDRS 
   models.h

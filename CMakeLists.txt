@@ -63,6 +63,8 @@ if(LD_LIBRARY_PATH)
   set (ENV{LD_LIBRARY_PATH} ${LD_LIBRARY_PATH}:$ENV{LD_LIBRARY_PATH})
 endif()
 
+#unsure as to why these are necessary when they are not in other frameworks
+#perhaps it is policies
 if(NOT DEFINED CMAKE_INSTALL_LIBDIR)
   set(CMAKE_INSTALL_LIBDIR lib)
 endif(NOT DEFINED CMAKE_INSTALL_LIBDIR)
@@ -82,7 +84,7 @@ set( MIN_ZMQ_VERSION 4.0.3 CACHE INTERNAL "ZeroMQ min version requirement" FORCE
 set( MIN_BOOST_VERSION 1.46.1 CACHE INTERNAL "Boost min version requirement" FORCE )
 
 #------------------------------------------------------
-MESSAGE(STATUS "Checking reveal build type")
+MESSAGE(STATUS "Checking Reveal build type")
 # Set the default build type
 if (NOT CMAKE_BUILD_TYPE)
     set (CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING
@@ -144,9 +146,9 @@ install( FILES
 
 #------------------------------------------------------
 
-SET(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
-SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
-SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
+#SET(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
+#SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
+#SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
 
 
 

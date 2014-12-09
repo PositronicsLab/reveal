@@ -1,13 +1,5 @@
 cmake_minimum_required(VERSION 2.8.7)
-project( Reveal-Analyzer-Weazelball )
-
-#------------------------------------------------------------------------------
-option( SERVER_SIDE "compile package as server side" OFF )
-
-#------------------------------------------------------------------------------
-#server only
-#add_definitions( -DANALYZER_PATH="${CMAKE_CURRENT_BUILD_DIR}" )
-add_definitions( -DANALYZER_PATH="/home/james/osrf/Reveal/packages/weazelball/server/build/libweazelball-analyzer.so" )
+project( Reveal-Package-Weazelball )
 
 #------------------------------------------------------------------------------
 

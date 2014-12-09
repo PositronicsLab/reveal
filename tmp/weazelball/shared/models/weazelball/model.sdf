@@ -41,17 +41,17 @@
         <surface>
           <friction>
             <ode>
-              <mu>100</mu>          
-              <mu2>100</mu2>       
-              <fdir1>0 0 0</fdir1>
+              <mu>2.0</mu>
+              <mu2>2.0</mu2>
+              <fdir1>0 0 1</fdir1>
               <slip1>0.0</slip1>
               <slip2>0.0</slip2>
             </ode>
             <bullet>
-              <friction>100</friction>
-              <friction2>100</friction2> 
+              <friction>2.0</friction>
+              <friction2>2.0</friction2>
               <fdir1>0 0 0</fdir1>
-              <rolling_friction>100</rolling_friction>
+              <rolling_friction>2.0</rolling_friction>
             </bullet>
           </friction>
         </surface>
@@ -90,6 +90,18 @@
           <friction>0.0</friction>
         </dynamics>
         <xyz>0 1 0</xyz>
+<!--
+        <limit>
+          <lower>0</lower>
+          <upper>0</upper>
+        </limit>
+-->
+<!--
+        <limit>
+          <lower>0</lower>
+          <upper>0.014</upper>
+        </limit>
+-->
       </axis>
     </joint>
 

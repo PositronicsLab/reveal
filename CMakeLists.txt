@@ -11,6 +11,12 @@ cmake_minimum_required( VERSION 2.8.7 )
 option( INSTALL_REVEAL_CLIENT "compile and install the Reveal client" ON )
 option( INSTALL_REVEAL_SERVER "compile and install the Reveal server" ON )
 
+# this will be subject to moving to system tmp or another designated location
+# at a later time.  It is the place where experimental files are to be 
+# downloaded or accessed
+set( PACKAGE_ROOT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/tmp/ )
+add_definitions( -DPACKAGE_ROOT_PATH="${PACKAGE_ROOT_PATH}")
+
 string( TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER )
 string( TOUPPER ${PROJECT_NAME} PROJECT_NAME_UPPER )
 

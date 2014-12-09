@@ -44,5 +44,4 @@ install( FILES ${REVEAL_CLIENT_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/clien
 
 # build the tests
 #add_subdirectory( test )
-#add_subdirectory( gazebo )
 

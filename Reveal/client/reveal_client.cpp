@@ -557,11 +557,14 @@ void print_tuning_menu( void ) {
 }
 
 //-----------------------------------------------------------------------------
+std::string package_root_path( void ) {
+  return PACKAGE_ROOT_PATH;
+}
+
+//-----------------------------------------------------------------------------
 bool run_experiment( Reveal::Core::authorization_ptr auth ) {
-  //std::string source_path = "/home/james/osrf/Reveal/tmp";
-  //std::string build_path = "/home/james/osrf/Reveal/tmp/build";
-  std::string source_path = "/home/james/osrf/Reveal/tmp/industrial_arm/shared";
-  std::string build_path = "/home/james/osrf/Reveal/tmp/industrial_arm/shared/build";
+  std::string source_path = package_root_path() + "industrial_arm/shared";
+  std::string build_path = package_root_path() + "industrial_arm/shared/build";
 
   //std::string world_path = build_path + '/' + "test.world";
   std::string world_path = build_path + '/' + "reveal.world";

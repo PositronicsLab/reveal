@@ -11,8 +11,9 @@ endif()
 
 #------------------------------------------------------------------------------
 #server only
-#add_definitions( -DANALYZER_PATH="${CMAKE_CURRENT_BUILD_DIR}" )
-add_definitions( -DANALYZER_PATH="/home/james/osrf/Reveal/packages/weazelball/server/build/libweazelball-analyzer.so" )
+## Note: hackish.  We can't necessarily guarantee where this will be based on
+#  relative path, but good enough for now.
+add_definitions( -DANALYZER_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../server/build/libweazelball-analyzer.so" )
 
 #------------------------------------------------------------------------------
 

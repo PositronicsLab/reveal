@@ -6,8 +6,9 @@ option( SERVER_SIDE "compile package as server side" OFF )
 
 #------------------------------------------------------------------------------
 #server only
-#add_definitions( -DANALYZER_PATH="${CMAKE_CURRENT_BUILD_DIR}" )
-add_definitions( -DANALYZER_PATH="/home/james/osrf/Reveal/packages/industrial_arm/server/build/libindustrial-arm-analyzer.so" )
+## Note: hackish.  We can't necessarily guarantee where this will be based on
+#  relative path, but good enough for now.
+add_definitions( -DANALYZER_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../server/build/libindustrial-arm-analyzer.so" )
 
 #------------------------------------------------------------------------------
 

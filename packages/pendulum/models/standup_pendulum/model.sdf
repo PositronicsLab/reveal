@@ -136,7 +136,6 @@
       </axis>
     </joint>
 
-    <!--<plugin name='pendulum_standup_controller' filename='/home/james/tas/build/gazebo/libpendulum_standup_controller.so'/>-->
     <plugin name='controller' filename='libcontroller.so'/> 
 
   </model>

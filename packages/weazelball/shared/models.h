@@ -10,7 +10,7 @@
 
 #include <Reveal/core/state.h>
 
-#define DATA_GENERATION
+//#define DATA_GENERATION
 
 #ifdef DATA_GENERATION
 

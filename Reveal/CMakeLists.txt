@@ -11,5 +11,7 @@ if( ${INSTALL_REVEAL_SERVER} )
 endif( ${INSTALL_REVEAL_SERVER} )
 
 if( ${INSTALL_REVEAL_CLIENT} )
+  add_subdirectory( sim )
   add_subdirectory( client )
 endif( ${INSTALL_REVEAL_CLIENT} )
+

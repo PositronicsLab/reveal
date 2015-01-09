@@ -6,11 +6,11 @@
 
 #include "models.h"
 
-#ifdef VISUALIZE_REAL_DATA
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <stdlib.h>
+#ifdef VISUALIZE_REAL_DATA
 #include <Reveal/core/pointers.h>
 #include <Reveal/core/state.h>
 #undef DATA_GENERATION   // TODO: remove when debugged
@@ -22,8 +22,33 @@
 #define MOTOR_HZ 2.2
 
 // will want to parameterize gains
-#define MOTOR_CONTROLLER_KD 0.01
+#define MOTOR_CONTROLLER_KD 0.0001
 
+class log_c {
+private:
+  std::string   _name;
+  std::ofstream _file;
+public:
+  log_c( std::string name ) { _name = name; }
+  virtual ~log_c( void ) { close(); }
+
+  bool open( void ) {
+    _file.open( _name.c_str(), std::ios::out | std::ios::trunc );
+    if( !_file.is_open() ) return false;
+    return true;
+  }
+
+  void close( void ) {
+    if( _file.is_open() ) _file.close();
+  }
+  
+  bool write( std::string data ) {
+    if( !_file.is_open() ) return false;
+    _file << data;
+    return true;
+  }
+};
+typedef boost::shared_ptr<log_c> log_ptr;
 
 class state_c {
 public:
@@ -98,6 +123,8 @@ namespace gazebo
     world_ptr _world;
     weazelball_ptr _weazelball;
 
+    log_ptr log;
+
 #ifdef VISUALIZE_REAL_DATA
     std::vector<state_ptr> _states;
 #endif
@@ -107,6 +134,8 @@ namespace gazebo
 
     //-------------------------------------------------------------------------
     virtual ~controller_c( void ) {
+      if( log ) log->close();
+
       event::Events::DisconnectWorldUpdateBegin( _updateConnection );
  
       _world->close();
@@ -224,9 +253,15 @@ namespace gazebo
 #endif
 
 #ifdef VISUALIZE_REAL_DATA
-     load_real_data();
+      load_real_data();
 #endif
- 
+
+      log = log_ptr( new log_c( "out.log" ) );
+      if( !log || !log->open() ) {
+        printf( "ERROR: unable to open output log\nPlugin failed to load\n" );
+        return;
+      }
+
       // -- FIN --
       printf( "controller has initialized\n" );
   
@@ -283,6 +318,23 @@ namespace gazebo
 
       // set the actuator forces for the weazelball
       _weazelball->actuator()->SetForce( 0, f );
+
+      // logging
+      std::stringstream logstr;
+      gazebo::math::Vector3 c = _weazelball->model()->GetWorldPose().pos;
+      gazebo::math::Vector3 v = _weazelball->model()->GetWorldLinearVel();
+      //gazebo::math::Vector3 com = _weazelball->motor()->GetWorldCoGPose().pos;
+      //gazebo::math::Vector3 com = _weazelball->motor()->GetWorldPose().pos;
+      gazebo::math::Quaternion mrot = _weazelball->motor()->GetWorldPose().rot;
+      logstr << t << " ";
+      logstr << c.x << " " << c.y << " "<< c.z << " ";
+      logstr << v.x << " " << v.y << " "<< v.z << " ";
+      //logstr << com.x << " " << com.y << " "<< com.z << std::endl; 
+      logstr << mrot.x << " " << mrot.y << " "<< mrot.z << " "<< mrot.w << std::endl; 
+ 
+      //std::string logdata = "test\n";
+      log->write( logstr.str() );
+
 #endif
 
 #ifdef DATA_GENERATION

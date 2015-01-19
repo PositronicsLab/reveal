@@ -5,14 +5,15 @@
 #include <gazebo/physics/physics.hh>
 
 #include "models.h"
+#include "weazelball.h"
 
 #ifdef VISUALIZE_REAL_DATA
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <stdlib.h>
-#include <Reveal/core/pointers.h>
-#include <Reveal/core/state.h>
+//#include <Reveal/core/pointers.h>
+//#include <Reveal/core/state.h>
 #undef DATA_GENERATION   // TODO: remove when debugged
 #endif
 #include <sstream>
@@ -99,7 +100,8 @@ namespace gazebo
     weazelball_ptr _weazelball;
 
 #ifdef VISUALIZE_REAL_DATA
-    std::vector<state_ptr> _states;
+    //std::vector<state_ptr> _states;
+    wbdata_ptr _wbdata;
 #endif
   public:
     //-------------------------------------------------------------------------
@@ -114,9 +116,13 @@ namespace gazebo
 
     //-------------------------------------------------------------------------
 #ifdef VISUALIZE_REAL_DATA
+/*
     bool load_real_data( void ) {
       std::string data;
-      std::ifstream file( "data.txt" );
+      std::string datapath = "/home/j/weasel-experiment-01-14-15/trials/";
+      std::string datafile = "trial1.txt";
+      std::string filename = datapath + datafile;
+      std::ifstream file( filename.c_str() );
       if( !file.is_open() ) return false;
 
       int min, sec, ms;
@@ -124,7 +130,6 @@ namespace gazebo
       double rot[4];
 
       int line = 0;
-      //while( line < 8 && std::getline( file, data ) ) {
       while( std::getline( file, data ) ) {
         int idx = line++ % 4;
         if( idx == 0 ) {
@@ -194,6 +199,7 @@ namespace gazebo
 
       return true;
     }
+*/
 #endif
 
     //-------------------------------------------------------------------------
@@ -224,7 +230,10 @@ namespace gazebo
 #endif
 
 #ifdef VISUALIZE_REAL_DATA
-     load_real_data();
+      //load_real_data();
+
+      _wbdata = wbdata_ptr( new wbdata_c() );
+      _wbdata->load_mocap();
 #endif
  
       // -- FIN --
@@ -248,7 +257,31 @@ namespace gazebo
 #endif
 
 #ifdef VISUALIZE_REAL_DATA
+      static unsigned calls = 0;
+      static unsigned current_state_idx = 0;
 
+      std::vector< wbstate_ptr >* trial = &_wbdata->states[0];
+
+      if( calls == 0 ) {
+        if( current_state_idx == trial->size() ) return;
+
+        wbstate_ptr state = trial->at( current_state_idx++ );
+
+        gazebo::math::Vector3 pos( state->val(0), state->val(1), state->val(2) );
+        gazebo::math::Quaternion rot( state->val(6), state->val(3), state->val(4), state->val(5) );
+        gazebo::math::Pose pose( pos, rot );
+
+        _weazelball->model()->SetLinkWorldPose( pose, _weazelball->shell() );
+
+        _world->sim_time( state->t() );
+      } else {
+        if( calls == 100 ) {
+          calls = 0;
+          return;
+        }
+      }
+      calls++;
+/*
       static unsigned calls = 0;
       static unsigned current_state_idx = 0;
 
@@ -271,7 +304,7 @@ namespace gazebo
         }
       }
       calls++;
-
+*/
 #else
       // get the current time
       double t = _world->sim_time();

@@ -61,6 +61,17 @@
       <self_collide>false</self_collide>
       <inertial>
         <pose>0 0 0 0 0 0</pose>
+
+        <inertia>
+          <ixx>0.00002191279</ixx>
+          <ixy>0.00000232259</ixy>
+          <ixz>-0.00000120945</ixz>
+          <iyy>0.00002143758</iyy>
+          <iyz>0.00000043107</iyz>
+          <izz>0.00002578811</izz>
+        </inertia>
+        <mass>0.0864</mass>
+<!--
         <inertia>
           <ixx>0.00002149676</ixx>
           <ixy>0.00000224448</ixy>
@@ -70,6 +81,7 @@
           <izz>0.00002531389</izz>
         </inertia>
         <mass>0.085</mass>
+-->
       </inertial>
       <visual name="motor_geom_visual">
         <pose>0 0 0 0 0 0</pose>

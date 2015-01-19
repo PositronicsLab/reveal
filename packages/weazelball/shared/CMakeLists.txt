@@ -46,6 +46,7 @@ set( LIBS
 
 set( HDRS 
   models.h
+  weazelball.h
 )
 
 add_library( controller SHARED controller.cpp ${HDRS} )

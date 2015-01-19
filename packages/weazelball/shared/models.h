@@ -8,11 +8,11 @@
 #include <gazebo/common/Events.hh>
 #include <gazebo/physics/physics.hh>
 
-#include <Reveal/core/state.h>
 
-#define DATA_GENERATION
+//#define DATA_GENERATION
 
 #ifdef DATA_GENERATION
+#include <Reveal/core/state.h>
 
 #ifndef _REVEAL_SERVER_SERVER_H_
 #define _REVEAL_SERVER_SERVER_H_

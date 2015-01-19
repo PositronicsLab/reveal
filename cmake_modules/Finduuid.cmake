@@ -1,113 +1,71 @@
-# - Try to find UUID
-# Once done this will define
+# - Find UUID
+# Find the native UUID includes and library
+# This module defines
+#  UUID_INCLUDE_DIR, where to find jpeglib.h, etc.
+#  UUID_LIBRARIES, the libraries needed to use UUID.
+#  UUID_FOUND, If false, do not try to use UUID.
+# also defined, but not for general use are
+#  UUID_LIBRARY, where to find the UUID library.
 #
-# UUID_FOUND - system has UUID
-# UUID_INCLUDE_DIRS - the UUID include directory
-# UUID_LIBRARIES - Link these to use UUID
-# UUID_DEFINITIONS - Compiler switches required for using UUID
+#  Copyright (c) 2006-2011 Mathieu Malaterre <mathieu.malaterre@gmail.com>
 #
-# Copyright (c) 2006 Andreas Schneider <mail@cynapses.org>
-#
-# Redistribution and use is allowed according to the terms of the New
-# BSD license.
-# For details see the accompanying COPYING-CMAKE-SCRIPTS file.
+#  Redistribution and use is allowed according to the terms of the New
+#  BSD license.
+#  For details see the accompanying COPYING-CMAKE-SCRIPTS file.
 #
 
-
-if (UUID_LIBRARIES AND UUID_INCLUDE_DIRS)
-# in cache already
-set(UUID_FOUND TRUE)
-else (UUID_LIBRARIES AND UUID_INCLUDE_DIRS)
-find_path(UUID_INCLUDE_DIR
-NAMES
-uuid/uuid.h
-PATHS
-${UUID_DIR}/include
-$ENV{UUID_DIR}/include
-$ENV{UUID_DIR}
-${DELTA3D_EXT_DIR}/inc
-$ENV{DELTA_ROOT}/ext/inc
-$ENV{DELTA_ROOT}
-~/Library/Frameworks
-/Library/Frameworks
-/usr/local/include
-/usr/include
-/usr/include/gdal
-/sw/include # Fink
-/opt/local/include # DarwinPorts
-/opt/csw/include # Blastwave
-/opt/include
-[HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Session\ Manager\\Environment;OSG_ROOT]/include
-/usr/freeware/include
-
-)
+# On MacOSX we have:
+# $ nm -g /usr/lib/libSystem.dylib | grep uuid_generate
+# 000b3aeb T _uuid_generate
+# 0003e67e T _uuid_generate_random
+# 000b37a1 T _uuid_generate_time
+if(APPLE)
+  set(UUID_LIBRARY_VAR System)
+else()
+  # Linux type:
+  set(UUID_LIBRARY_VAR uuid)
+endif()
 
 find_library(UUID_LIBRARY
-NAMES
-uuid
-PATHS
-${UUID_DIR}/lib
-$ENV{UUID_DIR}/lib
-$ENV{UUID_DIR}
-${DELTA3D_EXT_DIR}/lib
-$ENV{DELTA_ROOT}/ext/lib
-$ENV{DELTA_ROOT}
-$ENV{OSG_ROOT}/lib
-~/Library/Frameworks
-/Library/Frameworks
-/usr/local/lib
-/usr/lib
-/sw/lib
-/opt/local/lib
-/opt/csw/lib
-/opt/lib
-/usr/freeware/lib64
+  NAMES ${UUID_LIBRARY_VAR}
+  PATHS /lib /usr/lib /usr/local/lib
+  )
+
+# Must be *after* the lib itself
+set(CMAKE_FIND_FRAMEWORK_SAVE ${CMAKE_FIND_FRAMEWORK})
+set(CMAKE_FIND_FRAMEWORK NEVER)
+
+find_path(UUID_INCLUDE_DIR uuid/uuid.h
+/usr/local/include
+/usr/include
 )
 
-find_library(UUID_LIBRARY_DEBUG
-NAMES
-uuidd
-PATHS
-${UUID_DIR}/lib
-$ENV{UUID_DIR}/lib
-$ENV{UUID_DIR}
-${DELTA3D_EXT_DIR}/lib
-$ENV{DELTA_ROOT}/ext/lib
-$ENV{DELTA_ROOT}
-$ENV{OSG_ROOT}/lib
-~/Library/Frameworks
-/Library/Frameworks
-/usr/local/lib
-/usr/lib
-/sw/lib
-/opt/local/lib
-/opt/csw/lib
-/opt/lib
-/usr/freeware/lib64
-)
+if (UUID_LIBRARY AND UUID_INCLUDE_DIR)
+  set(UUID_LIBRARIES ${UUID_LIBRARY})
+  set(UUID_FOUND "YES")
+else ()
+  set(UUID_FOUND "NO")
+endif ()
 
-set(UUID_INCLUDE_DIRS
-${UUID_INCLUDE_DIR}
-)
-set(UUID_LIBRARIES
-${UUID_LIBRARY}
-)
-
-if (UUID_INCLUDE_DIRS AND UUID_LIBRARIES)
-set(UUID_FOUND TRUE)
-endif (UUID_INCLUDE_DIRS AND UUID_LIBRARIES)
 
 if (UUID_FOUND)
-if (NOT UUID_FIND_QUIETLY)
-message(STATUS "Found UUID: ${UUID_LIBRARIES}")
-endif (NOT UUID_FIND_QUIETLY)
-else (UUID_FOUND)
-if (UUID_FIND_REQUIRED)
-message(FATAL_ERROR "Could not find UUID")
-endif (UUID_FIND_REQUIRED)
-endif (UUID_FOUND)
+   if (NOT UUID_FIND_QUIETLY)
+      message(STATUS "Found UUID: ${UUID_LIBRARIES}")
+   endif ()
+else ()
+   if (UUID_FIND_REQUIRED)
+      message( "library: ${UUID_LIBRARY}" )
+      message( "include: ${UUID_INCLUDE_DIR}" )
+      message(FATAL_ERROR "Could not find UUID library")
+   endif ()
+endif ()
 
-# show the UUID_INCLUDE_DIRS and UUID_LIBRARIES variables only in the advanced view
-mark_as_advanced(UUID_INCLUDE_DIRS UUID_LIBRARIES)
+# Deprecated declarations.
+#set (NATIVE_UUID_INCLUDE_PATH ${UUID_INCLUDE_DIR} )
+#get_filename_component (NATIVE_UUID_LIB_PATH ${UUID_LIBRARY} PATH)
 
-endif (UUID_LIBRARIES AND UUID_INCLUDE_DIRS)
+mark_as_advanced(
+  UUID_LIBRARY
+  UUID_INCLUDE_DIR
+  )
+set(CMAKE_FIND_FRAMEWORK ${CMAKE_FIND_FRAMEWORK_SAVE})

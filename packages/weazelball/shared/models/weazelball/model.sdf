@@ -5,6 +5,20 @@
       <self_collide>false</self_collide>
       <inertial>
         <pose>0 0 0 0 0 0</pose>
+<!-- -->
+        <!-- per Torrey? refactored with 0.0489g mass -->
+        <inertia>
+          <ixx>0.0000497901</ixx>
+          <ixy>-0.0000000437</ixy>
+          <ixz>0.0000000021</ixz>
+          <iyy>0.0000531742</iyy>
+          <iyz>0.0000000036</iyz>
+          <izz>0.0000498265</izz>
+        </inertia>
+        <mass>0.0489</mass>
+<!-- -->
+        <!-- per Torrey? -->
+<!--
         <inertia>
           <ixx>0.00000682197</ixx>
           <ixy>-0.0000000006</ixy>
@@ -14,6 +28,19 @@
           <izz>0.00000682695</izz>
         </inertia>
         <mass>0.0067</mass>
+-->
+        <!-- hollow shell -->
+<!--
+        <inertia>
+          <ixx>0.00020394544</ixx>
+          <ixy>0.0000000000</ixy>
+          <ixz>0.0000000000</ixz>
+          <iyy>0.00020394544</iyy>
+          <iyz>0.0000000000</iyz>
+          <izz>0.00020394544</izz>
+        </inertia>
+        <mass>0.0489</mass>
+-->
       </inertial>
       <visual name="shell_1_geom_visual">
         <pose>0 0 0 0 0 0</pose>
@@ -80,7 +107,7 @@
           <iyz>0.00000041827</iyz>
           <izz>0.00002531389</izz>
         </inertia>
-        <mass>0.085</mass>
+        <mass>0.0865</mass>
 -->
       </inertial>
       <visual name="motor_geom_visual">

@@ -3,11 +3,6 @@ project( Reveal-Package-Weazelball )
 
 #------------------------------------------------------------------------------
 option( SERVER_SIDE "compile package as server side" OFF )
-option( VISUALIZE_REAL_DATA "load real data file and visualize" OFF )
-
-if( VISUALIZE_REAL_DATA )
-  add_definitions( -DVISUALIZE_REAL_DATA )
-endif()
 
 #------------------------------------------------------------------------------
 #server only
@@ -52,6 +47,12 @@ set( HDRS
 add_library( controller SHARED controller.cpp ${HDRS} )
 target_link_libraries( controller ${LIBS} )
 
+add_library( vicon-visualization-controller SHARED visualization_controller.cpp ${HDRS} )
+target_link_libraries( vicon-visualization-controller ${LIBS} )
+
+add_library( postprocess-controller SHARED postprocess_controller.cpp ${HDRS} )
+target_link_libraries( postprocess-controller ${LIBS} )
+
 add_library( world-plugin SHARED world_plugin.cpp ${HDRS} )
 target_link_libraries( world-plugin ${LIBS} )
 
@@ -59,3 +60,9 @@ target_link_libraries( world-plugin ${LIBS} )
 file( COPY ${CMAKE_CURRENT_SOURCE_DIR}/models DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
 file( COPY ${CMAKE_CURRENT_SOURCE_DIR}/gazebo.world DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
 file( COPY ${CMAKE_CURRENT_SOURCE_DIR}/reveal.world DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+
+# designed to work in conjunction with the vicon-visualization-controller
+file( COPY ${CMAKE_CURRENT_SOURCE_DIR}/visualize.world DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+
+# designed to work in conjunction with the postprocess-controller
+file( COPY ${CMAKE_CURRENT_SOURCE_DIR}/postprocess.world DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )

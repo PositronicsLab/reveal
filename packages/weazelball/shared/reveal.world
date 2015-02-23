@@ -61,6 +61,8 @@
     <include>
       <uri>model://weazelball</uri>
       <pose>0 0 0.041 0 0 0</pose>
+      <plugin name='controller' filename='libcontroller.so'>
+      </plugin>
     </include>
     <gui>
       <camera name='user_camera'>

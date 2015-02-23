@@ -64,7 +64,7 @@
     <include>
       <uri>model://weazelball</uri>
       <pose>0 0 0.041 0 0 0</pose>
-      <plugin name='vicon-visualization-controller' filename='libvicon-visualization-controller.so'>
+      <plugin name='postprocess-controller' filename='libpostprocess-controller.so'>
       </plugin>
     </include>
     <include>

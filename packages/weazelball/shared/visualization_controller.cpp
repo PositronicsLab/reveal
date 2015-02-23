@@ -12,24 +12,22 @@
 #include <string>
 #include <stdlib.h>
 
-/*
-#ifdef VISUALIZE_REAL_DATA
 #include <Reveal/core/pointers.h>
 #include <Reveal/core/state.h>
 #undef DATA_GENERATION   // TODO: remove when debugged
-#endif
-*/
-
-#undef DATA_GENERATION   // TODO: remove when debugged
-
 #include <sstream>
 
 #define PI 3.14159265359
 
-// will want to parameterize gains
-#define MOTOR_CONTROLLER_KD 0.0001
+//-----------------------------------------------------------------------------
+// set on the interval [0,9] to switch between different vicon motion capture
+// sessions.
+unsigned trialid = 9;
+
+double vicon_sample_rate = 100.0;      // set in software for these experiments
 
 //-----------------------------------------------------------------------------
+
 class log_c {
 private:
   std::string   _name;
@@ -117,10 +115,7 @@ public:
   }
 };
 
-//-----------------------------------------------------------------------------
-
 typedef boost::shared_ptr<state_c> state_ptr;
-unsigned trialid = 9;
 
 //-----------------------------------------------------------------------------
 namespace gazebo 
@@ -134,15 +129,12 @@ namespace gazebo
     weazelball_ptr _weazelball;
 
     log_ptr log;
-/*
-#ifdef VISUALIZE_REAL_DATA
+
     //std::vector<state_ptr> _states;
-    wbdata_ptr _wbdata;
+    wb_vicon_data_ptr _wb_vicon_data;
 
     log_ptr state_log;
-    log_ptr stats_log;
-#endif
-*/
+    //log_ptr stats_log;
   public:
     //-------------------------------------------------------------------------
     controller_c( void ) { }
@@ -177,17 +169,8 @@ namespace gazebo
       _updateConnection = event::Events::ConnectWorldUpdateBegin(
         boost::bind( &controller_c::Update, this ) );
 
-#ifdef DATA_GENERATION
-      //double desired_angpos;
-      // write the initial trial.  State at t = 0 and no controls
-      _world->write_trial( 0.0 );
-#endif
-/*
-#ifdef VISUALIZE_REAL_DATA
-      //load_real_data();
-
-      _wbdata = wbdata_ptr( new wbdata_c() );
-      _wbdata->load_mocap();
+      _wb_vicon_data = wb_vicon_data_ptr( new wb_vicon_data_c() );
+      _wb_vicon_data->load_mocap();
 
       std::stringstream state_log_name;
       state_log_name << "trial_" << trialid << ".log";
@@ -196,7 +179,7 @@ namespace gazebo
         printf( "ERROR: unable to open state log for writing\nPlugin failed to load\n" );
         return;
       }
-
+/*
       std::stringstream stats_log_name;
       stats_log_name << "stats_" << trialid << ".log";
       stats_log = log_ptr( new log_c( stats_log_name.str() ) );
@@ -204,7 +187,6 @@ namespace gazebo
         printf( "ERROR: unable to open stats log for writing\nPlugin failed to load\n" );
         return;
       }
-#endif
 */
       log = log_ptr( new log_c( "out.log" ) );
       if( !log || !log->open() ) {
@@ -220,31 +202,25 @@ namespace gazebo
     //-------------------------------------------------------------------------
     // Gazebo callback.  Called whenever the simulation advances a timestep
     virtual void Update( ) {
-#ifdef DATA_GENERATION
-/*
-      static bool first_trial = true;
 
-      if( first_trial ) 
-        first_trial = false;
-      else 
-        _world->write_solution();
-*/
-      _world->write_solution();
-#endif
-/*
-#ifdef VISUALIZE_REAL_DATA
       static std::vector< std::vector<double> > vicon_data_stats(10);
 
+      
       static unsigned calls = 0;
       static unsigned current_state_idx = 0;
 
-      static double max_vicon_latency = std::numeric_limits<double>::min();
-      static double min_vicon_latency = std::numeric_limits<double>::max();
+      //static double max_vicon_latency = std::numeric_limits<double>::min();
+      //static double min_vicon_latency = std::numeric_limits<double>::max();
+      //static unsigned zero_latency_count = 0;
+
       static bool first_state = true;
-      static unsigned zero_latency_count = 0;
-      static double vicon_time = 0.0; 
+
+      //static double last_vicon_time = 0.0;
       static double sim_time = 0.0; 
-      static double last_vicon_time = 0.0;
+      static double last_sim_time = 0.0;
+      static double adjusted_vicon_time = 0.0; 
+      static double initial_vicon_time = 0.0;
+
       static unsigned motor_cycles = 0;
       static double last_theta = 0.0;
 
@@ -252,9 +228,9 @@ namespace gazebo
       gazebo::math::Quaternion rot;
 
       if( calls == 0 ) {
-        if( current_state_idx == _wbdata->states[trialid].size() ) {
+        if( current_state_idx == _wb_vicon_data->states[trialid].size() ) {
           //log aggregated stats
-
+/*
           double avg_latency = sim_time / current_state_idx;
 
           std::stringstream stats;
@@ -265,7 +241,8 @@ namespace gazebo
           stats << avg_latency << std::endl;
 
           stats_log->write( stats.str() );
- 
+*/
+
 //          vicon_data_stats[trialid].push_back( current_state_idx );
 //          vicon_data_stats[trialid].push_back( min_vicon_latency );
 //          vicon_data_stats[trialid].push_back( max_vicon_latency );
@@ -299,12 +276,12 @@ namespace gazebo
 
           // kills the simulation
           state_log->close();
-          stats_log->close();
+//          stats_log->close();
           exit(0);
 //        }
         }
 
-        wbstate_ptr state = _wbdata->states[trialid].at( current_state_idx++ );
+        wb_vicon_state_ptr state = _wb_vicon_data->states[trialid].at( current_state_idx++ );
 
         pos = gazebo::math::Vector3( state->val(0), state->val(1), state->val(2) );
         rot = gazebo::math::Quaternion( state->val(6), state->val(3), state->val(4), state->val(5) );
@@ -317,8 +294,14 @@ namespace gazebo
 
         _weazelball->model()->SetLinkWorldPose( pose, _weazelball->shell() );
 
-        vicon_time = state->t();
-
+        if( !first_state ) {
+          double dt = 1.0 / vicon_sample_rate;
+          sim_time += dt;
+        } else {
+          initial_vicon_time = state->t();
+        }
+        adjusted_vicon_time = state->t() - initial_vicon_time;
+/*
         if( !first_state ) {
 
           double dt = vicon_time - last_vicon_time;
@@ -334,12 +317,13 @@ namespace gazebo
 
           sim_time += dt;
         }
-
+*/
         //_world->sim_time( state->t() );
         _world->sim_time( sim_time );
         //printf( "vicon_time[%f], sim_time[%f]\n", vicon_time, sim_time );
 
-        last_vicon_time = state->t();
+        //last_vicon_time = state->t();
+        last_sim_time = sim_time;
       } else {
         //if( calls >= 25 ) {
         if( calls >= 1 ) {
@@ -349,17 +333,13 @@ namespace gazebo
       }
 
       double theta;
-      //double motor_freq = 2.225;  // 133.5 bpm
-      //double motor_freq = 2.208;  // 132.5 bpm
-      //double motor_freq = 2.206;  // 132.4 bpm
-      //double motor_freq = 2.233;  // 134.0 bpm
-      //double motor_freq = 2.2417;  // 134.5 bpm
-      double motor_freq = 2.2182;  // 133.092 bpm
+      double motor_freq = WEAZELBALL_MOTOR_HZ;
       double theta_at_sim_t_zero;
 
       // updating the internal state of the robot
       if( trialid == 0 ) {
-        theta_at_sim_t_zero = 2.8762;
+        //theta_at_sim_t_zero = 2.8762;
+        theta_at_sim_t_zero = 3.9623;
       } else if( trialid == 1 ) {
         theta_at_sim_t_zero = 3.5203;
       } else if( trialid == 2 ) {
@@ -394,7 +374,8 @@ namespace gazebo
       last_theta = theta;
       //}
 
-      printf( "vicon_time[%f], sim_time[%f]", vicon_time, sim_time );
+
+      printf( "sim_time[%f], vicon_time[%f]", sim_time, adjusted_vicon_time );
       printf( ", cycles[%u], theta[%f]\n", motor_cycles, theta );
 
 
@@ -405,6 +386,7 @@ namespace gazebo
 
         std::stringstream data;
         data << sim_time << " ";
+        data << adjusted_vicon_time << " ";
         data << pos.x << " " << pos.y << " " << pos.z << " ";
         data << rot.x << " " << rot.y << " " << rot.z << " " << rot.w << " ";
         data << theta << std::endl;       
@@ -413,45 +395,13 @@ namespace gazebo
       }
 
       calls++;
-#else
-*/
-      // get the current time
-      double t = _world->sim_time();
-      double angvel = _weazelball->actuator()->GetVelocity( 0 );
-      double desired_angvel = WEAZELBALL_MOTOR_HZ * ( 2.0 * PI );
-
-      // compute the actuator forces
-      double f = MOTOR_CONTROLLER_KD * ( desired_angvel - angvel );
-
-      // set the actuator forces for the weazelball
-      _weazelball->actuator()->SetForce( 0, f );
-
-      // logging
-      std::stringstream logstr;
-      gazebo::math::Vector3 c = _weazelball->model()->GetWorldPose().pos;
-      gazebo::math::Vector3 v = _weazelball->model()->GetWorldLinearVel();
-      //gazebo::math::Vector3 com = _weazelball->motor()->GetWorldCoGPose().pos;
-      //gazebo::math::Vector3 com = _weazelball->motor()->GetWorldPose().pos;
-      gazebo::math::Quaternion mrot = _weazelball->motor()->GetWorldPose().rot;
-      logstr << t << " ";
-      logstr << c.x << " " << c.y << " "<< c.z << " ";
-      logstr << v.x << " " << v.y << " "<< v.z << " ";
-      //logstr << com.x << " " << com.y << " "<< com.z << std::endl; 
-      logstr << mrot.x << " " << mrot.y << " "<< mrot.z << " "<< mrot.w << std::endl; 
- 
-      //std::string logdata = "test\n";
-      log->write( logstr.str() );
-/*
-#endif
-*/
-#ifdef DATA_GENERATION
-      _world->write_trial( f );
-#endif
     }
 
     //-------------------------------------------------------------------------
     // Gazebo callback.  Called whenever the simulation is reset
-    //virtual void Reset( ) { }
+    virtual void Reset( ) { 
+      
+    }
 
   };
 

@@ -5,6 +5,12 @@ project( Reveal-Package-Industrial_Arm )
 option( SERVER_SIDE "compile package as server side" OFF )
 
 #------------------------------------------------------------------------------
+option( DATA_GENERATION "compile package for data generation" OFF )
+if( DATA_GENERATION ) 
+  add_definitions( -DDATA_GENERATION)
+endif()
+
+#------------------------------------------------------------------------------
 #server only
 ## Note: hackish.  We can't necessarily guarantee where this will be based on
 #  relative path, but good enough for now.

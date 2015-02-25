@@ -32,8 +32,5 @@
         </limit>
       </axis>
     </joint>
-
-    <plugin name='arm_controller' filename='libarm-controller.so'/>
-
   </model>
 </sdf>

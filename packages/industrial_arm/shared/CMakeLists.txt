@@ -47,14 +47,15 @@ set( LIBS
 #include_directories( /usr/local/include )
 
 set( HDRS 
+  arm_controller.h
   models.h
 )
 
-add_library( arm-controller SHARED arm_controller.cpp ${HDRS} )
-target_link_libraries( arm-controller ${LIBS} )
+add_library( gz-arm-plugin SHARED gazebo_arm_plugin.cpp ${HDRS} )
+target_link_libraries( gz-arm-plugin ${LIBS} )
 
-add_library( world-plugin SHARED world_plugin.cpp ${HDRS} )
-target_link_libraries( world-plugin ${LIBS} )
+add_library( gz-world-plugin SHARED gazebo_world_plugin.cpp ${HDRS} )
+target_link_libraries( gz-world-plugin ${LIBS} )
 
 # Copy data files
 file( COPY ${CMAKE_CURRENT_SOURCE_DIR}/models DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )

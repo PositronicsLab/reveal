@@ -69,7 +69,7 @@ void test_anonymous_user( void ) {
     printf( "SUCCESS: anonymous client gained authorization: session[%s]\n", auth->get_session().c_str() );
   }
 }
-
+///*
 //-----------------------------------------------------------------------------
 std::vector< std::string > gz_environment_keys( void ) {
   std::vector< std::string > enkeys;
@@ -83,7 +83,7 @@ std::vector< std::string > gz_environment_keys( void ) {
   enkeys.push_back( "GAZEBO_MODEL_PATH" );
   return enkeys;
 }
-
+//*/
 //-----------------------------------------------------------------------------
 std::vector< std::string > system_environment_vars( void ) {
   std::vector<std::string> ev;
@@ -158,7 +158,7 @@ void* make_worker( void* args ) {
   // NOTE: may be multiple libraries built by process
 
   // needs to be determined from manifest
-  std::string file_name = "libarm-controller.so";
+  std::string file_name = "libgz-arm-plugin.so";
   std::string file_path = build_path + '/' + file_name;
 
   // And also
@@ -509,13 +509,15 @@ unsigned prompt_digest( Reveal::Core::digest_ptr digest ) {
 }
 
 //-----------------------------------------------------------------------------
+///*
 enum gazebo_dynamics_e {
   DYNAMICS_ODE,
   DYNAMICS_BULLET,
   DYNAMICS_DART,
   DYNAMICS_SIMBODY
 };
-
+//*/
+///*
 gazebo_dynamics_e prompt_dynamics( void ) {
   Reveal::Core::scenario_ptr scenario;
 
@@ -549,7 +551,7 @@ gazebo_dynamics_e prompt_dynamics( void ) {
   // return a default if fall through for safety
   return DYNAMICS_ODE;
 }
-
+//*/
 //-----------------------------------------------------------------------------
 void print_tuning_menu( void ) {
   printf( "- Tuning Menu -\n" );

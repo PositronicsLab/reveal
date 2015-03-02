@@ -7,15 +7,16 @@
 #include <Reveal/core/scenario.h>
 #include <Reveal/core/trial.h>
 
-//TODO: will replace gazebo math with a more universal linalg library
-// so there is no requirement that gazebo be installed on the data server
-#include <gazebo/gazebo.hh>
-#include <gazebo/math/gzmath.hh>
+#include <Ravelin/Origin3d.h>
+#include <Ravelin/Vector3d.h>
+#include <Ravelin/Quatd.h>
+#include <Ravelin/Matrix3d.h>
+#include <Ravelin/Pose3d.h>
 
 //-----------------------------------------------------------------------------
 
 using namespace Reveal::Analytics;
-using namespace gazebo;
+//using namespace gazebo;
 
 //-------------------------------------------------------------------------
 Reveal::Core::model_ptr arm_model( Reveal::Core::trial_ptr trial ) {
@@ -91,64 +92,57 @@ Reveal::Core::link_ptr block_link( Reveal::Core::model_ptr model ) {
 }
 
 //-------------------------------------------------------------------------
-math::Vector3 position( const Reveal::Core::state_c& state ) {
-  return math::Vector3( state[0], state[1], state[2] );
+// Ravelin math
+//-------------------------------------------------------------------------
+Ravelin::Origin3d position( const Reveal::Core::state_c& state ) {
+  return Ravelin::Origin3d( state[0], state[1], state[2] );
 
 }
 
 //-------------------------------------------------------------------------
-math::Quaternion rotation( const Reveal::Core::state_c& state ) {
-  return math::Quaternion( state[3], state[4], state[5], state[6] );
+Ravelin::Quatd rotation( const Reveal::Core::state_c& state ) {
+  return Ravelin::Quatd( state[3], state[4], state[5], state[6] );
 
 }
 
 //-------------------------------------------------------------------------
-math::Vector3 linear_velocity( const Reveal::Core::state_c& state ) {
-  return math::Vector3( state[7], state[8], state[9] );
+Ravelin::Origin3d linear_velocity( const Reveal::Core::state_c& state ) {
+  return Ravelin::Origin3d( state[7], state[8], state[9] );
 
 }
 
 //-------------------------------------------------------------------------
-math::Vector3 angular_velocity( const Reveal::Core::state_c& state ) {
-  return math::Vector3( state[10], state[11], state[12] );
+Ravelin::Origin3d angular_velocity( const Reveal::Core::state_c& state ) {
+  return Ravelin::Origin3d( state[10], state[11], state[12] );
 
 }
 
 //-------------------------------------------------------------------------
-math::Vector3 to_omega( math::Quaternion q, math::Quaternion qd ) {
-  math::Vector3 omega;
-
-  omega.x = 2 * (-q.x * qd.w + q.w * qd.x - q.z * qd.y + q.y * qd.z);
-  omega.y = 2 * (-q.y * qd.w + q.z * qd.x + q.w * qd.y - q.x * qd.z);
-  omega.z = 2 * (-q.z * qd.w - q.y * qd.x + q.x * qd.y + q.w * qd.z);
-
-  return omega;
+// This function is in Ravelin, so can eliminate the redundancy
+Ravelin::Origin3d to_omega( const Ravelin::Quatd& q, const Ravelin::Quatd& qd ) {
+  Ravelin::Vector3d omega = Ravelin::Quatd::to_omega( q, qd ); 
+  return Ravelin::Origin3d( omega.data() );
 }
 
 //-------------------------------------------------------------------------
-math::Quaternion deriv( math::Quaternion q, math::Vector3 w ) {
-  math::Quaternion qd;
-
-  qd.w = .5 * (-q.x * w.x - q.y * w.y - q.z * w.z);
-  qd.x = .5 * (+q.w * w.x + q.z * w.y - q.y * w.z);
-  qd.y = .5 * (-q.z * w.x + q.w * w.y + q.x * w.z);
-  qd.z = .5 * (+q.y * w.x - q.x * w.y + q.w * w.z);
-
-  return qd;
+// This function is in Ravelin, so can eliminate the redundancy
+Ravelin::Quatd deriv( const Ravelin::Quatd& q, const Ravelin::Origin3d& w ) {
+  Ravelin::Vector3d x = Ravelin::Vector3d( w.data() );
+  return Ravelin::Quatd::deriv( q, x );
 }
 
 //-------------------------------------------------------------------------
-double energy( double mass, math::Matrix3 I_tensor, double dt, math::Pose current_pose, math::Pose desired_pose, math::Vector3 current_linvel, math::Vector3 desired_linvel, math::Vector3 current_angvel, math::Vector3 desired_angvel ) {
+double energy( double mass, Ravelin::Matrix3d I_tensor, double dt, Ravelin::Pose3d current_pose, Ravelin::Pose3d desired_pose, Ravelin::Origin3d current_linvel, Ravelin::Origin3d desired_linvel, Ravelin::Origin3d current_angvel, Ravelin::Origin3d desired_angvel ) {
 
-  math::Vector3 x = current_pose.pos;
-  math::Vector3 x_star = desired_pose.pos;
-  math::Vector3 xd = current_linvel;
-  math::Vector3 xd_star = desired_linvel;
-  math::Quaternion q = current_pose.rot;
-  math::Quaternion q_star = desired_pose.rot;
+  Ravelin::Origin3d x = current_pose.x;
+  Ravelin::Origin3d x_star = desired_pose.x;
+  Ravelin::Origin3d xd = current_linvel;
+  Ravelin::Origin3d xd_star = desired_linvel;
+  Ravelin::Quatd q = current_pose.q;
+  Ravelin::Quatd q_star = desired_pose.q;
 
-  math::Vector3 thetad = current_angvel;
-  math::Vector3 thetad_star = desired_angvel;
+  Ravelin::Origin3d thetad = current_angvel;
+  Ravelin::Origin3d thetad_star = desired_angvel;
 
   /*
   std::cout << "mass:" << mass << std::endl;
@@ -164,10 +158,10 @@ double energy( double mass, math::Matrix3 I_tensor, double dt, math::Pose curren
   std::cout << "thetad_star:" << thetad_star << std::endl;
   */
 
-  math::Vector3 v;
-  math::Vector3 omega;
+  Ravelin::Origin3d v;
+  Ravelin::Origin3d omega;
 
-  math::Quaternion qd = (q_star - q) * (1.0 / dt);
+  Ravelin::Quatd qd = (q_star - q) * (1.0 / dt);
   //  std::cout << "qd:" << qd << std::endl;
 
   // assert qd not normalized
@@ -181,50 +175,57 @@ double energy( double mass, math::Matrix3 I_tensor, double dt, math::Pose curren
   omega = to_omega( q, qd ) + (thetad_star - thetad);
   //  std::cout << "omega:" << omega << std::endl;
 
+//  Ravelin::Origin3d o_omega = Ravelin::Origin3d( omega.data() );
+//  Ravelin::Origin3d or_omega = I_tensor.mult( omega );
+//  Ravelin::Origin3d r_omega = Ravelin::Origin3d( or_omega.data() );
+
   //                 linear          +        angular
-  double KE = (0.5 * v.Dot( v ) * mass) + (0.5 * omega.Dot( I_tensor * omega ));
+  double KE = (0.5 * v.dot( v ) * mass) + (0.5 * omega.dot( I_tensor.mult( omega ) ));
   //  std::cout << "KE:" << KE << std::endl;
   return KE;
 }
 //-------------------------------------------------------------------------
-//double energy( physics::LinkPtr gripper, physics::LinkPtr grip_target, math::Vector3 c_v, math::Vector3 c_omega, double target_mass, math::Matrix3 target_I_tensor, double dt ) {
+double energy( Reveal::Core::link_ptr gripper, Reveal::Core::link_ptr target, Ravelin::Origin3d c_v, Ravelin::Origin3d c_omega, double mass, Ravelin::Matrix3d I, double dt ) {
 
-double energy( Reveal::Core::link_ptr gripper, Reveal::Core::link_ptr target, math::Vector3 c_v, math::Vector3 c_omega, double mass, math::Matrix3 I, double dt ) {
+  Ravelin::Origin3d target_pos = position( target->state );
+  Ravelin::Quatd target_rot = rotation( target->state );
+  Ravelin::Origin3d target_lvel = linear_velocity( target->state );
+  Ravelin::Origin3d target_avel = angular_velocity( target->state );
 
-  math::Vector3 target_pos = position( target->state );
-  math::Quaternion target_rot = rotation( target->state );
-  math::Vector3 target_lvel = linear_velocity( target->state );
-  math::Vector3 target_avel = angular_velocity( target->state );
+  Ravelin::Origin3d gripper_pos = position( gripper->state );
+  Ravelin::Quatd gripper_rot = rotation( gripper->state );
+  Ravelin::Origin3d gripper_lvel = linear_velocity( gripper->state );
+  Ravelin::Origin3d gripper_avel = angular_velocity( gripper->state );
 
-  math::Vector3 gripper_pos = position( gripper->state );
-  math::Quaternion gripper_rot = rotation( gripper->state );
-  math::Vector3 gripper_lvel = linear_velocity( gripper->state );
-  math::Vector3 gripper_avel = angular_velocity( gripper->state );
+  target_rot.normalize();
+  gripper_rot.normalize();
 
-  target_rot.Normalize();
-  gripper_rot.Normalize();
-
-  math::Pose x( target_pos, target_rot );
+  Ravelin::Pose3d x( target_rot, target_pos );
 
   //desired pose
-  math::Pose x_des;
+  Ravelin::Pose3d x_des;
 
-  math::Vector3 delta = gripper_pos - target_pos;
-  math::Vector3 v = x.rot.RotateVector( c_v );
-  x_des.pos = target_pos + (delta - v);
+  Ravelin::Origin3d delta = gripper_pos - target_pos;
+  Ravelin::Pose3d rot( target_rot );
+  Ravelin::Vector3d _v = Ravelin::Vector3d( c_v.data() );
+  Ravelin::Vector3d vrot = rot.transform_vector( _v );
+  Ravelin::Origin3d v = Ravelin::Origin3d( vrot.data() );
 
-  math::Quaternion dq = deriv( target_rot, c_omega );
-  x_des.rot = target_rot + dq;
-  x_des.rot.Normalize();
+  //Ravelin::Origin3d v = x.rot.RotateVector( c_v );   // legacy gazebo
+  x_des.x = target_pos + (delta - v);
+
+  Ravelin::Quatd dq = deriv( target_rot, c_omega );
+  x_des.q = target_rot + dq;
+  x_des.q.normalize();
 
   return energy( mass, I, dt, x, x_des, target_lvel, gripper_lvel, target_avel, gripper_avel );
 }
 
 //-------------------------------------------------------------------------
-void get_initial_config( Reveal::Core::model_ptr arm, Reveal::Core::model_ptr target, math::Vector3& c_v_l, math::Vector3& c_v_r, math::Vector3& c_omega_l, math::Vector3& c_omega_r ) {
+void get_initial_config( Reveal::Core::model_ptr arm, Reveal::Core::model_ptr target, Ravelin::Origin3d& c_v_l, Ravelin::Origin3d& c_v_r, Ravelin::Origin3d& c_omega_l, Ravelin::Origin3d& c_omega_r ) {
 
-  math::Vector3 finger_l_pos, finger_r_pos, block_pos;
-  math::Quaternion finger_l_rot, finger_r_rot, block_rot;
+  Ravelin::Origin3d finger_l_pos, finger_r_pos, block_pos;
+  Ravelin::Quatd finger_l_rot, finger_r_rot, block_rot;
 
   Reveal::Core::link_ptr finger_l = finger_l_link( arm );
   Reveal::Core::link_ptr finger_r = finger_r_link( arm );
@@ -252,16 +253,11 @@ error_e analyze( Reveal::Core::solution_set_ptr input, Reveal::Core::analysis_pt
   // load model data for inertial properties.  This has to come from client
   // package or from other records inserted in response to client action.  
   // For now, this will be hard coded.
-/*
+
   // get the inertial properties of the box
-  physics::InertialPtr gz_inertial = _target->link()->GetInertial();
-  double m = gz_inertial->GetMass();
-  math::Vector3 pm = gz_inertial->GetPrincipalMoments();
-  math::Matrix3 I( pm.x, 0.0, 0.0, 0.0, pm.y, 0.0, 0.0, 0.0, pm.z);
-*/
   // this may need to be in a header for the experiment or read from the sdf
   double m = 0.12;
-  math::Matrix3 I( 0.00001568, 0.0, 0.0, 
+  Ravelin::Matrix3d I( 0.00001568, 0.0, 0.0, 
                    0.0, 0.00001568, 0.0, 
                    0.0, 0.0, 0.00001568 );
 
@@ -285,11 +281,11 @@ error_e analyze( Reveal::Core::solution_set_ptr input, Reveal::Core::analysis_pt
   target_t0 = target_model( trial0 );
 
   // left gripper energy constants
-  math::Vector3 c_v_l;
-  math::Vector3 c_omega_l;
+  Ravelin::Origin3d c_v_l;
+  Ravelin::Origin3d c_omega_l;
   // right gripper energy constants
-  math::Vector3 c_v_r;
-  math::Vector3 c_omega_r;
+  Ravelin::Origin3d c_v_r;
+  Ravelin::Origin3d c_omega_r;
 
   // compute the initial energy from initial state.
   get_initial_config( arm_t0, target_t0, c_v_l, c_v_r, c_omega_l, c_omega_r );

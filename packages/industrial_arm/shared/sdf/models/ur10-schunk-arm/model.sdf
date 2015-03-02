@@ -10,7 +10,7 @@
     </include>
 
     <joint name='fixed_world_joint' type='revolute'>
-      <child>ur10::base_link</child>
+      <child>ur10::base_link</child> 
       <parent>world</parent>
       <axis>
         <xyz>0 0 1</xyz>

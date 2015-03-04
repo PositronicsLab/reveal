@@ -27,9 +27,8 @@ namespace gazebo
   {
   private:
 
-    event::ConnectionPtr updateConnection;
-
-    //physics::WorldPtr _world;
+    event::ConnectionPtr _preupdateConnection;
+    event::ConnectionPtr _postupdateConnection;
 
     world_ptr _world;
     arm_ptr _arm;
@@ -37,9 +36,6 @@ namespace gazebo
 
     common::Time start_time, last_time;
     common::Time sim_time;
-
-    //bool first_trial;
-    bool last_trial;
 
     Reveal::Core::authorization_ptr auth;
     Reveal::Core::scenario_ptr scenario;
@@ -50,14 +46,17 @@ namespace gazebo
   private:
     Reveal::Core::pipe_ptr _revealpipe;
 
+    int steps_this_trial;
+
     //-------------------------------------------------------------------------
+//--- monitor
     bool connect( void ) {
       //TODO: correct constructor
       printf( "Connecting to server...\n" );
 
       // TODO: For now, these hardcoded values are okay, but most likely needs 
       // to be configurable through defines in cmake
-      unsigned port = GAZEBO_PORT;
+      unsigned port = MONITOR_PORT;
       std::string host = "localhost";
       _revealpipe = Reveal::Core::pipe_ptr( new Reveal::Core::pipe_c( host, port ) );
       if( _revealpipe->open() != Reveal::Core::pipe_c::ERROR_NONE ) {
@@ -67,6 +66,7 @@ namespace gazebo
       printf( "Connected\n" );
       return true;
     }
+//---
 
   public:
 
@@ -77,7 +77,8 @@ namespace gazebo
 
     //-------------------------------------------------------------------------
     ~world_plugin_c( ) {
-      event::Events::DisconnectWorldUpdateBegin( this->updateConnection );
+      event::Events::DisconnectWorldUpdateBegin( _preupdateConnection );
+      event::Events::DisconnectWorldUpdateBegin( _postupdateConnection );
       _revealpipe->close();
     }
 
@@ -86,13 +87,15 @@ namespace gazebo
     //-------------------------------------------------------------------------
     void Load(physics::WorldPtr world, sdf::ElementPtr sdf) {
       std::cerr << "Starting World Plugin" << std::endl;
+      std::cerr << "Connecting to Reveal Client..." << std::endl;
 
       if( !connect() ) {
         std::cerr << "Failed to connect to Reveal Client\nExiting\n" << std::endl;
         exit( 1 );
       }
-      std::cerr << "Connected to Reveal Client" << std::endl;
+      std::cerr << "Connected to Reveal Client." << std::endl;
 
+//--- monitor
       // read experiment
       Reveal::Core::transport_exchange_c ex;
       std::string msg;
@@ -105,15 +108,14 @@ namespace gazebo
       ex_err = ex.parse_server_experiment( msg, auth, scenario, experiment );
       //TODO trap error
 
-      this->updateConnection = event::Events::ConnectWorldUpdateBegin(
-          boost::bind( &world_plugin_c::Update, this ) );
+//---
+      _preupdateConnection = event::Events::ConnectWorldUpdateBegin(
+          boost::bind( &world_plugin_c::Preupdate, this ) );
+      _postupdateConnection = event::Events::ConnectWorldUpdateEnd(
+          boost::bind( &world_plugin_c::Postupdate, this ) );
 
-      //_world = world;
       _world = world_ptr( new world_c( world ) );
       _world->sim_time( 0.0 );
-
-      //first_trial = true;
-      last_trial = false;
 
       std::string validation_errors;
       if( !_world->validate( validation_errors ) ) {
@@ -127,39 +129,52 @@ namespace gazebo
       // reset the world before we begin
       _world->reset();
 
+      steps_this_trial = 0;
     }
 
     //-------------------------------------------------------------------------
-    void Update( ) {
+    void Preupdate( ) {
+      //printf( "preupdate called\n" );
+
+      // if in the middle of evaluating a trial, get out
+      if( steps_this_trial > 0 ) return;
+
+      // otherwise, read next trial state message from reveal client (blocking) 
+//--- monitor
       Reveal::Core::transport_exchange_c ex;
       Reveal::Core::transport_exchange_c::error_e ex_err;
       std::string msg;
 
-      static bool first_trial = true;
-      static int steps_this_trial = 0;
-
-      double t = _world->sim_time();
-      double dt = _world->step_size();
-      double real_time = _world->real_time();
-
-      //printf( "experiment: " );
-      //experiment->print();
-      //printf( " trial_step[%d]", steps_this_trial );
-      //printf( "\n" );
-
-      if( first_trial ) {
-        first_trial = false;
-        // Note: have not taken a step yet.
-      } else {
-        steps_this_trial++;
+      if( _revealpipe->read( msg ) != Reveal::Core::pipe_c::ERROR_NONE ) {
+        // TODO: error recovery
       }
+      ex_err = ex.parse( msg );
+      if( ex_err != Reveal::Core::transport_exchange_c::ERROR_NONE ) {
+        //TODO: error handling
+      }
+      trial = ex.get_trial();
+//---
+      // set the simulation state from the trial
+      _world->apply_trial( trial );
+    }
 
+    //-------------------------------------------------------------------------
+    void Postupdate( ) {
+      //printf( "postupdate called\n" );
+
+      Reveal::Core::transport_exchange_c ex;
+      Reveal::Core::transport_exchange_c::error_e ex_err;
+      std::string msg;
+
+      // if reached the end of the set of steps in the trial
       if( steps_this_trial == experiment->steps_per_trial ) {
-        // build a solution
-        solution = scenario->get_solution( Reveal::Core::solution_c::CLIENT, trial, t );
 
+        // get the solution from the simulator
+        solution = scenario->get_solution( Reveal::Core::solution_c::CLIENT, trial, _world->sim_time() );
         _world->extract_solution( solution );
 
+//--- monitor
+        // and broadcast the solution to the reveal client.
         ex_err = ex.build_client_solution( msg, auth, experiment, solution );
         if( ex_err != Reveal::Core::transport_exchange_c::ERROR_NONE ) {
           //TODO: error handling
@@ -167,32 +182,16 @@ namespace gazebo
         if( _revealpipe->write( msg ) != Reveal::Core::pipe_c::ERROR_NONE ) {
           //TODO: error handling
         }
+//---
+        // if last trial, then exit gazebo
+        if( trial->trial_id == scenario->trials - 1 ) exit( 0 );
 
-        // since we just reset the world to trial state, reset the steps
+        // otherwise, we need to reset the trial state, so reset the steps
         steps_this_trial = 0;
 
-        // TODO: update last trial
-        // if last trial, exit gazebo
-        if( last_trial ) {
-          exit( 0 );
-        }
-      }
-
-      if( steps_this_trial == 0 ) {
-        // read next trial state message from reveal client (block) 
-        if( _revealpipe->read( msg ) != Reveal::Core::pipe_c::ERROR_NONE ) {
-          // TODO: error recovery
-        }
-        ex.parse( msg );
-        trial = ex.get_trial();
-
-        // if this is the last trial, flip the switch
-        if( trial->trial_id == scenario->trials - 1 )
-          last_trial = true;
-
-        // set the simulation state from the trial
-        _world->apply_trial( trial );
-
+      } else {
+        // otherwise advance to the next step
+        steps_this_trial++;
       }
     }
   };

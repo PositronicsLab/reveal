@@ -16,12 +16,17 @@ add_definitions( -DGZSERVER_BIN="/usr/local/bin/gzserver")
 #------------------------------------------------------
 # header files
 set( REVEAL_CLIENT_HEADERS 
+  simulator.h
   client.h
+  system.h
+  gazebo.h
 )
 
 # source files
 set( REVEAL_CLIENT_SOURCES 
   client.cpp
+  system.cpp
+  gazebo.cpp
 )
 
 #------------------------------------------------------

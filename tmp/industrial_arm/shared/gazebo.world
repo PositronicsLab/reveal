@@ -62,6 +62,7 @@
     <include>
       <uri>model://ur10-schunk-arm</uri>
       <pose>0 0 1.0 0 0 0</pose>
+      <plugin name='arm_controller' filename='libgz-arm-plugin.so'/>
     </include>
     <include>
       <uri>model://block</uri>

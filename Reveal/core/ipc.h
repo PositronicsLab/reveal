@@ -27,7 +27,7 @@ namespace Core {
 //-----------------------------------------------------------------------------
 
 /// The external connection port
-#define GAZEBO_PORT            20701
+#define MONITOR_PORT            20701
 /// The size of the send buffer.  Messages are sent in chunks.
 #define PIPE_SND_BUFFER_SZ   64        // Small for validation. TODO:Increase
 /// The size of the receive buffer.  Must be larger than the send buffer.

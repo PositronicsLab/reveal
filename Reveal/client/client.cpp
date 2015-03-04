@@ -5,6 +5,9 @@
 #include <iostream>
 #include <sstream>
 
+#include "Reveal/core/authorization.h"
+#include "Reveal/core/user.h"
+
 #include "Reveal/core/transport_exchange.h"
 #include "Reveal/core/pointers.h"
 #include "Reveal/core/digest.h"
@@ -13,7 +16,14 @@
 #include "Reveal/core/trial.h"
 #include "Reveal/core/solution.h"
 
+#include "Reveal/client/system.h"
+
 //#include <Reveal/pendulum.h>
+
+#include <boost/enable_shared_from_this.hpp>
+#include <boost/shared_ptr.hpp>
+
+#include "Reveal/client/gazebo.h"
 
 //-----------------------------------------------------------------------------
 
@@ -36,10 +46,15 @@ client_c::~client_c( void ) {
 }
 
 //-----------------------------------------------------------------------------
+Reveal::Client::client_ptr client_c::ptr( void ) {
+  return shared_from_this();
+}
+
+//-----------------------------------------------------------------------------
 /// Initialization
 bool client_c::init( void ) {
   Reveal::Core::transport_exchange_c::open();
-
+  gz = Reveal::Client::gazebo_ptr( new Reveal::Client::gazebo_c( ptr() ) );
   return true;
 }
 
@@ -376,6 +391,80 @@ bool client_c::connect( void ) {
   }
 
   printf( "Connected\n" );
+  return true;
+}
+
+//-----------------------------------------------------------------------------
+bool client_c::execute( void ) {
+
+  // Initialization
+  if( !init() ) {
+    printf( "ERROR: Failed to initialize properly.\nExiting.\n" );
+    terminate();
+    return false;
+  }
+
+  // Salutations
+  printf( "Welcome to Reveal\n" );
+
+  // Connect to Server
+  printf( "Connecting to Reveal Server\n" );
+
+  if( !connect() ) {
+    printf( "ERROR: Unable to reach Reveal Server.\nExiting.\n" );
+    terminate();
+    return false;
+  }
+
+  printf("Connected to Reveal Server\n");
+
+  // Prompt for Login
+  char input_buffer[512];
+
+  bool anonymous_login = !prompt_yes_no( "Would you like to login (Y/N)?", true );
+
+  // Authorization
+  Reveal::Core::user_ptr user = Reveal::Core::user_ptr(new Reveal::Core::user_c() );
+  Reveal::Core::authorization_ptr auth = Reveal::Core::authorization_ptr(new Reveal::Core::authorization_c() );
+
+  if( anonymous_login ) {
+    auth->set_type( Reveal::Core::authorization_c::TYPE_ANONYMOUS );
+  } else {
+    printf( "Please enter username: " );
+    scanf( "%32s", input_buffer );
+    user->id = input_buffer;
+    auth->set_type( Reveal::Core::authorization_c::TYPE_IDENTIFIED );
+    auth->set_user( user->id );
+  }  
+
+  if( anonymous_login ) 
+    printf( "Logging in and requesting anonymous authorization.\n" );
+  else
+    printf( "Logging in and requesting authorization for user %s.\n", user->id.c_str() );
+
+  // TODO: hammer on server side validation.  Noticed that authorization is
+  // granted if a bad user name is specified
+  error_e client_error;
+  client_error = request_authorization( auth );
+  if( client_error != ERROR_NONE ) {
+    printf( "ERROR: Failed to gain authorization\n" );
+  } else {
+    printf( "Authorization granted\n" );
+  }
+
+  // MOTD
+  printf("Message of the Day\n");
+
+  bool recycle;
+  do {
+    //bool result = run_experiment( auth );
+    bool result = gz->experiment( auth );
+
+    recycle = prompt_yes_no( "Would you like to run another experiment (Y/N)?", false );
+  } while( recycle );
+
+  terminate();
+
   return true;
 }
 

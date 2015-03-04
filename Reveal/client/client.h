@@ -15,6 +15,12 @@ class is the only required interface into the system.
 #include "Reveal/core/connection.h"
 #include "Reveal/core/pointers.h"
 
+#include "Reveal/client/system.h"
+#include "Reveal/client/simulator.h"
+
+#include <boost/enable_shared_from_this.hpp>
+#include <boost/shared_ptr.hpp>
+
 //-----------------------------------------------------------------------------
 
 namespace Reveal {
@@ -28,8 +34,14 @@ namespace Client {
 #define REVEAL_SERVER_URI "localhost"
 
 //-----------------------------------------------------------------------------
+class client_c;
+typedef boost::shared_ptr<client_c> client_ptr;
+class gazebo_c;
+typedef boost::shared_ptr<gazebo_c> gazebo_ptr;
 
-class client_c {
+
+//-----------------------------------------------------------------------------
+class client_c : public boost::enable_shared_from_this<client_c> {
 public:
   enum error_e {
     ERROR_NONE = 0,
@@ -50,6 +62,13 @@ public:
   bool init( void );
   void terminate( void );
   bool connect( void );
+
+  //bool execute( experiment_f );
+  bool execute( void );
+
+  client_ptr ptr( void );
+
+  Reveal::Client::gazebo_ptr gz;
 
   // API
   error_e request_authorization( Reveal::Core::authorization_ptr& auth );

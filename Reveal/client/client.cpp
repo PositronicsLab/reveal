@@ -17,6 +17,7 @@
 #include "Reveal/core/solution.h"
 
 #include "Reveal/client/system.h"
+#include "Reveal/client/console.h"
 
 //#include <Reveal/pendulum.h>
 
@@ -419,9 +420,7 @@ bool client_c::execute( void ) {
   printf("Connected to Reveal Server\n");
 
   // Prompt for Login
-  char input_buffer[512];
-
-  bool anonymous_login = !prompt_yes_no( "Would you like to login (Y/N)?", true );
+  bool anonymous_login = !console_c::prompt_yes_no( "Would you like to login (Y/N)?" );
 
   // Authorization
   Reveal::Core::user_ptr user = Reveal::Core::user_ptr(new Reveal::Core::user_c() );
@@ -430,9 +429,7 @@ bool client_c::execute( void ) {
   if( anonymous_login ) {
     auth->set_type( Reveal::Core::authorization_c::TYPE_ANONYMOUS );
   } else {
-    printf( "Please enter username: " );
-    scanf( "%32s", input_buffer );
-    user->id = input_buffer;
+    user->id = console_c::prompt( "Please enter a username:" );
     auth->set_type( Reveal::Core::authorization_c::TYPE_IDENTIFIED );
     auth->set_user( user->id );
   }  
@@ -459,8 +456,11 @@ bool client_c::execute( void ) {
   do {
     //bool result = run_experiment( auth );
     bool result = gz->experiment( auth );
+    if( !result ) {
+      // how to recover?
+    }
 
-    recycle = prompt_yes_no( "Would you like to run another experiment (Y/N)?", false );
+    recycle = console_c::prompt_yes_no( "Would you like to run another experiment (Y/N)?" );
   } while( recycle );
 
   terminate();

@@ -17,6 +17,7 @@ add_definitions( -DGZSERVER_BIN="/usr/local/bin/gzserver")
 # header files
 set( REVEAL_CLIENT_HEADERS 
   simulator.h
+  console.h
   client.h
   system.h
   gazebo.h
@@ -24,6 +25,7 @@ set( REVEAL_CLIENT_HEADERS
 
 # source files
 set( REVEAL_CLIENT_SOURCES 
+  console.cpp
   client.cpp
   system.cpp
   gazebo.cpp

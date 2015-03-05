@@ -14,14 +14,15 @@ std::vector< std::string > system_environment_vars( void );
 //bool copy_file( std::string src, std::string dest );
 std::string make_temp_dir( void );
 //-----------------------------------------------------------------------------
+// TODO: move to a class to have destructor for correct cleanup.
+char* const* param_array( std::vector< std::string > params );
+//-----------------------------------------------------------------------------
+/*
 // TODO: move to utilities
 void print_vector_of_strings( std::vector<std::string> v ); 
 //-----------------------------------------------------------------------------
 // TODO: move to utilities
 void print_param_array( char* const* a );
-//-----------------------------------------------------------------------------
-// TODO: move to a class to have destructor for correct cleanup.
-char* const* param_array( std::vector< std::string > params );
 //-----------------------------------------------------------------------------
 bool prompt_yes_no( std::string prompt, bool default_value );
 //-----------------------------------------------------------------------------
@@ -30,27 +31,8 @@ void print_digest_menu( Reveal::Core::digest_ptr digest );
 unsigned prompt_digest( Reveal::Core::digest_ptr digest );
 //-----------------------------------------------------------------------------
 unsigned prompt_select_string_from_list( std::string prompt, std::vector<std::string> list, unsigned default_value );
-
-//-----------------------------------------------------------------------------
-/*
-class sighandler_c{
-protected:
-  static bool _quit;
-
-public:
-  sighandler_c( void ); 
-  ~sighandler_c( void );
-
-  static void handler( int signum );
-
-  static bool quit( void ); 
-  static void set( bool quit_ );
-
-  void install( void );
-  void uninstall( void );
-  static void trip( void );
-};
 */
+
 //-----------------------------------------------------------------------------
 class sighandler_c {
 public:

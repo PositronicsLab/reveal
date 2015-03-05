@@ -6,6 +6,7 @@
 
 #include "Reveal/core/ipc.h"
 #include "Reveal/client/system.h"
+#include "Reveal/client/console.h"
 
 //-----------------------------------------------------------------------------
 #include <pthread.h>
@@ -128,7 +129,7 @@ bool gazebo_c::execute( void ) {
      }
   }
 
-  //print_vector_of_strings( env_strings );
+  //console_c::print( env_strings );
 
   char* const* exec_envars = param_array( env_strings );
 
@@ -143,23 +144,13 @@ bool gazebo_c::execute( void ) {
 //-----------------------------------------------------------------------------
 gazebo_c::dynamics_e gazebo_c::prompt_dynamics( void ) {
 
-  printf( "- Dynamics Menu -\n" );
-  printf( "0: ODE\n" );
-  printf( "1: Bullet\n" );
-  printf( "2: DART\n" );
-  printf( "3: Simbody\n" );
-
-  unsigned choice = 0;
-  unsigned range = 3;
-  int result;
-
-  do {
-    printf( "Select a dynamics engine: " );
-    result = scanf( "%u", &choice );
+  std::vector< std::string > list;
+  list.push_back( "ODE" );
+  list.push_back( "Bullet" );
+  list.push_back( "DART" );
+  list.push_back( "Simbody" );
   
-    if( !result || choice > range ) 
-      printf( "ERROR: Invalid Input. Enter a value in the range [0,%u]\n", range );
-  } while( !result || choice > range );
+  unsigned choice = console_c::menu( "--Dynamics Menu--", "Select a dynamics engine", list );
 
   if( choice == 0 ) 
     return DYNAMICS_ODE;
@@ -213,11 +204,12 @@ bool gazebo_c::experiment( Reveal::Core::authorization_ptr auth ) {
   _client->request_digest( auth, digest );
   // TODO: error handling
 
-  // print digest menu
-  print_digest_menu( digest );
-
   // user selects scenario
-  unsigned scenario_choice = prompt_digest( digest );
+  std::vector< std::string > scenario_list;
+  for( unsigned i = 0; i < digest->scenarios(); i++ ) 
+    scenario_list.push_back( digest->get_scenario( i )->description );
+
+  unsigned scenario_choice = console_c::menu( "--Scenario Menu--", "Select a scenario", scenario_list );
 
   // fetch scenario
   scenario = digest->get_scenario( scenario_choice );
@@ -236,10 +228,9 @@ bool gazebo_c::experiment( Reveal::Core::authorization_ptr auth ) {
   // print dynamics menu
   // user selects dynamics
   select_dynamics();
-  //Reveal::Client::gazebo_c::dynamics_e dynamics = gz.prompt_dynamics();
 
   // print tuning menu
-  if( prompt_yes_no( "Would you like to tune the experiment (Y/N)?", true ) )
+  if( console_c::prompt_yes_no( "Would you like to tune the experiment (Y/N)?" ) )
     print_tuning_menu();
 
   // build scenario
@@ -263,7 +254,7 @@ bool gazebo_c::experiment( Reveal::Core::authorization_ptr auth ) {
 
   printf( "launching gzserver\n" );
 
-  unsigned port = PORT + 1;
+  //unsigned port = PORT + 1;
 
   // open gzconnection and gzsignal
   // TODO: use correct constructors
@@ -364,7 +355,7 @@ bool gazebo_c::experiment( Reveal::Core::authorization_ptr auth ) {
        }
     }
 
-    //print_vector_of_strings( env_strings );
+    //console_c::print( env_strings );
 
     char* const* exec_envars = param_array( env_strings );
 
@@ -426,7 +417,16 @@ bool gazebo_c::experiment( Reveal::Core::authorization_ptr auth ) {
       channels[1].revents = 0;
 
       int rc = zmq_poll( channels, 2, -1);
-      //assert (rc >= 0); // Returned events will be stored in items[].revents 
+      if( rc == -1 ) {
+        if( errno == ETERM ) {
+          // At least one member of channels refers to a socket whose context
+          // was terminated
+        } else if( errno == EFAULT ) {
+          // The provided channels was NULL
+        } else if( errno == EINTR ) {
+          // signal interrupted polling before events were available
+        }
+      }
 
       if( channels[0].revents & ZMQ_POLLIN ) {
 
@@ -532,6 +532,8 @@ void gzexit_sighandler( int signum ) {
 
   std::string msg = "true";
   gzexit_write->write( msg );
+
+  assert( signum );  // to suppress compiler warning of unused variable
 }
 
 //-----------------------------------------------------------------------------

@@ -1,15 +1,5 @@
 #include "Reveal/client/system.h"
 
-/*
-#include <pthread.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <signal.h>
-#include <fcntl.h>
-#include <cstdio>
-*/
-//#include <cstdio>
 #include <pthread.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -71,6 +61,20 @@ std::string make_temp_dir( void ) {
 }
 
 //-----------------------------------------------------------------------------
+// TODO: move to a class to have destructor for correct cleanup.
+char* const* param_array( std::vector< std::string > params ) {
+
+  const char** pa = (const char**)malloc( sizeof(char*) * params.size() + 1 );
+  for( unsigned i = 0; i < params.size(); i++ ) {
+    pa[i] = (const char*)params[i].c_str();
+  }
+  pa[ params.size() ] = NULL;
+
+  return (char* const*) pa;
+}
+
+/*
+//-----------------------------------------------------------------------------
 // TODO: move to utilities
 void print_vector_of_strings( std::vector<std::string> v ) {
   for( std::vector<std::string>::iterator it = v.begin(); it != v.end(); it++ )
@@ -82,19 +86,6 @@ void print_vector_of_strings( std::vector<std::string> v ) {
 void print_param_array( char* const* a ) {
   for( char* const* ptr = (char* const*)a; *ptr != NULL; ptr++ )
     printf( "%s\n", *ptr );
-}
-
-//-----------------------------------------------------------------------------
-// TODO: move to a class to have destructor for correct cleanup.
-char* const* param_array( std::vector< std::string > params ) {
-
-  const char** pa = (const char**)malloc( sizeof(char*) * params.size() + 1 );
-  for( unsigned i = 0; i < params.size(); i++ ) {
-    pa[i] = (const char*)params[i].c_str();
-  }
-  pa[ params.size() ] = NULL;
-
-  return (char* const*) pa;
 }
 
 //-----------------------------------------------------------------------------
@@ -175,7 +166,7 @@ unsigned prompt_select_string_from_list( std::string prompt, std::vector< std::s
  
   return choice; 
 }
-
+*/
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 bool child_exit_handler_c::_quit = false;

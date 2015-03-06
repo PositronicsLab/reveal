@@ -20,6 +20,7 @@ set( REVEAL_CLIENT_HEADERS
   console.h
   client.h
   system.h
+  package.h
   gazebo.h
 )
 
@@ -28,6 +29,7 @@ set( REVEAL_CLIENT_SOURCES
   console.cpp
   client.cpp
   system.cpp
+  package.cpp
   gazebo.cpp
 )
 

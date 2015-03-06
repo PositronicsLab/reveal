@@ -28,6 +28,7 @@
 #include "Reveal/core/transport_exchange.h"
 
 #include "Reveal/client/client.h"
+#include "Reveal/client/package.h"
 
 //-----------------------------------------------------------------------------
 Reveal::Core::pipe_ptr gzexit_write;
@@ -233,8 +234,16 @@ bool gazebo_c::experiment( Reveal::Core::authorization_ptr auth ) {
   if( console_c::prompt_yes_no( "Would you like to tune the experiment (Y/N)?" ) )
     print_tuning_menu();
 
+  // build package
+  std::vector<std::string> build_products;
+  build_products.push_back( "libgz-arm-plugin.so" );
+  build_products.push_back( "libgz-world-plugin.so" );
+
+  package_c package( source_path, build_path, build_products );
+  bool cmake_result = package.configure();
+
   // build scenario
-  bool cmake_result = cmake_package( source_path, build_path );
+  //bool cmake_result = cmake_package( source_path, build_path );
   if( !cmake_result ) {
     printf( "ERROR: Failed to configure make for experiment\nExiting\n" );
     exit( 1 );
@@ -243,8 +252,9 @@ bool gazebo_c::experiment( Reveal::Core::authorization_ptr auth ) {
   }
   //exit( 0 );
 
-  bool make_result = make_package( build_path );
+  bool make_result = package.make();
 
+  //bool make_result = make_package( build_path );
   if( !make_result ) {
     printf( "ERROR: Failed to build experiment\nExiting\n" );
     exit( 1 );
@@ -277,9 +287,10 @@ bool gazebo_c::experiment( Reveal::Core::authorization_ptr auth ) {
   printf( "ipc pipes open\n" );
 
   // install sighandler to detect when the gazebo finishes
+  // TODO: make sighandler class more compatible with using a member function
   struct sigaction action;
   memset( &action, 0, sizeof(struct sigaction) );
-  action.sa_handler = gzexit_sighandler;
+  action.sa_handler = exit_sighandler;
   sigaction( SIGCHLD, &action, NULL );
 
   printf( "signal handler installed\n" );
@@ -465,47 +476,24 @@ bool gazebo_c::experiment( Reveal::Core::authorization_ptr auth ) {
   return true;
 }
 
-
 //-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-/*
-bool gazebo_exit_handler_c::_quit = false;
+// Note: only one instance of gzserver can run at a time at present, so having
+// a static function tied to a global variable for the signal handler is not
+// a major issue as of right now.
+void gazebo_c::exit_sighandler( int signum ) {
+  // write to gzexit_write
 
-gazebo_exit_handler_c::gazebo_exit_handler_c( void ) { _quit = false; }
-gazebo_exit_handler_c::~gazebo_exit_handler_c( void ) { }
+  std::string msg = "true";
+  gzexit_write->write( msg );
 
-void gazebo_exit_handler_c::handler( int signum ) {
-  _quit = true; 
+  assert( signum );  // to suppress compiler warning of unused variable
 }
-
-bool gazebo_exit_handler_c::quit( void ) { return _quit; }
-void gazebo_exit_handler_c::set( bool quit_ ) { _quit = quit_; }
-void gazebo_exit_handler_c::reset( void ) { _quit = false; }
-
-void gazebo_exit_handler_c::install( void ) {   
-  struct sigaction action;
-  memset( &action, 0, sizeof(struct sigaction) );
-  action.sa_handler = handler;
-  sigaction( SIGCHLD, &action, NULL );
-}
-void gazebo_exit_handler_c::uninstall( void ) {
-  struct sigaction action;
-  action.sa_handler = SIG_DFL;
-  sigaction( SIGCHLD, &action, NULL );
-}
-
-void gazebo_exit_handler_c::trip( void ) {
-  _quit = true;
-}
-*/
 
 //-----------------------------------------------------------------------------
 void gazebo_c::print_tuning_menu( void ) {
   printf( "- Tuning Menu -\n" );
   printf( "TODO\n" );
 }
-
-
 
 //-----------------------------------------------------------------------------
 } // Client
@@ -520,20 +508,6 @@ void gazebo_c::print_tuning_menu( void ) {
 // that set of class and function definitions.
 std::string package_root_path( void ) {
   return PACKAGE_ROOT_PATH;
-}
-
-
-//-----------------------------------------------------------------------------
-// Note: only one instance of gzserver can run at a time at present, so having
-// a static function tied to a global variable for the signal handler is not
-// a major issue as of right now.
-void gzexit_sighandler( int signum ) {
-  // write to gzexit_write
-
-  std::string msg = "true";
-  gzexit_write->write( msg );
-
-  assert( signum );  // to suppress compiler warning of unused variable
 }
 
 //-----------------------------------------------------------------------------

@@ -4,9 +4,8 @@
 #include <string>
 #include <vector>
 
+//#include "Reveal/client/simulator.h"
 #include "Reveal/core/ipc.h"
-#include "Reveal/client/system.h"
-#include "Reveal/client/simulator.h"
 #include "Reveal/client/client.h"
 
 //-----------------------------------------------------------------------------
@@ -51,6 +50,8 @@ public:
   void print_tuning_menu( void ); 
 
   virtual bool experiment( Reveal::Core::authorization_ptr auth );
+
+  static void exit_sighandler( int signum );
 };
 
 
@@ -61,7 +62,6 @@ public:
 //-----------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------
-void gzexit_sighandler( int signum );
 //-----------------------------------------------------------------------------
 std::string package_root_path( void );
 //-----------------------------------------------------------------------------

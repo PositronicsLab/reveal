@@ -80,7 +80,7 @@ bool gazebo_c::execute( void ) {
     dynamics_param = "simbody";     break;
   }
 
-  printf( "dyanamics: %s\n", dynamics_param.c_str() );
+  printf( "dynamics: %s\n", dynamics_param.c_str() );
 
   // build the make command line arguments array
   std::vector<std::string> arg_strings;
@@ -235,26 +235,23 @@ bool gazebo_c::experiment( Reveal::Core::authorization_ptr auth ) {
     print_tuning_menu();
 
   // build package
-  std::vector<std::string> build_products;
-  build_products.push_back( "libgz-arm-plugin.so" );
-  build_products.push_back( "libgz-world-plugin.so" );
+  package_c package( source_path, build_path );
 
-  package_c package( source_path, build_path, build_products );
+  // TODO : add robust error checking and handling
+  bool read_result = package.read();
+
+
   bool cmake_result = package.configure();
 
   // build scenario
-  //bool cmake_result = cmake_package( source_path, build_path );
   if( !cmake_result ) {
     printf( "ERROR: Failed to configure make for experiment\nExiting\n" );
     exit( 1 );
   } else {
     printf( "Built controller\n" );
   }
-  //exit( 0 );
 
   bool make_result = package.make();
-
-  //bool make_result = make_package( build_path );
   if( !make_result ) {
     printf( "ERROR: Failed to build experiment\nExiting\n" );
     exit( 1 );
@@ -316,7 +313,7 @@ bool gazebo_c::experiment( Reveal::Core::authorization_ptr auth ) {
       dynamics_param = "simbody";     break;
     }
 
-    printf( "dyanamics: %s\n", dynamics_param.c_str() );
+    printf( "dynamics: %s\n", dynamics_param.c_str() );
 
     // build the make command line arguments array
     std::vector<std::string> arg_strings;

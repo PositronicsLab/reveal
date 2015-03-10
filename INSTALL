@@ -3,6 +3,7 @@ Dependencies:
   protobuf (2.4.1 [default Ubuntu 12.04 distro])
   zeromq (4.0.3)
   boost (1.46.1 minimum)
+  tinyxml
  Server (in addition to client dependencies)
   mongodb c++ driver (branch 26compat)
  Database (to be installed on server system at this time)
@@ -16,11 +17,21 @@ Installation:
    refer to mongo/docs/building.md.
    To install mongo:
     ~> sudo scons core --prefix=/opt/mongo install
-  2.
+  2. (these are general instructions based on http://docs.mongodb.org/v2.2/tutorial/install-mongodb-on-linux/.)
    Create a mongo user, e.g. mongodb, to limit access rights
    Create directory /data/db and give the mongo user ownership
    If --prefix was set to something outside the system path, e.g. /opt/mongo, 
     export that path to the system PATH variable in the mongo user bash script
+  3. (Configuring MongoDB)
+   Note: MongoDB has various security configurations but the key security note
+    is that by default MongoDB opens an two unsecure ports if not properly 
+    configured.  Take measures documented at
+    http://docs.mongodb.org/v2.2/administration/security/ 
+    to ensure MongoDB is not opening a vulnerability to your system.  For 
+    simplest installations with MongoDB running on the same system as the 
+    Reveal Server, run mongodb server at least with nounixsocket enabled, 
+    nohttpinterface enabled and bind=127.0.0.1 (loopback address only).  Assume
+    that mongo has opened a vulnerability unless these parameters are set.
 
  Server:
   1.

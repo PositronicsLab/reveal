@@ -1,0 +1,5 @@
+<?xml version="1.0" ?>
+<Manifest>
+  <Product target="gazebo" type="controller" file="libgz-arm-plugin.so" />
+  <Product target="gazebo" type="monitor" file="libgz-world-plugin.so" />
+</Manifest>

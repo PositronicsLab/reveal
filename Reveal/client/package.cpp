@@ -51,15 +51,21 @@ void child_exit_handler_c::trip( void ) {
 //-----------------------------------------------------------------------------
 // TODO: build_products and any other additional parameters need to be 
 // supplanted by a manifest 
-package_c::package_c( std::string source_path, std::string build_path, std::vector<std::string> build_products ) {
+package_c::package_c( std::string source_path, std::string build_path ) {
   _source_path = source_path;
   _build_path = build_path;
-  _build_products = build_products;
 }
 
 //-----------------------------------------------------------------------------
 package_c::~package_c( void ) {
 
+}
+
+//-----------------------------------------------------------------------------
+bool package_c::read( void ) {
+  bool result;
+  result = _manifest.parse( _source_path );
+  return result;
 }
 
 //-----------------------------------------------------------------------------
@@ -69,7 +75,7 @@ bool package_c::configure( void ) {
 
 //-----------------------------------------------------------------------------
 bool package_c::make( void ) {
-  return make_package( _build_path, _build_products );
+  return make_package( _build_path, _manifest.build_products() );
 }
 
 //-----------------------------------------------------------------------------

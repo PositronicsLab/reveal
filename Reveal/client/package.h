@@ -4,6 +4,8 @@
 #include <string>
 #include "Reveal/client/system.h"
 
+#include "Reveal/client/manifest.h"
+
 //-----------------------------------------------------------------------------
 namespace Reveal {
 //-----------------------------------------------------------------------------
@@ -35,9 +37,10 @@ public:
 
 class package_c {
 public:
-  package_c( std::string source_path, std::string build_path, std::vector<std::string> build_products );
+  package_c( std::string source_path, std::string build_path );
   virtual ~package_c( void );
 
+  bool read( void );
   bool configure( void );
   bool make( void );
 
@@ -45,6 +48,8 @@ protected:
   std::string _source_path;
   std::string _build_path;
   std::vector<std::string> _build_products;
+
+  manifest_c _manifest;
 
   static void* cmake_worker( void* args );
   static void* make_worker( void* args );

@@ -5,6 +5,7 @@ project( Reveal_Client )
 #------------------------------------------------------
 find_package( Pthread REQUIRED )
 find_package( Boost REQUIRED )
+find_package( TinyXML REQUIRED )
 
 add_definitions( -DMAKE_BIN="${CMAKE_MAKE_PROGRAM}")
 add_definitions( -DCMAKE_BIN="${CMAKE_COMMAND}")
@@ -22,6 +23,7 @@ set( REVEAL_CLIENT_HEADERS
   system.h
   package.h
   gazebo.h
+  manifest.h
 )
 
 # source files
@@ -33,14 +35,18 @@ set( REVEAL_CLIENT_SOURCES
   gazebo.cpp
 )
 
+#link_directories(
+#  ${TinyXML_LIBRARIES}
+#)
+
 #------------------------------------------------------
 add_executable( revealclient ${CMAKE_CURRENT_SOURCE_DIR}/reveal_client.cpp ${REVEAL_CLIENT_HEADERS} ${REVEAL_CLIENT_SOURCES} )
 
 add_dependencies( revealclient 
   revealcore
 )
-
 target_link_libraries( revealclient 
+  ${TinyXML_LIBRARIES}
   ${PTHREAD_LIBRARIES} 
   revealcore 
 )

@@ -35,6 +35,14 @@ public:
   model_c( void ) {}
   virtual ~model_c( void ) {}
 
+  void insert( link_ptr link ) {
+    links.push_back( link );
+  }
+
+  void insert( joint_ptr joint ) {
+    joints.push_back( joint );
+  }
+
   void print( void ) {
     printf( "model[%s] { ", id.c_str() );
     for( unsigned i = 0; i < links.size(); i++ ) {

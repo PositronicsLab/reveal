@@ -1,5 +1,5 @@
-#ifndef _REVEAL_CLIENT_CONSOLE_H_
-#define _REVEAL_CLIENT_CONSOLE_H_
+#ifndef _REVEAL_CORE_CONSOLE_H_
+#define _REVEAL_CORE_CONSOLE_H_
 
 #include <string>
 #include <vector>
@@ -7,7 +7,7 @@
 //-----------------------------------------------------------------------------
 namespace Reveal {
 //-----------------------------------------------------------------------------
-namespace Client {
+namespace Core {
 //-----------------------------------------------------------------------------
 
 class console_c {
@@ -23,9 +23,9 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-} // namespace Client
+} // namespace Core
 //-----------------------------------------------------------------------------
 } // namespace Reveal
 //-----------------------------------------------------------------------------
 
-#endif // _REVEAL_CLIENT_CONSOLE_H_
+#endif // _REVEAL_CORE_CONSOLE_H_

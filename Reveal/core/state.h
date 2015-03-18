@@ -67,19 +67,19 @@ public:
     return 6;
   }
 
-  double linear_x( void ) { return _x[0]; }
-  double linear_y( void ) { return _x[1]; }
-  double linear_z( void ) { return _x[2]; }
-  double angular_x( void ) { return _x[3]; }
-  double angular_y( void ) { return _x[4]; }
-  double angular_z( void ) { return _x[5]; }
-  double angular_w( void ) { return _x[6]; }
-  double linear_dx( void ) { return _x[7]; }
-  double linear_dy( void ) { return _x[8]; }
-  double linear_dz( void ) { return _x[9]; }
-  double angular_dx( void ) { return _x[10]; }
-  double angular_dy( void ) { return _x[11]; }
-  double angular_dz( void ) { return _x[12]; }
+  double linear_x( void ) const { return _x[0]; }
+  double linear_y( void ) const { return _x[1]; }
+  double linear_z( void ) const { return _x[2]; }
+  double angular_x( void ) const { return _x[3]; }
+  double angular_y( void ) const { return _x[4]; }
+  double angular_z( void ) const { return _x[5]; }
+  double angular_w( void ) const { return _x[6]; }
+  double linear_dx( void ) const { return _x[7]; }
+  double linear_dy( void ) const { return _x[8]; }
+  double linear_dz( void ) const { return _x[9]; }
+  double angular_dx( void ) const { return _x[10]; }
+  double angular_dy( void ) const { return _x[11]; }
+  double angular_dz( void ) const { return _x[12]; }
 
   void linear_x( const double& x ) { _x[0] = x; }
   void linear_y( const double& y ) { _x[1] = y; }

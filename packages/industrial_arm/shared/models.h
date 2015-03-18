@@ -323,6 +323,7 @@ public:
 
     scenario->id = "industrial_arm";
     scenario->description = "grasping a block with an industrial arm";
+    // TODO : rectify determination of number of trials
     scenario->trials = 1000;  // NOTE: we don't know this in advance and we don't know when it will exit at this point!.
    // number of trials is arbitrary at this point
     scenario->steps_per_trial = 1;
@@ -423,7 +424,7 @@ public:
 
         for( unsigned j = 0; j < 3; j++ )
           link->state[j] = pose.pos[j];
-        link->state[3] = pose.rot.w;
+        link->state[3] = pose.rot.w;        // TODO: double check ordering here
         link->state[4] = pose.rot.x;
         link->state[5] = pose.rot.y;
         link->state[6] = pose.rot.z;
@@ -481,7 +482,7 @@ public:
 
         for( unsigned j = 0; j < 3; j++ )
           link->state[j] = pose.pos[j];
-        link->state[3] = pose.rot.w;
+        link->state[3] = pose.rot.w;        // TODO : double check ordering here
         link->state[4] = pose.rot.x;
         link->state[5] = pose.rot.y;
         link->state[6] = pose.rot.z;
@@ -512,7 +513,7 @@ public:
     solution->scenario_id = scenario->id;
     solution->trial_id = trial->trial_id;
     solution->t = t;
-    solution->dt = t;
+    solution->dt = dt;
 
     // arm data
     {

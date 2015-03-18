@@ -8,6 +8,7 @@ project( Reveal_Core )
 find_package( Boost REQUIRED )
 find_package( Protobuf REQUIRED )
 find_package( ZeroMQ REQUIRED )
+find_package( TinyXML REQUIRED )
 
 include_directories( 
   ${ZeroMQ_INCLUDE_DIRS}
@@ -21,6 +22,9 @@ link_directories(
 #------------------------------------------------------
 # header files
 set( REVEAL_CORE_HEADERS 
+  error.h
+  console.h
+  system.h
   pointers.h
   user.h
   session.h
@@ -43,10 +47,13 @@ set( REVEAL_CORE_HEADERS
   analyzer.h
   analysis.h
   log.h
+  manifest.h
 )
 
 # source files
 set( REVEAL_CORE_SOURCES 
+  console.cpp
+  system.cpp
   transport_exchange.cpp
   connection.cpp
   ipc.cpp
@@ -61,6 +68,7 @@ target_link_libraries( revealcore
   ${Boost_LIBRARIES}
   ${PROTOBUF_LIBRARY}
   ${ZeroMQ_LIBRARIES} 
+  ${TinyXML_LIBRARIES}
 )
 
 target_link_libraries( revealcore revealmessages )

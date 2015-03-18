@@ -14,8 +14,8 @@ class is the only required interface into the system.
 
 #include "Reveal/core/connection.h"
 #include "Reveal/core/pointers.h"
+#include "Reveal/core/system.h"
 
-#include "Reveal/client/system.h"
 #include "Reveal/client/simulator.h"
 
 #include <boost/enable_shared_from_this.hpp>
@@ -68,14 +68,26 @@ public:
 
   client_ptr ptr( void );
 
-  Reveal::Client::gazebo_ptr gz;
+  //Reveal::Client::gazebo_ptr simulator;
+  Reveal::Client::simulator_ptr simulator;
+
+private:
+  Reveal::Core::user_ptr _user;
+  Reveal::Core::authorization_ptr _auth;
+
+public:
+
+  bool login( void );
 
   // API
   error_e request_authorization( Reveal::Core::authorization_ptr& auth );
   error_e request_digest( Reveal::Core::authorization_ptr& auth, Reveal::Core::digest_ptr& digest );
+  unsigned ui_select_scenario( Reveal::Core::digest_ptr digest );
+
   error_e request_experiment( Reveal::Core::authorization_ptr& auth, Reveal::Core::scenario_ptr scenario, Reveal::Core::experiment_ptr& experiment );
-  error_e request_trial( Reveal::Core::authorization_ptr& auth, Reveal::Core::experiment_ptr experiment, Reveal::Core::trial_ptr& trial );
-  error_e submit_solution( Reveal::Core::authorization_ptr& auth, Reveal::Core::experiment_ptr experiment, Reveal::Core::solution_ptr& solution );
+
+  bool request_trial( Reveal::Core::authorization_ptr& auth, Reveal::Core::experiment_ptr experiment, Reveal::Core::trial_ptr& trial );
+  bool submit_solution( Reveal::Core::authorization_ptr& auth, Reveal::Core::experiment_ptr experiment, Reveal::Core::solution_ptr& solution );
 
   Reveal::Core::connection_c _connection;
 

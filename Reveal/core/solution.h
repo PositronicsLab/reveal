@@ -46,6 +46,10 @@ public:
   std::vector<model_ptr> models;
   type_e type;
 
+  void insert( model_ptr model ) {  
+    models.push_back( model );
+  }
+
   void print( void ) {
     printf( "scenario_id[%s]", scenario_id.c_str() );
     printf( ", trial_id[%u]", trial_id );

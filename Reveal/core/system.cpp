@@ -1,4 +1,4 @@
-#include "Reveal/client/system.h"
+#include "Reveal/core/system.h"
 
 #include <stdlib.h>
 

@@ -8,7 +8,7 @@
 #include <cstring>
 #include <sstream>
 
-#include "Reveal/client/system.h"
+#include "Reveal/core/system.h"
 
 //-----------------------------------------------------------------------------
 namespace Reveal {
@@ -64,6 +64,7 @@ package_c::~package_c( void ) {
 //-----------------------------------------------------------------------------
 bool package_c::read( void ) {
   bool result;
+  result = _manifest.parse( _source_path );
   result = _manifest.parse( _source_path );
   return result;
 }
@@ -185,6 +186,7 @@ void* package_c::cmake_worker( void* args ) {
     // build the cmake command line arguments array
     std::vector<std::string> arg_strings;
     arg_strings.push_back( "cmake" );
+    arg_strings.push_back( "-DGAZEBO=ON" );
     arg_strings.push_back( source_path );
     char* const* exec_argv = param_array( arg_strings );
 

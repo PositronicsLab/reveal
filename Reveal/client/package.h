@@ -2,9 +2,11 @@
 #define _REVEAL_CLIENT_PACKAGE_H_
 
 #include <string>
-#include "Reveal/client/system.h"
 
-#include "Reveal/client/manifest.h"
+#include <boost/shared_ptr.hpp>
+
+#include "Reveal/core/system.h"
+#include "Reveal/core/manifest.h"
 
 //-----------------------------------------------------------------------------
 namespace Reveal {
@@ -12,7 +14,7 @@ namespace Reveal {
 namespace Client {
 //-----------------------------------------------------------------------------
 
-class child_exit_handler_c : public sighandler_c {
+class child_exit_handler_c : public Reveal::Core::sighandler_c {
 protected:
   static bool _quit;
 
@@ -35,6 +37,10 @@ public:
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 
+class package_c;
+typedef boost::shared_ptr<package_c> package_ptr;
+//-----------------------------------------------------------------------------
+
 class package_c {
 public:
   package_c( std::string source_path, std::string build_path );
@@ -49,7 +55,7 @@ protected:
   std::string _build_path;
   std::vector<std::string> _build_products;
 
-  manifest_c _manifest;
+  Reveal::Core::manifest_c _manifest;
 
   static void* cmake_worker( void* args );
   static void* make_worker( void* args );

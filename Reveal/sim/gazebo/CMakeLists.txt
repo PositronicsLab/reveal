@@ -30,20 +30,20 @@ set( SRCS
 )
 
 #------------------------------------------------------
-add_library( revealsimgazebo SHARED ${HDRS} ${SRCS} )
+add_library( reveal_sim_gazebo SHARED ${HDRS} ${SRCS} )
 
-add_dependencies( revealsimgazebo 
-  revealcore
+add_dependencies( reveal_sim_gazebo 
+  reveal_core
 )
 
-target_link_libraries( revealsimgazebo 
+target_link_libraries( reveal_sim_gazebo 
   ${PTHREAD_LIBRARIES} 
   ${GAZEBO_LIBRARIES}
-  revealcore 
+  reveal_core
 )
 #------------------------------------------------------
-set_target_properties( revealsimgazebo PROPERTIES SOVERSION ${REVEAL_MAJOR_VERSION} VERSION ${REVEAL_VERSION_FULL} )
-install( TARGETS revealsimgazebo DESTINATION ${LIB_INSTALL_DIR} COMPONENT shlib )
+set_target_properties( reveal_sim_gazebo PROPERTIES SOVERSION ${REVEAL_MAJOR_VERSION} VERSION ${REVEAL_VERSION_FULL} )
+install( TARGETS reveal_sim_gazebo DESTINATION ${LIB_INSTALL_DIR} COMPONENT shlib )
 install( FILES ${HDRS} DESTINATION ${INCLUDE_INSTALL_DIR}/sim/gazebo COMPONENT headers )
 
 #TODO: automatically write a gazebo.h header in the sims directory that includes

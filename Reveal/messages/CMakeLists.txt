@@ -29,11 +29,11 @@ set( REVEAL_MESSAGES_LIBRARIES
 
 #------------------------------------------------------
 # build the message library
-add_library(revealmessages SHARED ${PROTO_SRCS} ${PROTO_HDRS})
-target_link_libraries(revealmessages ${REVEAL_MESSAGES_LIBRARIES})
+add_library(reveal_messages SHARED ${PROTO_SRCS} ${PROTO_HDRS})
+target_link_libraries(reveal_messages ${REVEAL_MESSAGES_LIBRARIES})
 
 #------------------------------------------------------
-set_target_properties( revealmessages PROPERTIES SOVERSION ${REVEAL_MAJOR_VERSION} VERSION ${REVEAL_VERSION_FULL} )
-install( TARGETS revealmessages DESTINATION ${LIB_INSTALL_DIR} COMPONENT shlib )
+set_target_properties( reveal_messages PROPERTIES SOVERSION ${REVEAL_MAJOR_VERSION} VERSION ${REVEAL_VERSION_FULL} )
+install( TARGETS reveal_messages DESTINATION ${LIB_INSTALL_DIR} COMPONENT shlib )
 install( FILES ${PROTO_HDRS} DESTINATION ${INCLUDE_INSTALL_DIR}/messages COMPONENT headers )
 

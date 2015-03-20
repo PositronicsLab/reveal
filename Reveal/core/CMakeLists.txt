@@ -66,21 +66,25 @@ set( REVEAL_CORE_SOURCES
 
 #------------------------------------------------------
 # build the revealcore library
-add_library( revealcore SHARED ${REVEAL_CORE_HEADERS} ${REVEAL_CORE_SOURCES} )
-add_dependencies( revealcore revealmessages )
+add_library( reveal_core SHARED ${REVEAL_CORE_HEADERS} ${REVEAL_CORE_SOURCES} )
+add_dependencies( reveal_core
+  reveal_messages
+)
 
-target_link_libraries( revealcore 
+target_link_libraries( reveal_core 
   ${Boost_LIBRARIES}
   ${PROTOBUF_LIBRARY}
   ${ZeroMQ_LIBRARIES} 
   ${TinyXML_LIBRARIES}
 )
 
-target_link_libraries( revealcore revealmessages )
+target_link_libraries( reveal_core 
+  reveal_messages
+)
 
 #------------------------------------------------------
 # install
-set_target_properties( revealcore PROPERTIES SOVERSION ${REVEAL_MAJOR_VERSION} VERSION ${REVEAL_VERSION_FULL} )
-install( TARGETS revealcore DESTINATION ${LIB_INSTALL_DIR} COMPONENT shlib )
+set_target_properties( reveal_core PROPERTIES SOVERSION ${REVEAL_MAJOR_VERSION} VERSION ${REVEAL_VERSION_FULL} )
+install( TARGETS reveal_core DESTINATION ${LIB_INSTALL_DIR} COMPONENT shlib )
 install( FILES ${REVEAL_CORE_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/core COMPONENT headers )
 

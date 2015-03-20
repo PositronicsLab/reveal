@@ -39,15 +39,15 @@ link_directories( ${REVEAL_LIBRARY_DIRS} )
 
 set( LIBS 
 #  ${REVEAL_LIBRARIES} 
-  revealcore
-  revealdb
-  revealsimgazebo
+  reveal_core
+  reveal_db
 ) 
 
 if( GAZEBO )
   set( LIBS 
     ${LIBS} 
     ${GAZEBO_LIBRARIES}
+    reveal_sim_gazebo
   )
 endif()
 

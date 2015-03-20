@@ -25,18 +25,18 @@ set( REVEAL_DB_SOURCES
 
 #------------------------------------------------------
 # build the library
-add_library( revealdb SHARED ${REVEAL_DB_HEADERS} ${REVEAL_DB_SOURCES} )
-add_dependencies( revealdb revealcore )
+add_library( reveal_db SHARED ${REVEAL_DB_HEADERS} ${REVEAL_DB_SOURCES} )
+add_dependencies( reveal_db revealcore )
 
-target_link_libraries( revealdb 
-  revealcore
+target_link_libraries( reveal_db 
+  reveal_core
   /usr/local/lib/libmongoclient.so
 )
 
 #------------------------------------------------------
 # install
-set_target_properties( revealdb PROPERTIES SOVERSION ${REVEAL_MAJOR_VERSION} VERSION ${REVEAL_VERSION_FULL} )
-install( TARGETS revealdb DESTINATION ${LIB_INSTALL_DIR} COMPONENT shlib )
+set_target_properties( reveal_db PROPERTIES SOVERSION ${REVEAL_MAJOR_VERSION} VERSION ${REVEAL_VERSION_FULL} )
+install( TARGETS reveal_db DESTINATION ${LIB_INSTALL_DIR} COMPONENT shlib )
 install( FILES ${REVEAL_DB_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/db COMPONENT headers )
 
 #add_subdirectory( test )

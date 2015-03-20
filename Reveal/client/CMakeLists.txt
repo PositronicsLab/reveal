@@ -18,21 +18,21 @@ set( REVEAL_CLIENT_SOURCES
 )
 
 #------------------------------------------------------
-add_executable( revealclient ${CMAKE_CURRENT_SOURCE_DIR}/reveal_client.cpp ${REVEAL_CLIENT_HEADERS} ${REVEAL_CLIENT_SOURCES} )
+add_executable( reveal_client ${CMAKE_CURRENT_SOURCE_DIR}/reveal_client.cpp ${REVEAL_CLIENT_HEADERS} ${REVEAL_CLIENT_SOURCES} )
 
-add_dependencies( revealclient 
-  revealcore
-  revealsimgazebo
+add_dependencies( reveal_client 
+  reveal_core
+  reveal_sim_gazebo
 )
-target_link_libraries( revealclient 
+target_link_libraries( reveal_client 
   ${PTHREAD_LIBRARIES} 
-  revealcore
-  revealsimgazebo 
+  reveal_core
+  reveal_sim_gazebo 
 )
 
 #------------------------------------------------------
-set_target_properties( revealclient PROPERTIES VERSION ${REVEAL_VERSION_FULL} )
-install( TARGETS revealclient DESTINATION ${BIN_INSTALL_DIR} )
+set_target_properties( reveal_client PROPERTIES VERSION ${REVEAL_VERSION_FULL} )
+install( TARGETS reveal_client DESTINATION ${BIN_INSTALL_DIR} )
 install( FILES ${REVEAL_CLIENT_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/client COMPONENT headers )
 
 #------------------------------------------------------
@@ -51,22 +51,22 @@ install( FILES ${REVEAL_CLIENT_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/clien
 #  importer.cpp
 #)
 
-#add_executable( revealimport ${CMAKE_CURRENT_SOURCE_DIR}/reveal_import.cpp ${REVEAL_IMPORT_HEADERS} ${REVEAL_IMPORT_SOURCES} )
+#add_executable( reveal_import ${CMAKE_CURRENT_SOURCE_DIR}/reveal_import.cpp ${REVEAL_IMPORT_HEADERS} ${REVEAL_IMPORT_SOURCES} )
 
-#add_dependencies( revealimport 
-#  revealcore
-#  revealdb
+#add_dependencies( reveal_import 
+#  reveal_core
+#  reveal_db
 #)
-#target_link_libraries( revealimport
+#target_link_libraries( reveal_import
 ##  ${TinyXML_LIBRARIES}
 ##  ${PTHREAD_LIBRARIES} 
-#  revealcore 
-#  revealdb
+#  reveal_core 
+#  reveal_db
 #)
 
 #------------------------------------------------------
-#set_target_properties( revealimport PROPERTIES VERSION ${REVEAL_VERSION_FULL} )
-#install( TARGETS revealimport DESTINATION ${BIN_INSTALL_DIR} )
+#set_target_properties( reveal_import PROPERTIES VERSION ${REVEAL_VERSION_FULL} )
+#install( TARGETS reveal_import DESTINATION ${BIN_INSTALL_DIR} )
 ##install( FILES ${REVEAL_CLIENT_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/client COMPONENT headers )
 
 ## build the tests

@@ -122,15 +122,15 @@ add_subdirectory( Reveal )
 # Make the cmake config files
 set( PKG_NAME ${PROJECT_NAME_UPPER} )
 set( PKG_LIBRARIES
-  revealmessages
-  revealcore
+  reveal_messages
+  reveal_core
 )
 
 if( ${INSTALL_REVEAL_SERVER} )
   set( PKG_LIBRARIES
     ${PKG_LIBRARIES}
-    revealdb
-    revealanalytics
+    reveal_db
+    reveal_analytics
   )
 endif( ${INSTALL_REVEAL_SERVER} )
 set(PKG_DEPENDS Boost Protobuf ZeroMQ)

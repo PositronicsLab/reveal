@@ -75,7 +75,7 @@ bool helpers_c::write_trial( Reveal::Core::trial_ptr trial, gazebo::physics::Wor
 // returns an empty pointer if it fails to find the model in the gazebo world
 Reveal::Core::model_ptr helpers_c::read_model( gazebo::physics::WorldPtr world, std::string model_name, std::map<std::string,double> control ) {
 
-  printf( "called me\n" );
+  //printf( "called me\n" );
 
   Reveal::Core::model_ptr rvlmodel;
   // attempt to find the model in the gazebo world

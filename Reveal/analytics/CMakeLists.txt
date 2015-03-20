@@ -28,25 +28,25 @@ set( REVEAL_ANALYTICS_SOURCES
 )
 
 #------------------------------------------------------
-add_library( revealanalytics SHARED ${REVEAL_ANALYTICS_HEADERS} ${REVEAL_ANALYTICS_SOURCES} )
-add_dependencies( revealanalytics 
-  revealmessages 
-  revealcore
-  revealdb 
+add_library( reveal_analytics SHARED ${REVEAL_ANALYTICS_HEADERS} ${REVEAL_ANALYTICS_SOURCES} )
+add_dependencies( reveal_analytics 
+  reveal_messages 
+  reveal_core
+  reveal_db 
 )
 
-target_link_libraries( revealanalytics
+target_link_libraries( reveal_analytics
   ${PTHREAD_LIBRARIES}
   ${DL_LIBRARIES}
-  revealmessages
-  revealcore
-  revealdb
+  reveal_messages
+  reveal_core
+  reveal_db
 )
 
 #------------------------------------------------------
 # install
-set_target_properties( revealanalytics PROPERTIES SOVERSION ${REVEAL_MAJOR_VERSION} VERSION ${REVEAL_VERSION_FULL} )
-install( TARGETS revealanalytics DESTINATION ${LIB_INSTALL_DIR} COMPONENT shlib )
+set_target_properties( reveal_analytics PROPERTIES SOVERSION ${REVEAL_MAJOR_VERSION} VERSION ${REVEAL_VERSION_FULL} )
+install( TARGETS reveal_analytics DESTINATION ${LIB_INSTALL_DIR} COMPONENT shlib )
 install( FILES ${REVEAL_ANALYTICS_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/analytics COMPONENT headers )
 
 #------------------------------------------------------

@@ -15,13 +15,17 @@ Installation:
    Install mongo (branch v2.6) https://github.com/mongodb/mongo.git
    32-bit ok for testing.  64-bit for deployment as 32-bit has 2.4 GB limit
    refer to mongo/docs/building.md.
-   To install mongo:
-    ~> sudo scons core --prefix=/opt/mongo install
+   Ex.
+    ~> git clone https://github.com/mongodb/mongo.git
+    ~> cd mongo
+    ~/mongo> git checkout v2.6
+    ~/mongo> sudo scons core --prefix=/opt/mongo install
   2. (these are general instructions based on http://docs.mongodb.org/v2.2/tutorial/install-mongodb-on-linux/.)
    Create a mongo user, e.g. mongodb, to limit access rights
    Create directory /data/db and give the mongo user ownership
    If --prefix was set to something outside the system path, e.g. /opt/mongo, 
-    export that path to the system PATH variable in the mongo user bash script
+    export that path including a bin subfolder, i.e. /opt/mongo/bin to the 
+    system PATH variable in the mongo user bash script
   3. (Configuring MongoDB)
    Note: MongoDB has various security configurations but the key security note
     is that by default MongoDB opens an two unsecure ports if not properly 
@@ -36,6 +40,10 @@ Installation:
  Server:
   1.
    Install mongo-cxx-driver (branch 26compat) https://github.com/mongodb/mongo-cxx-driver.git
+    Ex.
+    ~> git clone https://github.com/mongodb/mongo-cxx-driver.git
+    ~> cd mongo-cxx-driver
+    ~/mongo-cxx-driver> git checkout 26compat
     ~> sudo scons --full --use-system-boost --prefix=/usr/local --sharedclient --install-mongoclient
     - or -
     ~> sudo scons --32 --sharedclient --release --full --use-system-boost --cpppath=/usr/include install-mongoclient

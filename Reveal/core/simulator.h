@@ -1,5 +1,5 @@
-#ifndef _REVEAL_CLIENT_SIMULATOR_H_
-#define _REVEAL_CLIENT_SIMULATOR_H_
+#ifndef _REVEAL_CORE_SIMULATOR_H_
+#define _REVEAL_CORE_SIMULATOR_H_
 //-----------------------------------------------------------------------------
 
 #include "Reveal/core/pointers.h"
@@ -8,7 +8,7 @@
 //-----------------------------------------------------------------------------
 namespace Reveal {
 //-----------------------------------------------------------------------------
-namespace Client {
+namespace Core {
 //-----------------------------------------------------------------------------
 
 class simulator_c;
@@ -46,8 +46,8 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-} // namespace Client
+} // namespace Core
 //-----------------------------------------------------------------------------
 } // namespace Reveal
 //-----------------------------------------------------------------------------
-#endif // _REVEAL_CLIENT_SIMULATOR_H_
+#endif // _REVEAL_CORE_SIMULATOR_H_

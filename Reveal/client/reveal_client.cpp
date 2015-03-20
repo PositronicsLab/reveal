@@ -5,7 +5,6 @@
 #include "Reveal/core/user.h"
 
 #include "Reveal/client/client.h"
-#include "Reveal/client/gazebo.h"
 
 //-----------------------------------------------------------------------------
 

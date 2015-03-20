@@ -21,12 +21,11 @@
 #include "Reveal/core/trial.h"
 #include "Reveal/core/solution.h"
 
-//#include <Reveal/pendulum.h>
-
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/shared_ptr.hpp>
 
-#include "Reveal/client/gazebo.h"
+#include "Reveal/sim/gazebo/gazebo.h"
+//TODO once CMakeLists supports change above include to "Reveal/sim/gazebo.h"
 
 //-----------------------------------------------------------------------------
 
@@ -493,11 +492,11 @@ bool client_c::execute( void ) {
 //  simulator_c::request_trial_f rtf = boost::bind(&client_c::request_trial, this, _1, _2, _3);
 //  simulator_c::submit_solution_f ssf = boost::bind(&client_c::submit_solution, this, _1, _2, _3);
   // create the simulator (using the bound functions and comm layer context)
-//  simulator = boost::dynamic_pointer_cast<simulator_c>( Reveal::Client::gazebo_ptr( new Reveal::Client::gazebo_c( rtf, ssf, _connection.context() ) ) );
+//  simulator = boost::dynamic_pointer_cast<Reveal::Core::simulator_c>( Reveal::Sim::gazebo_ptr( new Reveal::Sim::gazebo_c( rtf, ssf, _connection.context() ) ) );
 
   // - Approach 2 -  This approach is universal for all sims
   // create the simulator
-  simulator = boost::dynamic_pointer_cast<simulator_c>( Reveal::Client::gazebo_ptr( new Reveal::Client::gazebo_c() ) );
+  simulator = boost::dynamic_pointer_cast<Reveal::Core::simulator_c>( Reveal::Sim::gazebo_ptr( new Reveal::Sim::gazebo_c() ) );
   // bind the client request_trial function to the simulator for callback
   simulator->set_request_trial( boost::bind(&client_c::request_trial, this, _1, _2, _3) );
   // bind the client submit_solution function to the simulator for callback

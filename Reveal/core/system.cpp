@@ -1,12 +1,14 @@
 #include "Reveal/core/system.h"
 
 #include <stdlib.h>
+#include <iostream>
 
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <errno.h>
-#include <iostream>
+#include <signal.h>
+#include <fcntl.h>
 
 //-----------------------------------------------------------------------------
 extern char **environ;

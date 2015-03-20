@@ -15,8 +15,7 @@ class is the only required interface into the system.
 #include "Reveal/core/connection.h"
 #include "Reveal/core/pointers.h"
 #include "Reveal/core/system.h"
-
-#include "Reveal/client/simulator.h"
+#include "Reveal/core/simulator.h"
 
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/shared_ptr.hpp>
@@ -36,9 +35,6 @@ namespace Client {
 //-----------------------------------------------------------------------------
 class client_c;
 typedef boost::shared_ptr<client_c> client_ptr;
-class gazebo_c;
-typedef boost::shared_ptr<gazebo_c> gazebo_ptr;
-
 
 //-----------------------------------------------------------------------------
 class client_c : public boost::enable_shared_from_this<client_c> {
@@ -68,8 +64,7 @@ public:
 
   client_ptr ptr( void );
 
-  //Reveal::Client::gazebo_ptr simulator;
-  Reveal::Client::simulator_ptr simulator;
+  Reveal::Core::simulator_ptr simulator;
 
 private:
   Reveal::Core::user_ptr _user;

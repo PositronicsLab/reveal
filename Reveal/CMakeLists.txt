@@ -3,7 +3,7 @@ include_directories( .. )
 add_subdirectory( messages )
 include_directories( ${CMAKE_CURRENT_BINARY_DIR}/.. ) # for generated .h's
 add_subdirectory( core )
-#  add_subdirectory( sim )
+add_subdirectory( sim )
 
 if( ${INSTALL_REVEAL_SERVER} )
   add_subdirectory( db )

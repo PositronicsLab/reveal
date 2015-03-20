@@ -44,6 +44,8 @@
 #include <Reveal/core/joint.h>
 #endif
 
+#include <Reveal/sim/gazebo/helpers.h>
+
 //-----------------------------------------------------------------------------
 using namespace gazebo;
 
@@ -353,7 +355,8 @@ public:
 // solely to firewall dependencies.
 #ifdef REVEAL_SERVICE
   void apply_trial( Reveal::Core::trial_ptr trial ) {
-
+//    Reveal::Sim::Gazebo::helpers_c::write_trial( trial, _world );
+///*
     _world->SetSimTime( trial->t );
     _world->GetPhysicsEngine()->SetMaxStepSize( trial->dt );
 
@@ -393,7 +396,8 @@ public:
         // Bullet and ODE only use 1 DOF?
         gzjoint->SetForce( 0, joint->control[0] ); 
       }
-    } 
+    }
+//*/
   }
 #endif // REVEAL_SERVICE
 
@@ -504,6 +508,20 @@ public:
 
 #ifdef DATA_GENERATION
   void write_solution( void ) {
+///*
+    std::vector<std::string> model_list;
+    model_list.push_back( "ur10_schunk_arm" );
+    model_list.push_back( "block" );
+
+    solution = Reveal::Sim::Gazebo::helpers_c::read_model_solution( _world, model_list, scenario->id, trial->trial_id );
+//*/
+/*
+    gazebo::physics::Model_V models = _world->GetModels();
+    for( unsigned i = 0; i < models.size(); i++ )
+      printf( "model: %s\n", models[i]->GetName().c_str() );
+    printf( "\n" );
+*/
+/*
     double t = sim_time();
     double dt = step_size();
 
@@ -575,13 +593,21 @@ public:
 
       solution->models.push_back( model );
     }
-
+*/
     db->insert( solution );
   }
 #endif // DATA_GENERATION
 
 #ifdef REVEAL_SERVICE
   void extract_solution( Reveal::Core::solution_ptr& solution ) {
+/*
+    std::vector<std::string> model_list;
+    model_list.push_back( "ur10_schunk_arm" );
+    model_list.push_back( "block" );
+
+    solution = Reveal::Sim::Gazebo::helpers_c::read_client_solution( _world, model_list, scenario->id, trial->trial_id );
+*/
+///*
     solution->dt = step_size();
     // arm data
     {
@@ -644,7 +670,7 @@ public:
 
       solution->models.push_back( model );
     }
-
+//*/
   }
 #endif // REVEAL_SERVICE
 

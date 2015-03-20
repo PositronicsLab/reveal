@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 2.8.7)
 project( Reveal_Core )
 
 #------------------------------------------------------
+add_definitions( -DMAKE_BIN="${CMAKE_MAKE_PROGRAM}")
+add_definitions( -DCMAKE_BIN="${CMAKE_COMMAND}")
 
 #------------------------------------------------------
 find_package( Boost REQUIRED )
@@ -48,6 +50,8 @@ set( REVEAL_CORE_HEADERS
   analysis.h
   log.h
   manifest.h
+  simulator.h
+  package.h
 )
 
 # source files
@@ -57,6 +61,7 @@ set( REVEAL_CORE_SOURCES
   transport_exchange.cpp
   connection.cpp
   ipc.cpp
+  package.cpp
 )
 
 #------------------------------------------------------

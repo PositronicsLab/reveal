@@ -38,7 +38,10 @@ include_directories( ${REVEAL_INCLUDE_DIRS} )
 link_directories( ${REVEAL_LIBRARY_DIRS} )
 
 set( LIBS 
-  ${REVEAL_LIBRARIES} 
+#  ${REVEAL_LIBRARIES} 
+  revealcore
+  revealdb
+  revealsimgazebo
 ) 
 
 if( GAZEBO )

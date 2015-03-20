@@ -4,7 +4,6 @@
 #include <assert.h>
 #include <iostream>
 #include <sstream>
-#include <uuid/uuid.h>
 
 #include "Reveal/server/identity.h"
 #include "Reveal/core/authorization.h"

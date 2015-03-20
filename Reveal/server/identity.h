@@ -10,7 +10,11 @@ identity.h defines identity functions.
 //-----------------------------------------------------------------------------
 
 #include <string>
-#include <uuid/uuid.h>
+#include <sstream>
+
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 //-----------------------------------------------------------------------------
 
@@ -22,15 +26,11 @@ namespace Server {
 
 //-----------------------------------------------------------------------------
 std::string generate_uuid( void ) {
-  uuid_t uuid;
-  uuid_generate( uuid );
 
-  char buffer[16];
-  sprintf( buffer, "%X", uuid );
-  //sprintf( buffer, "%s", uuid );
-  
-  std::string result = buffer;
-  return result;
+  std::stringstream ss;
+  boost::uuids::uuid uuid = boost::uuids::random_generator()();
+  ss << uuid;
+  return ss.str();
 }
 
 //-----------------------------------------------------------------------------

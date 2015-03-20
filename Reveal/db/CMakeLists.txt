@@ -39,6 +39,6 @@ set_target_properties( revealdb PROPERTIES SOVERSION ${REVEAL_MAJOR_VERSION} VER
 install( TARGETS revealdb DESTINATION ${LIB_INSTALL_DIR} COMPONENT shlib )
 install( FILES ${REVEAL_DB_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/db COMPONENT headers )
 
-add_subdirectory( test )
+#add_subdirectory( test )
 
 

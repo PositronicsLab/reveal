@@ -4,11 +4,10 @@ project( Reveal_Server )
 
 #------------------------------------------------------
 find_package( Pthread REQUIRED )
-find_package( uuid REQUIRED )
+find_package( Boost REQUIRED )
 
 link_directories(
   ${PTHREAD_LIBRARIES}
-  ${UUID_LIBRARIES}
 )
 
 #------------------------------------------------------
@@ -35,7 +34,8 @@ add_dependencies( revealserver
 
 target_link_libraries( revealserver
   ${PTHREAD_LIBRARIES}
-  ${UUID_LIBRARIES}
+  ${Boost_LIBRARIES}
+  boost_system
   revealcore
   revealdb
   revealanalytics

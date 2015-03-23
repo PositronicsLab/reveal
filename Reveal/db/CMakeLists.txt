@@ -26,7 +26,7 @@ set( REVEAL_DB_SOURCES
 #------------------------------------------------------
 # build the library
 add_library( reveal_db SHARED ${REVEAL_DB_HEADERS} ${REVEAL_DB_SOURCES} )
-add_dependencies( reveal_db revealcore )
+add_dependencies( reveal_db reveal_core )
 
 target_link_libraries( reveal_db 
   reveal_core

@@ -52,6 +52,7 @@ set( REVEAL_CORE_HEADERS
   manifest.h
   simulator.h
   package.h
+  xml.h
 )
 
 # source files
@@ -62,6 +63,7 @@ set( REVEAL_CORE_SOURCES
   connection.cpp
   ipc.cpp
   package.cpp
+  xml.cpp
 )
 
 #------------------------------------------------------

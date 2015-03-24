@@ -2,9 +2,11 @@
 #define _REVEAL_CORE_MANIFEST_H_
 //-----------------------------------------------------------------------------
 
-#include <tinyxml.h>
 #include <vector>
 #include <string>
+
+#include "Reveal/core/xml.h"
+//#include <stdio.h>
 
 //-----------------------------------------------------------------------------
 namespace Reveal {
@@ -20,33 +22,22 @@ public:
   // TODO : add robust error handling
   bool parse( std::string path ) {
     std::string manifest_path = path + '/'+ "manifest.xml";
-    printf( "manifest_path: %s\n", manifest_path.c_str() );
 
-    TiXmlDocument doc( manifest_path.c_str() );
-    bool result = doc.LoadFile();
-    if( !result ) return false;
-    
-    TiXmlHandle hdoc( &doc );
-    TiXmlHandle root( 0 ); 
-    TiXmlElement* e;
-    TiXmlHandle h( 0 );
+    xml_c xml;
+    xml.read( manifest_path );
 
-    e = hdoc.FirstChildElement().Element();
-    root = TiXmlHandle( e );
+    xml_element_ptr root, element;
+    root = xml.root();
 
-    h = root.FirstChild( "Product" );
-    TiXmlElement* echild = h.ToElement();
-
-    //TiXmlElement* echild = root.FirstChildElement();
- 
-    for( echild; echild; echild = echild->NextSiblingElement() ) {
-      TiXmlAttribute* a = echild->FirstAttribute();
-      std::string target, type, product; 
-      while( a!= NULL ) {
-        std::string name = a->Name();
-        std::string value = a->Value();
-        //printf("name: %s, value: %s\n", name.c_str(), value.c_str() );
-
+    for( unsigned i = 0; i < root->elements(); i++ ) {
+      element = root->element( i );
+      if( element->get_name() == "Product" ) {
+        for( unsigned j = 0; j < element->attributes(); j++ ) {
+          xml_attribute_ptr attrib = element->attribute( j );
+          if( attrib->get_name() == "file" )
+            _build_products.push_back( attrib->get_value() );
+        }
+/*
         if( name == "target" ) {
           target = value;
         } else if( name == "type" ) {
@@ -55,14 +46,15 @@ public:
           product = value;
           _build_products.push_back( product );
         }
-        a = a->Next();
+*/
       }
     }
-
+/*
     for( std::vector<std::string>::iterator it = _build_products.begin(); it != _build_products.end(); it++ )
       printf( "build product: %s\n", it->c_str() );
-    
+*/    
     return true;
+
   }
 
   std::vector<std::string> build_products( void ) {

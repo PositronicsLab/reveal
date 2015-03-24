@@ -10,6 +10,7 @@ cmake_minimum_required( VERSION 2.8.7 )
 
 option( INSTALL_REVEAL_CLIENT "compile and install the Reveal client" ON )
 option( INSTALL_REVEAL_SERVER "compile and install the Reveal server" ON )
+option( BUILD_TESTS "compile test programs" OFF )
 
 # this will be subject to moving to system tmp or another designated location
 # at a later time.  It is the place where experimental files are to be 
@@ -116,6 +117,9 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -g ")
 
 
 add_subdirectory( Reveal )
+if( BUILD_TESTS )
+  add_subdirectory( test )
+endif()
 #add_subdirectory( scenarios )
 
 #------------------------------------------------------

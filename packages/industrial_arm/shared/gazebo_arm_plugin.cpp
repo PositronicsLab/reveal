@@ -16,6 +16,8 @@
 #define _REVEAL_SERVER_SERVER_H_
 #endif
 #include <Reveal/db/database.h>
+#include <Reveal/core/exporter.h>
+#include <Reveal/core/importer.h>
 #endif
 
 #include "arm_controller.h"
@@ -159,7 +161,17 @@ namespace gazebo
 #ifdef DATA_GENERATION
 
       _scenario = generate_scenario( );
-      _scenario->export_definition( "industrial_arm.scenario" );
+
+/*
+      Reveal::Core::importer_c importer;
+      Reveal::Core::exporter_c exporter;
+      bool result;
+      Reveal::Core::scenario_ptr test;
+
+      result = exporter.write_scenario( _scenario, "industrial_arm.scenario" );
+      result = importer.read_scenario( "industrial_arm.scenario", test );
+      result = exporter.write_scenario( test, "test.scenario" );
+*/      
 
       // write the initial trial.  State at t = 0 and no controls
 //      _world->write_trial( 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 );

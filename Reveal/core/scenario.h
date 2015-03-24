@@ -12,19 +12,18 @@ and server
 //-----------------------------------------------------------------------------
 
 #include <stdio.h>
+#include <iostream>
+#include <fstream>
 
 #include "Reveal/core/pointers.h"
 #include "Reveal/core/trial.h"
 #include "Reveal/core/solution.h"
+#include "Reveal/core/xml.h"
 
 //-----------------------------------------------------------------------------
-
 namespace Reveal {
-
 //-----------------------------------------------------------------------------
-
 namespace Core {
-
 //-----------------------------------------------------------------------------
 
 class scenario_c {
@@ -37,7 +36,7 @@ public:
   unsigned trials;
   unsigned steps_per_trial;
   std::vector<std::string> uris;
-
+/*
   void print( void ) const {
     printf( "id[%s]", id.c_str() );
     printf( ", trials[%u]", trials );
@@ -49,7 +48,7 @@ public:
     }
     printf( "]\n" );
   }
-
+*/
   trial_ptr get_trial( unsigned trial_id ) {
     assert( trial_id < trials );
 
@@ -77,13 +76,9 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-
 }  // namespace Core
-
 //-----------------------------------------------------------------------------
-
 }  // namespace Reveal
-
 //-----------------------------------------------------------------------------
 
 #endif // _REVEAL_CORE_SCENARIO_H_

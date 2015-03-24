@@ -3,6 +3,7 @@
 #include <tinyxml.h>
 
 #include <assert.h>
+#include <sstream>
 
 //-----------------------------------------------------------------------------
 namespace Reveal {
@@ -93,6 +94,24 @@ std::string xml_element_c::get_value( void ) {
 //-----------------------------------------------------------------------------
 void xml_element_c::set_value( std::string value ) {
   _value = value;
+}
+//-----------------------------------------------------------------------------
+void xml_element_c::set_value( unsigned value ) {
+  std::stringstream ss;
+  ss << value;
+  _value = ss.str();
+}
+//-----------------------------------------------------------------------------
+void xml_element_c::set_value( int value ) {
+  std::stringstream ss;
+  ss << value;
+  _value = ss.str();
+}
+//-----------------------------------------------------------------------------
+void xml_element_c::set_value( double value ) {
+  std::stringstream ss;
+  ss << value;
+  _value = ss.str();
 }
 
 //-----------------------------------------------------------------------------

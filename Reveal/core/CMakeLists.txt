@@ -53,6 +53,8 @@ set( REVEAL_CORE_HEADERS
   simulator.h
   package.h
   xml.h
+  importer.h
+  exporter.h
 )
 
 # source files
@@ -64,6 +66,8 @@ set( REVEAL_CORE_SOURCES
   ipc.cpp
   package.cpp
   xml.cpp
+  importer.cpp
+  exporter.cpp
 )
 
 #------------------------------------------------------

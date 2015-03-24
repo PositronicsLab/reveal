@@ -12,13 +12,7 @@
 #include <Reveal/core/solution.h>
 #include <Reveal/core/transport_exchange.h>
 
-#define REVEAL_SERVICE
-
-#include "models.h"
-
-#define MAX_SIM_TIME 100.0
-
-typedef double Real;
+#include <Reveal/sim/gazebo/helpers.h>
 
 //-----------------------------------------------------------------------------
 namespace gazebo
@@ -30,9 +24,7 @@ namespace gazebo
     event::ConnectionPtr _preupdateConnection;
     event::ConnectionPtr _postupdateConnection;
 
-    world_ptr _world;
-    arm_ptr _arm;
-    target_ptr _target;
+    physics::WorldPtr _world;
 
     common::Time start_time, last_time;
     common::Time sim_time;
@@ -114,20 +106,13 @@ namespace gazebo
       _postupdateConnection = event::Events::ConnectWorldUpdateEnd(
           boost::bind( &world_plugin_c::Postupdate, this ) );
 
-      _world = world_ptr( new world_c( world ) );
-      _world->sim_time( 0.0 );
+      _world = world;
+      Reveal::Sim::Gazebo::helpers_c::sim_time( 0.0, _world );
 
-      std::string validation_errors;
-      if( !_world->validate( validation_errors ) ) {
-        printf( "Unable to validate world in world_plugin\n%s\nERROR: Plugin failed to load\n", validation_errors.c_str() );
-        return;
-      }
-
-      _arm = _world->arm();
-      _target = _world->target();
+      // If validation added back in, do validation here
 
       // reset the world before we begin
-      _world->reset();
+      Reveal::Sim::Gazebo::helpers_c::reset( _world );
 
       steps_this_trial = 0;
     }
@@ -155,7 +140,7 @@ namespace gazebo
       trial = ex.get_trial();
 //---
       // set the simulation state from the trial
-      _world->apply_trial( trial );
+      Reveal::Sim::Gazebo::helpers_c::write_trial( trial, _world );
     }
 
     //-------------------------------------------------------------------------
@@ -170,8 +155,15 @@ namespace gazebo
       if( steps_this_trial == experiment->steps_per_trial ) {
 
         // get the solution from the simulator
-        solution = scenario->get_solution( Reveal::Core::solution_c::CLIENT, trial, _world->sim_time() );
-        _world->extract_solution( solution );
+        double t = Reveal::Sim::Gazebo::helpers_c::sim_time( _world );
+        solution = scenario->get_solution( Reveal::Core::solution_c::CLIENT, trial, t );
+
+        //_world->extract_solution( trial, solution );
+        std::vector<std::string> model_list;
+        model_list.push_back( "ur10_schunk_arm" );
+        model_list.push_back( "block" );
+
+        solution = Reveal::Sim::Gazebo::helpers_c::read_client_solution( _world, model_list, trial->scenario_id, trial->trial_id );
 
 //--- monitor
         // and broadcast the solution to the reveal client.

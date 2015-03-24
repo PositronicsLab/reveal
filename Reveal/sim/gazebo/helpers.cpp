@@ -105,7 +105,7 @@ Reveal::Core::model_ptr helpers_c::read_model( gazebo::physics::WorldPtr world, 
     rvlmodel->insert( link );
     //rvlmodel->push_back( link );
   }
-/*
+
   // get all the joints in the gazebo model and iterate through them
   gazebo::physics::Joint_V gzjoints = gzmodel->GetJoints();
   for( unsigned i = 0; i < gzjoints.size(); i++ ) {
@@ -136,7 +136,7 @@ Reveal::Core::model_ptr helpers_c::read_model( gazebo::physics::WorldPtr world, 
     // insert the joint into the reveal model
     rvlmodel->insert( joint );
   }
-*/
+
   // return the reveal model
   return rvlmodel;
 }

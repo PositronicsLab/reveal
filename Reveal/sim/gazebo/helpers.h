@@ -53,7 +53,7 @@ public:
   // map a gazebo rotation into a reveal state
   static void rotation( const gazebo::math::Quaternion rot, Reveal::Core::state_c& state );
   // map a gazebo linear velocity into a reveal state
-static void linear_velocity( const gazebo::math::Vector3 lvel, Reveal::Core::state_c& state );
+  static void linear_velocity( const gazebo::math::Vector3 lvel, Reveal::Core::state_c& state );
   // map a gazebo angular velocity into a reveal state
   static void angular_velocity( const gazebo::math::Vector3 avel, Reveal::Core::state_c& state );
   // map a gazebo pose into a reveal state  

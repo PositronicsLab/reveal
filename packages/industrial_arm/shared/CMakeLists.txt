@@ -5,9 +5,6 @@ project( Reveal-Package-Industrial_Arm )
 option( GAZEBO "compile package with Gazebo support" OFF )
 
 #------------------------------------------------------------------------------
-option( SERVER_SIDE "compile package as server side" OFF )
-
-#------------------------------------------------------------------------------
 option( DATA_GENERATION "compile package for data generation" OFF )
 if( DATA_GENERATION ) 
   add_definitions( -DDATA_GENERATION)
@@ -51,12 +48,11 @@ if( GAZEBO )
   )
 endif()
 
-if( GAZEBO )
-  set( HDRS 
-    arm_controller.h
-    models.h
-  )
+set( HDRS 
+  arm_controller.h
+)
 
+if( GAZEBO )
   add_library( gz-arm-plugin SHARED gazebo_arm_plugin.cpp ${HDRS} )
   target_link_libraries( gz-arm-plugin ${LIBS} )
 

@@ -9,6 +9,8 @@
 #include "Reveal/core/transport_exchange.h"
 #include "Reveal/core/scenario.h"
 
+#include <sstream>
+
 /*
 #include <pthread.h>
 #include <sys/types.h>

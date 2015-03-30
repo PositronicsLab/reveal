@@ -35,6 +35,9 @@ public:
 
   std::string get_value( void );
   void set_value( std::string value );
+  void set_value( unsigned value );
+  void set_value( int value );
+  void set_value( double value );
 };
 
 //-----------------------------------------------------------------------------

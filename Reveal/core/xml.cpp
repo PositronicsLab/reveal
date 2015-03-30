@@ -40,6 +40,24 @@ std::string xml_attribute_c::get_value( void ) {
 void xml_attribute_c::set_value( std::string value ) {
   _value = value;
 }
+//-----------------------------------------------------------------------------
+void xml_attribute_c::set_value( unsigned value ) {
+  std::stringstream ss;
+  ss << value;
+  _value = ss.str();
+}
+//-----------------------------------------------------------------------------
+void xml_attribute_c::set_value( int value ) {
+  std::stringstream ss;
+  ss << value;
+  _value = ss.str();
+}
+//-----------------------------------------------------------------------------
+void xml_attribute_c::set_value( double value ) {
+  std::stringstream ss;
+  ss << value;
+  _value = ss.str();
+}
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------

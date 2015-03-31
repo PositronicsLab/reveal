@@ -1,8 +1,9 @@
 #ifndef _REVEAL_CORE_XML_H_
 #define _REVEAL_CORE_XML_H_
 
-#include <vector>
 #include <string>
+#include <vector>
+#include <map>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 
@@ -44,10 +45,12 @@ public:
 //-----------------------------------------------------------------------------
 class xml_element_c : public boost::enable_shared_from_this<xml_element_c> {
 private:
-  std::vector<xml_attribute_ptr> _attributes;
   std::vector<xml_element_ptr> _elements;
   std::string _name;
   std::string _value;
+
+  std::map<std::string,unsigned> _attribute_map;
+  std::vector<xml_attribute_ptr> _attributes;
 
 public:
   xml_element_c( void );
@@ -57,6 +60,7 @@ public:
 
   unsigned attributes( void );
   xml_attribute_ptr attribute( unsigned i );
+  xml_attribute_ptr attribute( std::string name );
   void append( xml_attribute_ptr attribute );
 
   unsigned elements( void );

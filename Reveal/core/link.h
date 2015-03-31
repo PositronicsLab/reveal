@@ -12,19 +12,16 @@ author: James R Taylor (jrt@gwu.edu)
 #include <string>
 #include <assert.h>
 
+#include "Reveal/core/component.h"
 #include "Reveal/core/state.h"
 
 //-----------------------------------------------------------------------------
-
 namespace Reveal {
-
 //-----------------------------------------------------------------------------
-
 namespace Core {
-
 //-----------------------------------------------------------------------------
 
-class link_c {
+class link_c : public component_c {
 public:
   std::string id;
   state_c state;
@@ -39,16 +36,14 @@ public:
     printf( "}" );
   }
 
+  virtual component_c::type_e component_type( void ) { return component_c::LINK; }
+
 };
 
 //-----------------------------------------------------------------------------
-
 }  // namespace Core
-
 //-----------------------------------------------------------------------------
-
 }  // namespace Reveal
-
 //-----------------------------------------------------------------------------
 
 #endif // _REVEAL_CORE_LINK_H_

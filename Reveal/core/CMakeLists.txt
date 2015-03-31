@@ -55,6 +55,7 @@ set( REVEAL_CORE_HEADERS
   xml.h
   exporter.h
   datamap.h
+  component.h
 )
 
 # source files

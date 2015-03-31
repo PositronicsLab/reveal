@@ -17,19 +17,16 @@ to the server for analysis
 #include <string>
 
 #include "Reveal/core/pointers.h"
+#include "Reveal/core/component.h"
 #include "Reveal/core/model.h"
 
 //-----------------------------------------------------------------------------
-
 namespace Reveal {
-
 //-----------------------------------------------------------------------------
-
 namespace Core {
-
 //-----------------------------------------------------------------------------
 
-class trial_c {
+class trial_c : public component_c {
 public:
   trial_c( void ) {}
   virtual ~trial_c( void ) {}
@@ -53,16 +50,14 @@ public:
     }
     printf( " }\n" );
   }
+
+  virtual component_c::type_e component_type( void ) { return component_c::TRIAL; }
 };
 
 //-----------------------------------------------------------------------------
-
 }  // namespace Core
-
 //-----------------------------------------------------------------------------
-
 }  // namespace Reveal
-
 //-----------------------------------------------------------------------------
 
 #endif // _REVEAL_CORE_TRIAL_H_

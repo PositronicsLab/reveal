@@ -17,7 +17,7 @@
 #endif
 #include <Reveal/db/database.h>
 #include <Reveal/core/exporter.h>
-#include <Reveal/core/importer.h>
+#include <Reveal/db/importer.h>
 #endif
 
 #include "arm_controller.h"
@@ -63,8 +63,17 @@ namespace gazebo
     physics::JointPtr _finger_actuator_l;
     physics::JointPtr _finger_actuator_r;
 
+    bool _first_iteration;
+
+    //Reveal::Core::datamap_ptr _trial_column_map;
+    //Reveal::Core::datamap_ptr _solution_column_map;
+
+    Reveal::Core::datawriter_c _trial_datawriter;
+    Reveal::Core::datawriter_c _solution_datawriter;
+
 #ifdef DATA_GENERATION
-    boost::shared_ptr<Reveal::DB::database_c> _db;
+    //boost::shared_ptr<Reveal::DB::database_c> _db;
+    Reveal::Core::exporter_c exporter;
 #endif
 
   public:
@@ -77,7 +86,7 @@ namespace gazebo
       event::Events::DisconnectWorldUpdateBegin( _postupdateConnection );
  
 #ifdef DATA_GENERATION
-      _db->close();
+      //_db->close();
 #endif
     }
 
@@ -117,6 +126,8 @@ namespace gazebo
     // Gazebo callback.  Called when the simulation is starting up
     virtual void Load( physics::ModelPtr model, sdf::ElementPtr sdf ) {
 
+      _first_iteration = true;
+
       _model = model;
       _world = model->GetWorld();
       if( !validate( ) ) {
@@ -127,6 +138,7 @@ namespace gazebo
       _trial_index = 0;
 
 #ifdef DATA_GENERATION
+/*
       _db = boost::shared_ptr<Reveal::DB::database_c>( new Reveal::DB::database_c( "localhost" ) );
       _db->open();
 
@@ -137,6 +149,7 @@ namespace gazebo
       // create and insert the analyzer record
       Reveal::Core::analyzer_ptr analyzer = generate_analyzer( _scenario );
       _db->insert( analyzer );
+*/
 #endif
 
       Reveal::Sim::Gazebo::helpers_c::reset( _world );
@@ -225,6 +238,7 @@ namespace gazebo
       _finger_actuator_r->SetForce(0, u.find("r_finger_actuator")->second); 
 
 #ifdef DATA_GENERATION
+
       _trial = generate_trial( _scenario, _trial_index,  
                            u.find("shoulder_pan_joint")->second, 
                            u.find("shoulder_lift_joint")->second, 
@@ -234,7 +248,7 @@ namespace gazebo
                            u.find("wrist_3_joint")->second,
                            u.find("l_finger_actuator")->second,
                            u.find("r_finger_actuator")->second  );
-      _db->insert( _trial );
+//      _db->insert( _trial );
 #endif
     }
 
@@ -243,6 +257,7 @@ namespace gazebo
     virtual void Postupdate( ) {
 #ifdef DATA_GENERATION
       double t = Reveal::Sim::Gazebo::helpers_c::sim_time( _world );
+      double dt = Reveal::Sim::Gazebo::helpers_c::step_size( _world );
 
       std::vector<std::string> model_list;
       model_list.push_back( "ur10_schunk_arm" );
@@ -250,7 +265,17 @@ namespace gazebo
 
       _solution = Reveal::Sim::Gazebo::helpers_c::read_model_solution( _world, model_list, _scenario->id, _trial_index++ );
      
-      _db->insert( _solution );
+      if( _first_iteration ) {
+        Reveal::Core::analyzer_ptr analyzer = generate_analyzer( _scenario );
+        bool result;
+        result = exporter.write( _scenario, analyzer, _solution, _trial );
+        result = exporter.write( analyzer );
+        _first_iteration = false;
+      }
+
+      exporter.write( t, dt, _trial );
+      exporter.write( t, dt, _solution );
+
 #endif
     }
 

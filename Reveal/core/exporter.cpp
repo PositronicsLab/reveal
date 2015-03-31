@@ -43,8 +43,8 @@ bool exporter_c::write( scenario_ptr scenario, analyzer_ptr analyzer, solution_p
   xml.root( root );
   xml.write( _scenario_file );
 
-  _trial_column_map->print();
-  _solution_column_map->print();
+  //_trial_column_map->print();
+  //_solution_column_map->print();
 
   _trial_datawriter = Reveal::Core::datawriter_c( _trial_file, delimiter, _trial_column_map );
   _solution_datawriter = Reveal::Core::datawriter_c( _solution_file, delimiter, _solution_column_map );
@@ -199,6 +199,7 @@ bool exporter_c::write_scenario_element( xml_element_ptr parent, scenario_ptr sc
 
   return true;
 }
+
 //-----------------------------------------------------------------------------
 bool exporter_c::write_analyzer_element( xml_element_ptr parent, analyzer_ptr analyzer, bool reference_only ) {
   xml_c xml;
@@ -237,6 +238,7 @@ bool exporter_c::write_analyzer_element( xml_element_ptr parent, analyzer_ptr an
 
   return true;
 }
+
 //-----------------------------------------------------------------------------
 bool exporter_c::write_solution_element( xml_element_ptr parent, solution_ptr ex_solution, std::string scenario_id, std::string delimiter ) {
   xml_element_ptr top, element;
@@ -286,6 +288,7 @@ bool exporter_c::write_solution_element( xml_element_ptr parent, solution_ptr ex
 
   return true;
 }
+
 //-----------------------------------------------------------------------------
 bool exporter_c::write_trial_element( xml_element_ptr parent, trial_ptr ex_trial, std::string scenario_id, std::string delimiter ) {
   xml_element_ptr top, element;
@@ -377,7 +380,7 @@ bool exporter_c::write_joint_element( xml_element_ptr parent, joint_ptr joint, u
   attribute->set_value( joint->id );
   top->append( attribute );
  
-  add_field_element( top, "control", column, 1, "u" );
+  add_field_element( top, "control", column, 6, "u" );
 
   parent->append( top );
 
@@ -395,6 +398,7 @@ bool exporter_c::add_column_attribute( xml_element_ptr element, unsigned& column
 #endif
   return true;
 }
+
 //-----------------------------------------------------------------------------
 bool exporter_c::add_map_attribute( xml_element_ptr element, std::string map ) {
 #ifdef DEFINE_MAP

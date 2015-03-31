@@ -71,10 +71,33 @@ public:
 
 //-----------------------------------------------------------------------------
 class datareader_c {
+private:
+  std::string _filename;
+  datamap_ptr _column_map;
+  bool _open;
+
+  std::vector<double> _cells;
+  std::ifstream* _infile;
+  std::string _delimiter;
+
 public:
   datareader_c( void );
+  datareader_c( std::string filename, std::string delimiter, datamap_ptr column_map );
   virtual ~datareader_c( void );
 
+  bool open( void );
+  void close( void );
+  bool read( trial_ptr& trial, std::string scenario_id, unsigned index, xml_element_ptr top );
+  bool read( solution_ptr& solution, std::string scenario_id, unsigned index, xml_element_ptr top );
+
+private:
+  bool buffer_line( void );
+  void print_cells( void );
+
+  bool read_model( component_ptr owner, xml_element_ptr top, std::string key = "" );
+  bool read_link( model_ptr owner, xml_element_ptr top, std::string key = "" );
+  bool read_joint( model_ptr owner, xml_element_ptr top, std::string key = "" );
+  bool read_field( component_ptr owner, xml_element_ptr top, std::string key = "" );
 
 };
 

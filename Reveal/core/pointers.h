@@ -22,6 +22,9 @@ namespace Core {
 
 //-----------------------------------------------------------------------------
 
+class component_c;
+typedef boost::shared_ptr<component_c> component_ptr;
+
 class link_c;
 typedef boost::shared_ptr<link_c> link_ptr;
 

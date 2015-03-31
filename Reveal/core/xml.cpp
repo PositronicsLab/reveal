@@ -80,7 +80,16 @@ xml_attribute_ptr xml_element_c::attribute( unsigned i ) {
   return _attributes[i];
 }
 //-----------------------------------------------------------------------------
+xml_attribute_ptr xml_element_c::attribute( std::string name ) {
+  xml_attribute_ptr attribute_;
+  std::map<std::string,unsigned>::iterator it = _attribute_map.find( name );
+  if( it != _attribute_map.end() )
+    attribute_ = _attributes[it->second];
+  return attribute_;
+}
+//-----------------------------------------------------------------------------
 void xml_element_c::append( xml_attribute_ptr attribute ) {
+  _attribute_map.insert( std::pair<std::string,unsigned>(attribute->get_name(), _attributes.size() ) );
   _attributes.push_back( attribute );
 }
 

@@ -15,19 +15,16 @@ a client upon completion of a trial within a scenario
 #include <stdio.h>
 
 #include "Reveal/core/pointers.h"
+#include "Reveal/core/component.h"
 #include "Reveal/core/model.h"
 
 //-----------------------------------------------------------------------------
-
 namespace Reveal {
-
 //-----------------------------------------------------------------------------
-
 namespace Core {
-
 //-----------------------------------------------------------------------------
 
-class solution_c {
+class solution_c : public component_c {
 public:
   enum type_e {
     MODEL,
@@ -64,16 +61,13 @@ public:
     printf( " }\n" );
   }
 
+  virtual component_c::type_e component_type( void ) { return component_c::SOLUTION; }
 };
 
 //-----------------------------------------------------------------------------
-
 }  // namespace Core
-
 //-----------------------------------------------------------------------------
-
 }  // namespace Reveal
-
 //-----------------------------------------------------------------------------
 
 #endif // _REVEAL_CORE_SOLUTION_H_

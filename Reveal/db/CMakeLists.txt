@@ -15,12 +15,14 @@ link_directories(
 set( REVEAL_DB_HEADERS 
   query.h
   database.h
+  importer.h
 )
 
 # source files
 set( REVEAL_DB_SOURCES 
   query.cpp
   database.cpp
+  importer.cpp
 )
 
 #------------------------------------------------------

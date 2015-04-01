@@ -13,18 +13,15 @@ state component 0f a scenario
 #include <assert.h>
 #include <stdio.h>
 #include <vector>
+#include "Reveal/core/serial.h"
 
 //-----------------------------------------------------------------------------
-
 namespace Reveal {
-
 //-----------------------------------------------------------------------------
-
 namespace Core {
-
 //-----------------------------------------------------------------------------
 
-class state_c {
+class state_c : public serial_c {
 public:
   state_c( void ) {
     for( unsigned i = 0; i < size(); i++ ) _x[i] = 0.0;
@@ -122,16 +119,28 @@ public:
     printf( "}" );
   }
 
+  // serial_c interface
+  virtual std::stringstream& serialize( std::stringstream& stream, char delimiter ) {
+    for( unsigned i = 0; i < size(); i++ ) {
+      if( i > 0 ) stream << delimiter;
+      stream << _x[i];
+    }
+    return stream;
+  }
+
+  // TODO : Error detection
+  virtual bool deserialize( std::stringstream& stream ) {
+    for( unsigned i = 0; i < size(); i++ ) {
+      stream >> _x[i];
+    }
+    return true;
+  }
 };
 
 //-----------------------------------------------------------------------------
-
 }  // namespace Core
-
 //-----------------------------------------------------------------------------
-
 }  // namespace Reveal
-
 //-----------------------------------------------------------------------------
 
 #endif // _REVEAL_CORE_STATE_H_

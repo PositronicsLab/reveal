@@ -301,7 +301,7 @@ bool datareader_c::buffer_line( void ) {
   if( !std::getline( *_infile, line ) ) 
     return false;
 
-  std::istringstream buffer( line );
+  std::stringstream buffer( line );
   std::string token;
   const char delimiter = (const char)_delimiter[0];
   while( std::getline( buffer, token, delimiter ) ) {

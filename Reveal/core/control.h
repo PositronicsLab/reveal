@@ -11,18 +11,15 @@ control data
 //-----------------------------------------------------------------------------
 
 #include <vector>
+#include "Reveal/core/serial.h"
 
 //-----------------------------------------------------------------------------
-
 namespace Reveal {
-
 //-----------------------------------------------------------------------------
-
 namespace Core {
-
 //-----------------------------------------------------------------------------
 
-class control_c {
+class control_c : public serial_c {
 public:
   control_c( void ) {
     for( unsigned i = 0; i < size_u(); i++ ) _u[i] = 0.0;
@@ -84,16 +81,28 @@ public:
     printf( "}" );
   }
 
+  // serial_c interface
+  virtual std::stringstream& serialize( std::stringstream& stream, char delimiter ) {
+    for( unsigned i = 0; i < size(); i++ ) {
+      if( i > 0 ) stream << delimiter;
+      stream << _u[i];
+    }
+    return stream;
+  }
+
+  // TODO : Error detection
+  virtual bool deserialize( std::stringstream& stream ) {
+    for( unsigned i = 0; i < size(); i++ ) {
+      stream >> _u[i];
+    }
+    return true;
+  }
 };
 
 //-----------------------------------------------------------------------------
-
 }  // namespace Core
-
 //-----------------------------------------------------------------------------
-
 }  // namespace Reveal
-
 //-----------------------------------------------------------------------------
 
 #endif // _REVEAL_CORE_CONTROL_H_

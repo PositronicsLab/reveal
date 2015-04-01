@@ -19,38 +19,33 @@ namespace Core {
 //-----------------------------------------------------------------------------
 // TODO: should be sequestered if possible in system.h/cpp
 bool child_exit_handler_c::_quit = false;
-
+//-----------------------------------------------------------------------------
 child_exit_handler_c::child_exit_handler_c( void ) { _quit = false; }
+//-----------------------------------------------------------------------------
 child_exit_handler_c::~child_exit_handler_c( void ) { }
-
+//-----------------------------------------------------------------------------
 void child_exit_handler_c::handler( int signum ) {
   _quit = true; 
   assert( signum );
 }
-
+//-----------------------------------------------------------------------------
 bool child_exit_handler_c::quit( void ) { return _quit; }
-void child_exit_handler_c::set( bool quit_ ) { _quit = quit_; }
-void child_exit_handler_c::reset( void ) { _quit = false; }
-
+//-----------------------------------------------------------------------------
 void child_exit_handler_c::install( void ) {   
   struct sigaction action;
   memset( &action, 0, sizeof(struct sigaction) );
   action.sa_handler = handler;
   sigaction( SIGCHLD, &action, NULL );
 }
+//-----------------------------------------------------------------------------
 void child_exit_handler_c::uninstall( void ) {
   struct sigaction action;
   action.sa_handler = SIG_DFL;
   sigaction( SIGCHLD, &action, NULL );
 }
 
-void child_exit_handler_c::trip( void ) {
-  _quit = true;
-}
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-// TODO: build_products and any other additional parameters need to be 
-// supplanted by a manifest 
 package_c::package_c( std::string source_path, std::string build_path ) {
   _source_path = source_path;
   _build_path = build_path;
@@ -62,11 +57,19 @@ package_c::~package_c( void ) {
 }
 
 //-----------------------------------------------------------------------------
-bool package_c::read( void ) {
-  bool result;
-  result = _manifest.parse( _source_path );
-  result = _manifest.parse( _source_path );
-  return result;
+xml_element_ptr package_c::read( std::string sim_key ) {
+  xml_element_ptr manifest = manifest_c::read( _source_path );
+  if( !manifest ) return manifest;
+
+  xml_element_ptr element, sim;
+  for( unsigned i = 0; i < manifest->elements(); i++ ) {
+    element = manifest->element( i );
+    if( element->get_name() == sim_key ) {
+      sim = element;
+      break;
+    }
+  }
+  return sim;
 }
 
 //-----------------------------------------------------------------------------
@@ -75,8 +78,11 @@ bool package_c::configure( void ) {
 }
 
 //-----------------------------------------------------------------------------
-bool package_c::make( void ) {
-  return make_package( _build_path, _manifest.build_products() );
+bool package_c::make( std::vector<std::string> build_products ) {
+  //if( !build_products.size() ) return false;  
+  // above remarked because not definitive that build products needs anything 
+  // for all sims
+  return make_package( _build_path, build_products );
 }
 
 //-----------------------------------------------------------------------------
@@ -154,6 +160,9 @@ void* package_c::make_worker( void* args ) {
 }
 
 //-----------------------------------------------------------------------------
+// Note: this can succeed even if cmake failed if the directory was not clean 
+// before the attempt to cmake.  It is probably a rare instance that it exits
+// and indicates success when it really failed, but it is possible.
 void* package_c::cmake_worker( void* args ) {
 
   // allocate a return variable
@@ -186,7 +195,11 @@ void* package_c::cmake_worker( void* args ) {
     // build the cmake command line arguments array
     std::vector<std::string> arg_strings;
     arg_strings.push_back( "cmake" );
-    arg_strings.push_back( "-DGAZEBO=ON" );
+    //arg_strings.push_back( "-DGAZEBO=ON" );  
+    // Note: above commented because it requires particular knowledge of the 
+    // installed package and installed sims.  Needs to be handled a differently.
+    // as at this level, needs to be abstracted.  Might be possible to send in
+    // a list of optional make parameters.
     arg_strings.push_back( source_path );
     char* const* exec_argv = param_array( arg_strings );
 

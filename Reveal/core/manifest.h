@@ -1,3 +1,10 @@
+/*------------------------------------------------------------------------------
+author: James R Taylor (jrt@gwu.edu)
+
+manifest.h defines the manifest_c class that reads a manifest xml file from
+a package and publishes the manifest tree typically for package building.
+------------------------------------------------------------------------------*/
+
 #ifndef _REVEAL_CORE_MANIFEST_H_
 #define _REVEAL_CORE_MANIFEST_H_
 //-----------------------------------------------------------------------------
@@ -6,7 +13,6 @@
 #include <string>
 
 #include "Reveal/core/xml.h"
-//#include <stdio.h>
 
 //-----------------------------------------------------------------------------
 namespace Reveal {
@@ -14,64 +20,38 @@ namespace Reveal {
 namespace Core {
 //-----------------------------------------------------------------------------
 
+/**
+Reads a manifest xml file from a package and returns the manifest xml tree
+*/
 class manifest_c {
-public: 
-  manifest_c( void ) { }
-  virtual ~manifest_c( void ) { }
-
-  // TODO : add robust error handling
-  bool parse( std::string path ) {
-    std::string manifest_path = path + '/'+ "manifest.xml";
+public:
+  /// Reads the manifest file and locates the manifest xml element.
+  /// @param package_path the path to directory containing the package
+  /// @return a valid xml_element_ptr OR an empty pointer
+  static xml_element_ptr read( std::string package_path ) {
+    xml_element_ptr root, manifest, element;
+    std::string manifest_path = package_path + '/'+ "manifest.xml";
 
     xml_c xml;
-    xml.read( manifest_path );
+    if( !xml.read( manifest_path ) ) return manifest;
 
-    xml_element_ptr root, element;
     root = xml.root();
 
+    // find the manifest element
     for( unsigned i = 0; i < root->elements(); i++ ) {
       element = root->element( i );
-      if( element->get_name() == "Product" ) {
-        for( unsigned j = 0; j < element->attributes(); j++ ) {
-          xml_attribute_ptr attrib = element->attribute( j );
-          if( attrib->get_name() == "file" )
-            _build_products.push_back( attrib->get_value() );
-        }
-/*
-        if( name == "target" ) {
-          target = value;
-        } else if( name == "type" ) {
-          type = value;
-        } else if( name == "file" ) {
-          product = value;
-          _build_products.push_back( product );
-        }
-*/
+      if( element->get_name() == "Manifest" ) {
+        manifest = element;
+        break;
       }
     }
-/*
-    for( std::vector<std::string>::iterator it = _build_products.begin(); it != _build_products.end(); it++ )
-      printf( "build product: %s\n", it->c_str() );
-*/    
-    return true;
-
+    return manifest;
   }
-
-  std::vector<std::string> build_products( void ) {
-    std::vector<std::string> products;
-    for( std::vector<std::string>::iterator it = _build_products.begin(); it != _build_products.end(); it++ )
-      products.push_back( *it );
-    return products;
-  }
-
-private:
-  std::vector<std::string> _build_products;
-  
 };
 
 //-----------------------------------------------------------------------------
-} // namespace Client
+} // namespace Core
 //-----------------------------------------------------------------------------
 } // namespace Reveal
 //-----------------------------------------------------------------------------
-#endif // _REVEAL_CLIENT_MANIFEST_H_
+#endif // _REVEAL_CORE_MANIFEST_H_

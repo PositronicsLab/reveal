@@ -2,20 +2,23 @@ cmake_minimum_required(VERSION 2.8.7)
 project( Reveal-Package-Industrial_Arm )
 
 #------------------------------------------------------------------------------
-option( GAZEBO "compile package with Gazebo support" OFF )
+option( GAZEBO "compile package with Gazebo support" ON )
 
 #------------------------------------------------------------------------------
 option( DATA_GENERATION "compile package for data generation" OFF )
 if( DATA_GENERATION ) 
-  add_definitions( -DDATA_GENERATION)
-endif()
+  add_definitions( -DDATA_GENERATION )
+  option( DB_DIRECT_INSERT "compile package to directly insert into db" OFF )
+  if( DB_DIRECT_INSERT ) 
+    add_definitions( -DDB_DIRECT_INSERT )
+  endif( DB_DIRECT_INSERT )
+  #server only
+  ## Note: hackish. We can't necessarily guarantee where this will be based on
+  #  relative path, but good enough for now.
+  add_definitions( -DANALYZER_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../server/build/libindustrial-arm-analyzer.so" )
+endif( DATA_GENERATION )
 
 #------------------------------------------------------------------------------
-#server only
-## Note: hackish.  We can't necessarily guarantee where this will be based on
-#  relative path, but good enough for now.
-add_definitions( -DANALYZER_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../server/build/libindustrial-arm-analyzer.so" )
-
 #------------------------------------------------------------------------------
 
 #SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -g")

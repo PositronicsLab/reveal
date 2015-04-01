@@ -141,7 +141,7 @@ bool importer_c::read_trial_file_element( Reveal::Core::xml_element_ptr top, std
 //  if( !result )
 //    printf( "failed to open reader\n" );
 
-  for( unsigned i = 1; i <= 10; i++ ) {
+  for( unsigned i = 1; i <= 1000; i++ ) {
     reader.read( trial, scenario_id, i, top );
     //trial->print();
 

@@ -116,7 +116,7 @@ bool gazebo_c::ui_select_tuning( void ) {
 //-----------------------------------------------------------------------------
 bool gazebo_c::build_package( std::string src_path, std::string build_path ) {
 
-  _world_path = build_path + '/' + "reveal.world";
+  //_world_path = build_path + '/' + "reveal.world";
   _plugin_path = build_path;
   _model_path = build_path;
 
@@ -129,8 +129,25 @@ bool gazebo_c::build_package( std::string src_path, std::string build_path ) {
   // build package
   _package = Reveal::Core::package_ptr( new Reveal::Core::package_c( src_path, build_path ) );
 
-  // TODO : add robust error checking and handling
-  bool read_result = _package->read();
+  Reveal::Core::xml_element_ptr manifest = _package->read( "Gazebo" );
+  // parse xml
+  std::vector<std::string> build_products;
+  Reveal::Core::xml_element_ptr element;
+  Reveal::Core::xml_attribute_ptr attribute;
+  for( unsigned i = 0; i < manifest->elements(); i++ ) {
+    element = manifest->element( i );
+    if( element->get_name() == "Product" ) {
+      attribute = element->attribute( "file" );
+      if( !attribute ) continue;  // malformed xml.  probably a bigger error
+      // otherwise
+      build_products.push_back( attribute->get_value() );
+    } else if( element->get_name() == "World" ) {
+      attribute = element->attribute( "file" );
+      if( !attribute ) continue;  // malformed xml.  probably a bigger error
+      // otherwise
+      _world_path = build_path + '/' + attribute->get_value();
+    }
+  }
 
   // configure package
   bool cmake_result = _package->configure();
@@ -142,7 +159,7 @@ bool gazebo_c::build_package( std::string src_path, std::string build_path ) {
   }
 
   // build package
-  bool make_result = _package->make();
+  bool make_result = _package->make( build_products );
   if( !make_result ) {
     printf( "ERROR: Failed to build experimental package\nExiting\n" );
     return false;

@@ -1,15 +1,10 @@
 <?xml version="1.0" ?>
-<Manifest>
-  <Product target="gazebo" type="controller" file="libgz-arm-plugin.so" />
-  <Product target="gazebo" type="monitor" file="libgz-world-plugin.so" />
-
-  <Id>industrial_arm</Id>
-  <Analyzer>libindustrial-arm-analyzer.so</Analyzer>
-  <Title>Grasping a block with an industrial arm.</Title>
-  <Description>Grasping a block with an industrial arm.</Description>
-  <Gazebo>
-    <World file="reveal.world" />
-    <Product type="controller" product="libgz-arm-plugin.so" />
-    <Product type="monitor" product="libgz-world-plugin.so" />
-  </Gazebo>
-</Manifest>
+<Reveal>
+  <Manifest>
+    <Gazebo>
+      <World file="reveal.world" />
+      <Product file="libgz-arm-plugin.so" type="controller" />
+      <Product file="libgz-world-plugin.so" type="monitor" />
+    </Gazebo>
+  </Manifest>
+</Reveal>

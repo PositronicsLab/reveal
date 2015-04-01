@@ -7,18 +7,31 @@
 #include <Reveal/core/scenario.h>
 #include <Reveal/core/trial.h>
 #include <Reveal/core/solution.h>
-#include <Reveal/core/analyzer.h>
 
 #include <Reveal/sim/gazebo/helpers.h>
 
+// The DATA_GENERATION define is set by cmake and must be manually turned on
+// so that the data is output to file.  This is an example of how the controller
+// can be set up to produce data, but also be compatible for Reveal which by
+// default has no knowledge of the cmake parameter so the switch is off when
+// running a scenario via Reveal 
 #ifdef DATA_GENERATION
+
+// The DB_DIRECT_INSERT define is set by cmake and must be manually turned on so
+// that data is directly inserted into the database.  This option can speed up
+// development on a fully local platform as it circumvents the need to export
+// then import, but it is not compatible to distributed Reveal client/server so
+// should not be included in any form in distributed packages
+#ifdef DB_DIRECT_INSERT
 #ifndef _REVEAL_SERVER_SERVER_H_
 #define _REVEAL_SERVER_SERVER_H_
-#endif
+#endif // _REVEAL_SERVER_SERVER_H_
 #include <Reveal/db/database.h>
+#endif  // DB_DIRECT_INSERT
+
 #include <Reveal/core/exporter.h>
-#include <Reveal/db/importer.h>
-#endif
+#include <Reveal/core/analyzer.h>
+#endif // DATA_GENERATION
 
 #include "arm_controller.h"
 
@@ -65,16 +78,14 @@ namespace gazebo
 
     bool _first_iteration;
 
-    //Reveal::Core::datamap_ptr _trial_column_map;
-    //Reveal::Core::datamap_ptr _solution_column_map;
-
+#ifdef DATA_GENERATION
+#ifdef DB_DIRECT_INSERT
+    boost::shared_ptr<Reveal::DB::database_c> _db;
+#endif // DB_DIRECT_INSERT
     Reveal::Core::datawriter_c _trial_datawriter;
     Reveal::Core::datawriter_c _solution_datawriter;
-
-#ifdef DATA_GENERATION
-    //boost::shared_ptr<Reveal::DB::database_c> _db;
     Reveal::Core::exporter_c exporter;
-#endif
+#endif // DATA_GENERATION
 
   public:
     //-------------------------------------------------------------------------
@@ -85,9 +96,9 @@ namespace gazebo
       event::Events::DisconnectWorldUpdateBegin( _preupdateConnection );
       event::Events::DisconnectWorldUpdateBegin( _postupdateConnection );
  
-#ifdef DATA_GENERATION
-      //_db->close();
-#endif
+#ifdef DB_DIRECT_INSERT
+      _db->close();
+#endif // DB_DIRECT_INSERT
     }
 
     bool validate( void ) {
@@ -137,8 +148,7 @@ namespace gazebo
 
       _trial_index = 0;
 
-#ifdef DATA_GENERATION
-/*
+#ifdef DB_DIRECT_INSERT
       _db = boost::shared_ptr<Reveal::DB::database_c>( new Reveal::DB::database_c( "localhost" ) );
       _db->open();
 
@@ -149,8 +159,7 @@ namespace gazebo
       // create and insert the analyzer record
       Reveal::Core::analyzer_ptr analyzer = generate_analyzer( _scenario );
       _db->insert( analyzer );
-*/
-#endif
+#endif // DB_DIRECT_INSERT
 
       Reveal::Sim::Gazebo::helpers_c::reset( _world );
 
@@ -175,22 +184,11 @@ namespace gazebo
 
       _scenario = generate_scenario( );
 
-/*
-      Reveal::Core::importer_c importer;
-      Reveal::Core::exporter_c exporter;
-      bool result;
-      Reveal::Core::scenario_ptr test;
-
-      result = exporter.write_scenario( _scenario, "industrial_arm.scenario" );
-      result = importer.read_scenario( "industrial_arm.scenario", test );
-      result = exporter.write_scenario( test, "test.scenario" );
-*/      
-
       // write the initial trial.  State at t = 0 and no controls
 //      _world->write_trial( 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 );
       // TODO : rectify whether it is correct to write a trial here when a 
       // potential solution might not be found until post update
-#endif
+#endif // DATA_GENERATION
 
       // -- FIN --
       printf( "arm_controller has initialized\n" );
@@ -248,8 +246,10 @@ namespace gazebo
                            u.find("wrist_3_joint")->second,
                            u.find("l_finger_actuator")->second,
                            u.find("r_finger_actuator")->second  );
-//      _db->insert( _trial );
-#endif
+#ifdef DB_DIRECT_INSERT
+      _db->insert( _trial );
+#endif // DB_DIRECT_INSERT
+#endif // DATA_GENERATION
     }
 
     //-------------------------------------------------------------------------
@@ -275,14 +275,14 @@ namespace gazebo
 
       exporter.write( t, dt, _trial );
       exporter.write( t, dt, _solution );
-
-#endif
+#endif // DATA_GENERATION
     }
 
     //-------------------------------------------------------------------------
     // Gazebo callback.  Called whenever the simulation is reset
     //virtual void Reset( ) { }
 
+#ifdef DATA_GENERATION
     //-------------------------------------------------------------------------
     // Data Generation methods.
     // For generating records directly from the simulation.  Not directly
@@ -349,6 +349,7 @@ namespace gazebo
       
       return trial;
     }
+#endif // DATA_GENERATION
   };
 
   GZ_REGISTER_MODEL_PLUGIN( arm_controller_c )

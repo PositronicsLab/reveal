@@ -172,6 +172,11 @@ bool gazebo_c::build_package( std::string src_path, std::string build_path ) {
 //-----------------------------------------------------------------------------
 bool gazebo_c::execute( Reveal::Core::authorization_ptr auth, Reveal::Core::scenario_ptr scenario, Reveal::Core::experiment_ptr experiment ) {
 
+  unsigned monitor_port;
+  Reveal::Core::system_c system( Reveal::Core::system_c::CLIENT );
+  if( !system.open() ) return false;
+  monitor_port = system.monitor_port();
+
   // sanity check
   if( _request_trial == NULL || _submit_solution == NULL || _ipc_context == NULL ) {
     // the simulator has not been properly set up and execute cannot proceed!
@@ -187,7 +192,7 @@ bool gazebo_c::execute( Reveal::Core::authorization_ptr auth, Reveal::Core::scen
 
   // open ipc channels between this instance and the gazebo process and 
   // for signal handling
-  _ipc = Reveal::Core::pipe_ptr( new Reveal::Core::pipe_c( MONITOR_PORT, _ipc_context ) );
+  _ipc = Reveal::Core::pipe_ptr( new Reveal::Core::pipe_c( system.monitor_port(), _ipc_context ) );
   _exit_read = Reveal::Core::pipe_ptr( new Reveal::Core::pipe_c( "gzsignal", true, _ipc_context ) );
   //_exit_write = Reveal::Core::pipe_ptr( new Reveal::Core::pipe_c( "gzsignal", false, _ipc_context ) );
 

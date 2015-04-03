@@ -5,6 +5,7 @@
 #include <iostream>
 #include <sstream>
 
+#include "Reveal/core/system.h"
 #include "Reveal/core/transport_exchange.h"
 
 //-----------------------------------------------------------------------------
@@ -30,9 +31,16 @@ server_c::~server_c( void ) {
 //-----------------------------------------------------------------------------
 /// Initialization
 bool server_c::init( void ) {
+  Reveal::Core::system_c system( Reveal::Core::system_c::SERVER );
+  if( !system.open() ) return false;
+
+  unsigned port = system.server_port();
+
+  system.close();
+
   Reveal::Core::transport_exchange_c::open();  
 
-  _clientconnection = Reveal::Core::connection_c( PORT );
+  _clientconnection = Reveal::Core::connection_c( port );
   if( _clientconnection.open() != Reveal::Core::connection_c::ERROR_NONE ) {
     printf( "Failed to open clientconnection\n" );
     return false;
@@ -46,9 +54,9 @@ bool server_c::init( void ) {
 
   void* context = _clientconnection.context();
   for( unsigned i = 0; i < MAX_CLIENT_WORKERS; i++ ) {
-    pthread_t worker_thread;
-    pthread_create( &worker_thread, NULL, server_c::worker_thread, context );
-    workers.push_back( worker_thread );
+    pthread_t workerthread;
+    pthread_create( &workerthread, NULL, server_c::worker_thread, context );
+    workers.push_back( workerthread );
   }
 
   printf( "Server is listening...\n" );
@@ -74,6 +82,7 @@ void server_c::terminate( void ) {
 } 
 
 //-----------------------------------------------------------------------------
+//TODO : need to properly handle a failure in worker init.
 void* server_c::worker_thread( void* context ) {
   boost::shared_ptr<worker_c> worker = boost::shared_ptr<worker_c>( new worker_c(context) );
   if( !worker->init() ) return NULL;

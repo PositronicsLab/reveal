@@ -13,6 +13,7 @@
 #include "Reveal/core/authorization.h"
 #include "Reveal/core/user.h"
 
+#include "Reveal/core/system.h"
 #include "Reveal/core/transport_exchange.h"
 #include "Reveal/core/pointers.h"
 #include "Reveal/core/digest.h"
@@ -55,6 +56,10 @@ Reveal::Client::client_ptr client_c::ptr( void ) {
 //-----------------------------------------------------------------------------
 /// Initialization
 bool client_c::init( void ) {
+  _system = boost::shared_ptr<Reveal::Core::system_c>( new Reveal::Core::system_c( Reveal::Core::system_c::CLIENT ) );
+
+  if( !_system->open() ) return false;
+
   Reveal::Core::transport_exchange_c::open();
   return true;
 }
@@ -67,6 +72,8 @@ void client_c::terminate( void ) {
   _connection.close();
 
   Reveal::Core::transport_exchange_c::close();
+
+  _system->close();
 }
 
 //-----------------------------------------------------------------------------
@@ -74,7 +81,7 @@ void client_c::terminate( void ) {
 bool client_c::connect( void ) {
   printf( "Connecting to server...\n" );
 
-  _connection = Reveal::Core::connection_c( REVEAL_SERVER_URI, PORT );
+  _connection = Reveal::Core::connection_c( _system->server_host(), _system->server_port() );
   if( _connection.open() != Reveal::Core::connection_c::ERROR_NONE ) {
     return false;
   }

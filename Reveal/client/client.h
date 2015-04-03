@@ -12,27 +12,20 @@ class is the only required interface into the system.
 
 #include <string.h>
 
+#include "Reveal/core/system.h"
 #include "Reveal/core/connection.h"
 #include "Reveal/core/pointers.h"
-#include "Reveal/core/system.h"
 #include "Reveal/core/simulator.h"
 
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/shared_ptr.hpp>
 
 //-----------------------------------------------------------------------------
-
 namespace Reveal {
-
 //-----------------------------------------------------------------------------
-
 namespace Client {
-
 //-----------------------------------------------------------------------------
 
-#define REVEAL_SERVER_URI "localhost"
-
-//-----------------------------------------------------------------------------
 class client_c;
 typedef boost::shared_ptr<client_c> client_ptr;
 
@@ -70,6 +63,8 @@ private:
   Reveal::Core::user_ptr _user;
   Reveal::Core::authorization_ptr _auth;
 
+  boost::shared_ptr<Reveal::Core::system_c> _system;
+
 public:
 
   bool login( void );
@@ -91,13 +86,9 @@ private:
 };
 
 //-----------------------------------------------------------------------------
-
 } // namespace Client
-
 //-----------------------------------------------------------------------------
-
 } // namespace Reveal
-
 //-----------------------------------------------------------------------------
 
 #endif // _REVEAL_CLIENT_CLIENT_H_

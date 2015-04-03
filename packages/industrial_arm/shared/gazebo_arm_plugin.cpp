@@ -149,7 +149,7 @@ namespace gazebo
       _trial_index = 0;
 
 #ifdef DB_DIRECT_INSERT
-      _db = boost::shared_ptr<Reveal::DB::database_c>( new Reveal::DB::database_c( "localhost" ) );
+      _db = boost::shared_ptr<Reveal::DB::database_c>( new Reveal::DB::database_c() );
       _db->open();
 
      // create and insert the scenario record

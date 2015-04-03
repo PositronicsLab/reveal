@@ -48,10 +48,14 @@ bool worker_c::init( void ) {
     printf( "worker failed to open connection\n" );
     // return?
     // TODO: determine what to do in event of failure to open connection
+    return false;
   }
 
-  _db = boost::shared_ptr<Reveal::DB::database_c>( new Reveal::DB::database_c( "localhost" ) );
-  _db->open();
+  _db = boost::shared_ptr<Reveal::DB::database_c>( new Reveal::DB::database_c() );
+  if( !_db->open() ) {
+    printf( "worker failed to open database\n" );
+    return false;
+  }
 
   return true;
 }

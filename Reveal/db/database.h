@@ -15,7 +15,6 @@ interface
 #include <memory>
 
 #include <mongo/client/dbclient.h>
-//#include <string>
 
 #include "Reveal/core/pointers.h"
 #include "Reveal/core/analysis.h"
@@ -34,12 +33,9 @@ namespace DB {
 
 class database_c {
 private:
-  std::string                  _host;
-  unsigned                     _port;
   bool                         _open;
   std::string                  _dbname;
 
-//  mongo::ConnectionString      _connection_string;
   mongo::DBClientConnection    _connection;
 
 public:
@@ -49,7 +45,6 @@ public:
   };
 
   database_c( void );
-  database_c( const std::string& host );
   virtual ~database_c( void );
 
   bool open( void );

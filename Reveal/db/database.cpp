@@ -11,6 +11,7 @@
 
 #include "Reveal/db/query.h"
 
+#include "Reveal/core/system.h"
 #include "Reveal/core/pointers.h"
 #include "Reveal/core/user.h"
 #include "Reveal/core/session.h"
@@ -35,19 +36,6 @@ namespace DB {
 //-----------------------------------------------------------------------------
 database_c::database_c( void ) {
   _open = false;
-  _host = "localhost";
-  _port = 27017;
-  //_dbname = "revealdb";
-  _dbname = "test";
-}
-
-//-----------------------------------------------------------------------------
-database_c::database_c( const std::string& host ) {
-  _open = false;
-  _host = host;
-  _port = 27017;
-//  _dbname = "revealdb";
-  _dbname = "test";
 }
 
 //-----------------------------------------------------------------------------
@@ -59,8 +47,17 @@ database_c::~database_c( void ) {
 bool database_c::open( void ) {
   if( _open ) return false;
 
+  Reveal::Core::system_c system( Reveal::Core::system_c::DATABASE );
+  if( !system.open() ) return false;
+
+  _dbname = system.database_name();
+
+  std::stringstream connection_str;
+  connection_str << system.database_host() << ':' << system.database_port();
+
   try {
-    _connection.connect( _host );
+    //_connection.connect( _host );
+    _connection.connect( connection_str.str() );
   } catch( const mongo::DBException &ex ) {
     std::cout << "ERROR: Failed to open connection to database host: " << ex.what() << std::endl;
     return false;

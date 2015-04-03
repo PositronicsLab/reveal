@@ -25,7 +25,7 @@ bool importer_c::read( std::string filename ) {
   Reveal::Core::xml_element_ptr root, element;  
 
 #ifdef LOCAL_DB
-  _db = boost::shared_ptr<Reveal::DB::database_c>( new Reveal::DB::database_c( "localhost" ) );
+  _db = boost::shared_ptr<Reveal::DB::database_c>( new Reveal::DB::database_c() );
   if( !_db->open() ) return false;
 #endif
 

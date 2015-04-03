@@ -4,6 +4,7 @@
 #include <gazebo/common/Events.hh>
 #include <gazebo/physics/physics.hh>
 
+#include <Reveal/core/system.h>
 #include <Reveal/core/ipc.h>
 #include <Reveal/core/pointers.h>
 #include <Reveal/core/experiment.h>
@@ -48,7 +49,9 @@ namespace gazebo
 
       // TODO: For now, these hardcoded values are okay, but most likely needs 
       // to be configurable through defines in cmake
-      unsigned port = MONITOR_PORT;
+      Reveal::Core::system_c system( Reveal::Core::system_c::CLIENT );
+      if( !system.open() ) return false;
+      unsigned port = system.monitor_port();
       std::string host = "localhost";
       _revealpipe = Reveal::Core::pipe_ptr( new Reveal::Core::pipe_c( host, port ) );
       if( _revealpipe->open() != Reveal::Core::pipe_c::ERROR_NONE ) {

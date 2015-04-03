@@ -94,6 +94,17 @@ set( MIN_ZMQ_VERSION 4.0.3 CACHE INTERNAL "ZeroMQ min version requirement" FORCE
 set( MIN_BOOST_VERSION 1.46.1 CACHE INTERNAL "Boost min version requirement" FORCE )
 
 #------------------------------------------------------
+set(REVEAL_DEFAULT_SERVER_HOST localhost)
+set(REVEAL_DEFAULT_SERVER_PORT 20700)
+set(REVEAL_DEFAULT_DATABASE_HOST localhost)
+set(REVEAL_DEFAULT_DATABASE_PORT 27017)
+set(REVEAL_DEFAULT_PACKAGE_PATH "")
+set(REVEAL_DEFAULT_MONITOR_PORT 20701)
+set(REVEAL_DEFAULT_DATABASE_NAME revealdb)
+
+configure_file(${CMAKE_SOURCE_DIR}/cmake_modules/setup.sh.in ${CMAKE_CURRENT_BINARY_DIR}/setup.sh @ONLY)
+
+#------------------------------------------------------
 MESSAGE(STATUS "Checking Reveal build type")
 # Set the default build type
 if (NOT CMAKE_BUILD_TYPE)
@@ -109,11 +120,6 @@ string(TOUPPER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE_UPPERCASE)
 #SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -Wall -Wextra -g ")
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -g")
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -g ")
-#SET(CMAKE_SHARED_LINKER_FLAGS "-Wl,--no-undefined -Bsymbolic")
-#SET(CMAKE_SHARED_LINKER_FLAGS "-Wl,--warn-unresolved-symbols -Bsymbolic")
-#SET(CMAKE_SHARED_LINKER_FLAGS "-Bsymbolic --verbose")
-#SET(CMAKE_SHARED_LINKER_FLAGS "-Bsymbolic -E")
-#SET(CMAKE_SHARED_LINKER_FLAGS "-z defs")
 
 
 add_subdirectory( Reveal )

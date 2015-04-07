@@ -7,16 +7,31 @@
 #include <Reveal/core/scenario.h>
 #include <Reveal/core/trial.h>
 #include <Reveal/core/solution.h>
-#include <Reveal/core/analyzer.h>
 
 #include <Reveal/sim/gazebo/helpers.h>
 
+// The DATA_GENERATION define is set by cmake and must be manually turned on
+// so that the data is output to file.  This is an example of how the controller
+// can be set up to produce data, but also be compatible for Reveal which by
+// default has no knowledge of the cmake parameter so the switch is off when
+// running a scenario via Reveal 
 #ifdef DATA_GENERATION
+
+// The DB_DIRECT_INSERT define is set by cmake and must be manually turned on so
+// that data is directly inserted into the database.  This option can speed up
+// development on a fully local platform as it circumvents the need to export
+// then import, but it is not compatible to distributed Reveal client/server so
+// should not be included in any form in distributed packages
+#ifdef DB_DIRECT_INSERT
 #ifndef _REVEAL_SERVER_SERVER_H_
 #define _REVEAL_SERVER_SERVER_H_
-#endif
+#endif // _REVEAL_SERVER_SERVER_H_
 #include <Reveal/db/database.h>
-#endif
+#endif  // DB_DIRECT_INSERT
+
+#include <Reveal/core/exporter.h>
+#include <Reveal/core/analyzer.h>
+#endif // DATA_GENERATION
 
 #include "arm_controller.h"
 
@@ -61,9 +76,16 @@ namespace gazebo
     physics::JointPtr _finger_actuator_l;
     physics::JointPtr _finger_actuator_r;
 
+    bool _first_iteration;
+
 #ifdef DATA_GENERATION
+#ifdef DB_DIRECT_INSERT
     boost::shared_ptr<Reveal::DB::database_c> _db;
-#endif
+#endif // DB_DIRECT_INSERT
+    Reveal::Core::datawriter_c _trial_datawriter;
+    Reveal::Core::datawriter_c _solution_datawriter;
+    Reveal::Core::exporter_c exporter;
+#endif // DATA_GENERATION
 
   public:
     //-------------------------------------------------------------------------
@@ -74,9 +96,9 @@ namespace gazebo
       event::Events::DisconnectWorldUpdateBegin( _preupdateConnection );
       event::Events::DisconnectWorldUpdateBegin( _postupdateConnection );
  
-#ifdef DATA_GENERATION
+#ifdef DB_DIRECT_INSERT
       _db->close();
-#endif
+#endif // DB_DIRECT_INSERT
     }
 
     bool validate( void ) {
@@ -115,6 +137,8 @@ namespace gazebo
     // Gazebo callback.  Called when the simulation is starting up
     virtual void Load( physics::ModelPtr model, sdf::ElementPtr sdf ) {
 
+      _first_iteration = true;
+
       _model = model;
       _world = model->GetWorld();
       if( !validate( ) ) {
@@ -124,8 +148,8 @@ namespace gazebo
 
       _trial_index = 0;
 
-#ifdef DATA_GENERATION
-      _db = boost::shared_ptr<Reveal::DB::database_c>( new Reveal::DB::database_c( "localhost" ) );
+#ifdef DB_DIRECT_INSERT
+      _db = boost::shared_ptr<Reveal::DB::database_c>( new Reveal::DB::database_c() );
       _db->open();
 
      // create and insert the scenario record
@@ -135,7 +159,7 @@ namespace gazebo
       // create and insert the analyzer record
       Reveal::Core::analyzer_ptr analyzer = generate_analyzer( _scenario );
       _db->insert( analyzer );
-#endif
+#endif // DB_DIRECT_INSERT
 
       Reveal::Sim::Gazebo::helpers_c::reset( _world );
 
@@ -159,13 +183,12 @@ namespace gazebo
 #ifdef DATA_GENERATION
 
       _scenario = generate_scenario( );
-      _scenario->export_definition( "industrial_arm.scenario" );
 
       // write the initial trial.  State at t = 0 and no controls
 //      _world->write_trial( 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 );
       // TODO : rectify whether it is correct to write a trial here when a 
       // potential solution might not be found until post update
-#endif
+#endif // DATA_GENERATION
 
       // -- FIN --
       printf( "arm_controller has initialized\n" );
@@ -213,6 +236,7 @@ namespace gazebo
       _finger_actuator_r->SetForce(0, u.find("r_finger_actuator")->second); 
 
 #ifdef DATA_GENERATION
+
       _trial = generate_trial( _scenario, _trial_index,  
                            u.find("shoulder_pan_joint")->second, 
                            u.find("shoulder_lift_joint")->second, 
@@ -222,8 +246,10 @@ namespace gazebo
                            u.find("wrist_3_joint")->second,
                            u.find("l_finger_actuator")->second,
                            u.find("r_finger_actuator")->second  );
+#ifdef DB_DIRECT_INSERT
       _db->insert( _trial );
-#endif
+#endif // DB_DIRECT_INSERT
+#endif // DATA_GENERATION
     }
 
     //-------------------------------------------------------------------------
@@ -231,6 +257,7 @@ namespace gazebo
     virtual void Postupdate( ) {
 #ifdef DATA_GENERATION
       double t = Reveal::Sim::Gazebo::helpers_c::sim_time( _world );
+      double dt = Reveal::Sim::Gazebo::helpers_c::step_size( _world );
 
       std::vector<std::string> model_list;
       model_list.push_back( "ur10_schunk_arm" );
@@ -238,14 +265,24 @@ namespace gazebo
 
       _solution = Reveal::Sim::Gazebo::helpers_c::read_model_solution( _world, model_list, _scenario->id, _trial_index++ );
      
-      _db->insert( _solution );
-#endif
+      if( _first_iteration ) {
+        Reveal::Core::analyzer_ptr analyzer = generate_analyzer( _scenario );
+        bool result;
+        result = exporter.write( _scenario, analyzer, _solution, _trial );
+        result = exporter.write( analyzer );
+        _first_iteration = false;
+      }
+
+      exporter.write( t, dt, _trial );
+      exporter.write( t, dt, _solution );
+#endif // DATA_GENERATION
     }
 
     //-------------------------------------------------------------------------
     // Gazebo callback.  Called whenever the simulation is reset
     //virtual void Reset( ) { }
 
+#ifdef DATA_GENERATION
     //-------------------------------------------------------------------------
     // Data Generation methods.
     // For generating records directly from the simulation.  Not directly
@@ -312,6 +349,7 @@ namespace gazebo
       
       return trial;
     }
+#endif // DATA_GENERATION
   };
 
   GZ_REGISTER_MODEL_PLUGIN( arm_controller_c )

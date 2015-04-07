@@ -8,7 +8,6 @@ add_definitions( -DCMAKE_BIN="${CMAKE_COMMAND}")
 
 #------------------------------------------------------
 find_package( Boost REQUIRED )
-find_package( Protobuf REQUIRED )
 find_package( ZeroMQ REQUIRED )
 find_package( TinyXML REQUIRED )
 
@@ -17,7 +16,6 @@ include_directories(
 )
 
 link_directories(
-  ${PROTOBUF_LIBRARY}
   ${ZeroMQ_LIBRARIES}
 )
 
@@ -81,7 +79,6 @@ add_dependencies( reveal_core
 
 target_link_libraries( reveal_core 
   ${Boost_LIBRARIES}
-  ${PROTOBUF_LIBRARY}
   ${ZeroMQ_LIBRARIES} 
   ${TinyXML_LIBRARIES}
 )

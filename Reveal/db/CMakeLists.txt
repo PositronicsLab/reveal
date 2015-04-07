@@ -4,11 +4,7 @@ project( Reveal_DB )
 
 #------------------------------------------------------
 # find all packages
-#find_package( MongoDB REQUIRED )
-
-link_directories(
-  /usr/local/lib/libmongoclient.so
-)
+find_package( MongoDB REQUIRED )
 
 #------------------------------------------------------
 # header files
@@ -31,8 +27,8 @@ add_library( reveal_db SHARED ${REVEAL_DB_HEADERS} ${REVEAL_DB_SOURCES} )
 add_dependencies( reveal_db reveal_core )
 
 target_link_libraries( reveal_db 
+  ${MongoDB_LIBRARIES}
   reveal_core
-  /usr/local/lib/libmongoclient.so
 )
 
 #------------------------------------------------------

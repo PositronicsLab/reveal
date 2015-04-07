@@ -2,10 +2,8 @@ cmake_minimum_required(VERSION 2.8.7)
 
 project( Reveal_Sim_Gazebo )
 
-
 #------------------------------------------------------
 find_package( Pthread REQUIRED )
-find_package( Boost REQUIRED )
 
 include( FindPkgConfig )
 if( PKG_CONFIG_FOUND )
@@ -15,8 +13,13 @@ include_directories( ${GAZEBO_INCLUDE_DIRS} )
 link_directories( ${GAZEBO_LIBRARY_DIRS} )
 
 find_path( GZSERVER_BIN gzserver )
-#add_definitions( -DGZSERVER_BIN="${GZSERVER_PATH}/gzserver")
-add_definitions( -DGZSERVER_BIN="/usr/local/bin/gzserver")
+if(GZSERVER_BIN-NOTFOUND)
+  message( WARNING "Could not find gzserver.  Make sure gazebo is fully installed before proceeding." )
+endif()
+
+set( GZSERVER_BIN "${GZSERVER_BIN}/gzserver" )
+#message( WARNING "${GZSERVER_BIN}" )
+add_definitions( -DGZSERVER_BIN="${GZSERVER_BIN}")
 
 #------------------------------------------------------
 set( HDRS 

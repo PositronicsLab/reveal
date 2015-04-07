@@ -6,6 +6,7 @@ Dependencies:
   tinyxml
  Server (in addition to client dependencies)
   mongodb c++ driver (branch 26compat)
+  Ravelin (commit 00b6184ae5dff492579dc864692a1f43248a0fec *latest is being serviced*)
  Database (to be installed on server system at this time)
   mongodb-2.6.0 (branch v2.6) [32-bit for local testing, 64-bit for deployment]
 

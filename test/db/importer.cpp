@@ -6,9 +6,16 @@
 
 int main( int argc, char* argv[] ) {
 
-  Reveal::DB::importer_c importer;
+  if(argc != 3) {
+    printf( "Usage: ... <PATH-TO-IMPORT-DATA> <SCENARIO-FILE>\n" );
+    return 1;
+  }
 
-  importer.read( "/home/james/osrf/Reveal/packages/industrial_arm/shared/build/industrial_arm.scenario" );
+  std::string path = argv[1];
+  std::string filename = argv[2];
+
+  Reveal::DB::importer_c importer;
+  importer.read( path, filename );
 
   return 0;
 }

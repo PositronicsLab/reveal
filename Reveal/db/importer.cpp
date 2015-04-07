@@ -18,18 +18,26 @@ importer_c::~importer_c( void ) {
 }
 
 //-----------------------------------------------------------------------------
-bool importer_c::read( std::string filename ) {
+bool importer_c::read( std::string path, std::string scenario_file ) {
   Reveal::Core::scenario_ptr scenario;
   
   Reveal::Core::xml_c xml;
   Reveal::Core::xml_element_ptr root, element;  
+
+  _path = path;
+  _scenario_file = scenario_file;
+  std::string full_path;
+
+  if( _path[_path.size()-1] != '/' )
+    _path += '/';
+  full_path = _path + scenario_file;
 
 #ifdef LOCAL_DB
   _db = boost::shared_ptr<Reveal::DB::database_c>( new Reveal::DB::database_c() );
   if( !_db->open() ) return false;
 #endif
 
-  xml.read( filename );
+  xml.read( scenario_file );
   root = xml.root();
 
   for( unsigned i = 0; i < root->elements(); i++ ) {
@@ -135,7 +143,11 @@ bool importer_c::read_trial_file_element( Reveal::Core::xml_element_ptr top, std
   //_trial_column_map->print();
 
   Reveal::Core::trial_ptr trial;
-  Reveal::Core::datareader_c reader( "/home/james/osrf/Reveal/packages/industrial_arm/shared/build/industrial_arm.trials", " ", _trial_column_map );
+
+  std::string trial_file = scenario_id + ".trials";
+  std::string full_path = _path + trial_file;
+
+  Reveal::Core::datareader_c reader( full_path, " ", _trial_column_map );
   bool result = reader.open();
 
 //  if( !result )
@@ -175,8 +187,11 @@ bool importer_c::read_solution_file_element( Reveal::Core::xml_element_ptr top, 
   _solution_column_map->map_solution_element( top );
   //_solution_column_map->print();
  
+  std::string trial_file = scenario_id + ".solutions";
+  std::string full_path = _path + trial_file;
+
   Reveal::Core::solution_ptr solution;
-  Reveal::Core::datareader_c reader( "/home/james/osrf/Reveal/packages/industrial_arm/shared/build/industrial_arm.solutions", " ", _solution_column_map );
+  Reveal::Core::datareader_c reader( full_path, " ", _solution_column_map );
   bool result = reader.open();
 
 //  if( !result )

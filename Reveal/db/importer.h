@@ -23,11 +23,14 @@ private:
   Reveal::Core::datamap_ptr _trial_column_map;
   Reveal::Core::datamap_ptr _solution_column_map;
 
+  std::string _path;
+  std::string _scenario_file;
+
 public:
   importer_c( void );
   virtual ~importer_c( void );
 
-  bool read( std::string filename );
+  bool read( std::string path, std::string scenario_file );
 
 private:
 #ifdef LOCAL_DB

@@ -1,6 +1,7 @@
 #include "Reveal/core/system.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <iostream>
 #include <sstream>
 
@@ -12,50 +13,239 @@
 #include <fcntl.h>
 #include <dirent.h>
 
-//-----------------------------------------------------------------------------
-extern char **environ;
+#include <boost/filesystem.hpp>
 
 //-----------------------------------------------------------------------------
-std::vector< std::string > system_environment_vars( void ) {
-  std::vector<std::string> ev;
+bool path_exists( std::string path ) {
+  boost::system::error_code ec;
+  bool result = boost::filesystem::exists( path, ec );
 
-  for (char **env = environ; *env; ++env) {
-    ev.push_back( *env );
+  if( ec != boost::system::errc::success ) {
+    std::cerr << ec.message() << std::endl;
   }
-
-  return ev;
+  return result; 
 }
+//-----------------------------------------------------------------------------
+bool file_exists( std::string path ) {
+  boost::system::error_code ec;
 
 /*
-//-----------------------------------------------------------------------------
-bool copy_file( std::string src, std::string dest ) {
+  struct stat st;
+  stat( path.c_str(), &st );
+  if( S_ISREG( st.st_mode ) )
+    return true;
+  return false;
+*/
+  if( !path_exists( path ) ) return false;
+  //boost::filesystem::path full_path = root_path;
 
-  char buf[BUFSIZ];
-  size_t size;
-
-  int fd_src = open( src.c_str(), O_RDONLY, 0 );
-  int fd_dest = open( dest.c_str(), O_WRONLY | O_CREAT, 0644 );
-//  int fd_dest = open( dest.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644 );
-
-  while( ( size = read( fd_src, buf, BUFSIZ ) ) > 0 )
-    write( fd_dest, buf, size );
-
-  close( fd_src );
-  close( fd_dest );
+  if( !boost::filesystem::is_regular_file( boost::filesystem::path(path), ec ) ) {
+    std::cerr << ec.message() << std::endl;
+    return false;
+  }
 
   return true;
 }
-*/
 
 //-----------------------------------------------------------------------------
-std::string make_temp_dir( void ) {
+bool get_directory( std::string path ) {
+
+  boost::system::error_code ec;
+  if( !boost::filesystem::exists( path, ec ) ) {
+    // if the directory does not exist, create the directory
+    if( !boost::filesystem::create_directory( path, ec ) ) {
+      // failed to create directory.  take no further action and bail
+      std::cerr << ec.message() << std::endl;
+      return false;
+    }
+  } else {
+    // verify that it is a directory
+    if( !boost::filesystem::is_directory( path, ec ) ) {
+      // path exists but not as a directory.  take no action and bail
+      std::cerr << ec.message() << std::endl;
+      return false;
+    }
+  }
+  //printf( "created directory: %s\n", path.c_str() );
+
+  return true;
+}
+
+//-----------------------------------------------------------------------------
+std::string combine_path( std::string root_path, std::string relative_child ) {
+  boost::filesystem::path full_path = root_path;
+  full_path /= relative_child;
+  return full_path.string();
+}
+
+//-----------------------------------------------------------------------------
+bool get_temp_directory( std::string& path ) {
+
+/*
   char tmp_path_template[] = "/tmp/reveal-XXXXXX";
   std::string tmp_path = mkdtemp( tmp_path_template );
   //printf( "tmp_path: %s\n", tmp_path.c_str() );
+*/
+  boost::filesystem::path tmp_path;
+  boost::filesystem::path generated_tmp_path;
 
-  return tmp_path;
+  try {
+    tmp_path = boost::filesystem::temp_directory_path();
+    generated_tmp_path = boost::filesystem::unique_path("Reveal-%%%%%%");
+  } catch(const boost::system::error_code &_ex) {
+    std::cerr << "Failed generating temp directory name. Reason: "
+          << _ex.message() << "\n";
+    return false;
+  }
+
+  boost::filesystem::path full_path = tmp_path;
+  full_path /= generated_tmp_path;
+  
+/*
+  std::cout << "tmp_path: " << tmp_path.string() << std::endl;
+  std::cout << "generated_tmp_path: " << generated_tmp_path.string() << std::endl;
+  std::cout << "full_path: " << full_path.string() << std::endl;
+*/
+  path = full_path.string();
+ 
+  //std::cout << "temp directory: " << path << std::endl;
+
+  if( !get_directory( path ) )
+    return false;
+ 
+  return true;
 }
 
+//-----------------------------------------------------------------------------
+bool copy_file( std::string source_path, std::string target_path ) {
+  boost::system::error_code ec;
+  boost::filesystem::path src_path( source_path );
+  boost::filesystem::path tgt_path( target_path );
+
+  copy( src_path, tgt_path, ec );
+  if( ec != boost::system::errc::success ) {
+    // TODO handle
+    std::cerr << ec.message() << std::endl;
+    return false;
+  }
+
+  return true;
+}
+
+//-----------------------------------------------------------------------------
+bool copy_directory( std::string source_path, std::string target_path ) {
+  boost::system::error_code ec;
+
+  // get the directory
+  if( !get_directory( target_path ) ) return false;
+
+  // clean this directory, i.e. remove all children but not this directory
+  if( !clean_directory( target_path ) ) return false;
+
+  boost::filesystem::path src_path( source_path );
+  boost::filesystem::path tgt_path( target_path );
+
+  typedef std::vector<boost::filesystem::path> paths_t;
+  paths_t src_paths;
+
+  copy( boost::filesystem::directory_iterator( src_path ),
+        boost::filesystem::directory_iterator(),
+        back_inserter( src_paths ) );
+
+  for( paths_t::const_iterator it = src_paths.begin(); it != src_paths.end(); it++ ) {
+
+    boost::filesystem::path::iterator rel_path = --it->end();
+    boost::filesystem::path next_src_path = *it;
+    boost::filesystem::path next_tgt_path = tgt_path;
+    next_tgt_path /= *rel_path;
+    //std::cout << next_src_path << " -> " << next_tgt_path << '\n';
+    
+    if( boost::filesystem::is_directory( next_src_path, ec ) ) {
+      // if it is a directory, recurse
+      if( !copy_directory( next_src_path.string(), next_tgt_path.string() ) ) {
+        return false;
+      }
+    } else {
+      // otherwise, let boost handle the copy
+      copy( next_src_path, next_tgt_path, ec );
+      if( ec != boost::system::errc::success ) {
+        std::cerr << ec.message() << std::endl;
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+//-----------------------------------------------------------------------------
+bool clean_directory( std::string path ) {
+  boost::filesystem::path top_path( path );
+
+  boost::system::error_code ec;
+  if( !boost::filesystem::exists( top_path, ec ) ) {
+    // if the directory does not exist, bail out
+    std::cerr << ec.message() << std::endl;
+    return false;
+  }
+
+  // verify that it is a directory
+  if( !boost::filesystem::is_directory( top_path, ec ) ) {
+    // path exists but not as a directory.  take no action and bail
+    std::cerr << ec.message() << std::endl;
+    return false;
+  }
+
+  typedef std::vector<boost::filesystem::path> paths_t;
+  paths_t paths;
+
+  copy( boost::filesystem::directory_iterator( top_path ),
+        boost::filesystem::directory_iterator(),
+        back_inserter( paths ) );
+
+  for( paths_t::const_iterator it = paths.begin(); it != paths.end(); it++ ) {
+    //std::cout << it->string() << std::endl;
+
+    if( boost::filesystem::is_directory( *it, ec ) ) {
+      if( !remove_directory( it->string() ) ) {
+        return false;
+      }
+    } else {
+      if( !boost::filesystem::remove( *it, ec ) ) {
+        std::cerr << ec.message() << std::endl;
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+//-----------------------------------------------------------------------------
+bool remove_directory( std::string path ) {
+  boost::system::error_code ec;
+  boost::filesystem::path _path( path );
+
+  if( !boost::filesystem::exists( _path, ec ) ) {
+    // if the directory does not exist, bail out
+    std::cerr << ec.message() << std::endl;
+    return false;
+  }
+
+  // verify that it is a directory
+  if( !boost::filesystem::is_directory( _path, ec ) ) {
+    // path exists but not as a directory.  take no action and bail
+    std::cerr << ec.message() << std::endl;
+    return false;
+  }
+
+  boost::filesystem::remove_all( _path, ec );
+  if( ec != boost::system::errc::success ) {
+    std::cerr << ec.message() << std::endl;
+    return false;
+  }
+
+  return true;
+}
 //-----------------------------------------------------------------------------
 // TODO: move to a class to have destructor for correct cleanup.
 char* const* param_array( std::vector< std::string > params ) {
@@ -70,13 +260,16 @@ char* const* param_array( std::vector< std::string > params ) {
 }
 
 //-----------------------------------------------------------------------------
-// TODO:  for platform independence, replace stat with boost filesystem
-bool file_exists( std::string path ) {
-  struct stat st;
-  stat( path.c_str(), &st );
-  if( S_ISREG( st.st_mode ) )
-    return true;
-  return false;
+extern char **environ;
+//-----------------------------------------------------------------------------
+std::vector< std::string > system_environment_vars( void ) {
+  std::vector<std::string> ev;
+
+  for (char **env = environ; *env; ++env) {
+    ev.push_back( *env );
+  }
+
+  return ev;
 }
 
 //-----------------------------------------------------------------------------
@@ -214,7 +407,10 @@ bool system_c::open( void ) {
     // client side issue
     // no package path so use the working path
     _package_path = _working_path + "/packages";
+  } else {
+    _package_path = package_path;
   }
+  std::cout << "package_path: " << _package_path << std::endl;
 
   if( _side == DATABASE && dbname == NULL ) {
     return false;
@@ -227,18 +423,6 @@ bool system_c::open( void ) {
 //-----------------------------------------------------------------------------
 void system_c::close( void ) {
 
-}
-
-//-----------------------------------------------------------------------------
-bool system_c::get_directory( std::string path ) {
-  DIR *dir = opendir( path.c_str() );
-  if( !dir ) {
-    if( mkdir( path.c_str(), S_IRWXU | S_IRGRP | S_IROTH ) == -1 )
-      return false;
-  } else {
-    closedir( dir );
-  }
-  return true;
 }
 
 //-----------------------------------------------------------------------------

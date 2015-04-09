@@ -81,6 +81,7 @@ target_link_libraries( reveal_core
   ${Boost_LIBRARIES}
   ${ZeroMQ_LIBRARIES} 
   ${TinyXML_LIBRARIES}
+  boost_filesystem
 )
 
 target_link_libraries( reveal_core 

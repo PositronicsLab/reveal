@@ -11,14 +11,6 @@
 
 #include <sstream>
 
-/*
-#include <pthread.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <fcntl.h>
-*/
-
 //-----------------------------------------------------------------------------
 Reveal::Core::pipe_ptr gzexit_write;
 
@@ -443,7 +435,8 @@ void gazebo_c::exit_sighandler( int signum ) {
 //-----------------------------------------------------------------------------
 void gazebo_c::print_tuning_menu( void ) {
   printf( "- Tuning Menu -\n" );
-  printf( "TODO\n" );
+  //printf( "TODO\n" );
+  printf( "This is a placeholder for future expansion.  Tuning can be currently accomplished by modifying the relevant package as defined by the $REVEAL_PACKAGE_PATH environment variable.  This menu is provided as a hint that an interactive (and restricted) tuning environment can be supported if desired.\n" )
 }
 
 //-----------------------------------------------------------------------------

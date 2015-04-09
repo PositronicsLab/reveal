@@ -12,12 +12,6 @@ option( INSTALL_REVEAL_CLIENT "compile and install the Reveal client" ON )
 option( INSTALL_REVEAL_SERVER "compile and install the Reveal server" ON )
 option( BUILD_TESTS "compile test programs" OFF )
 
-# this will be subject to moving to system tmp or another designated location
-# at a later time.  It is the place where experimental files are to be 
-# downloaded or accessed
-set( PACKAGE_ROOT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/tmp/ )
-add_definitions( -DPACKAGE_ROOT_PATH="${PACKAGE_ROOT_PATH}")
-
 string( TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER )
 string( TOUPPER ${PROJECT_NAME} PROJECT_NAME_UPPER )
 
@@ -98,7 +92,7 @@ set(REVEAL_DEFAULT_SERVER_HOST localhost)
 set(REVEAL_DEFAULT_SERVER_PORT 20700)
 set(REVEAL_DEFAULT_DATABASE_HOST localhost)
 set(REVEAL_DEFAULT_DATABASE_PORT 27017)
-set(REVEAL_DEFAULT_PACKAGE_PATH "")
+set(REVEAL_DEFAULT_PACKAGE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/packages")
 set(REVEAL_DEFAULT_MONITOR_PORT 20701)
 set(REVEAL_DEFAULT_DATABASE_NAME revealdb)
 

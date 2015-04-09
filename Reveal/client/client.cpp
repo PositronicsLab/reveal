@@ -29,13 +29,9 @@
 //TODO once CMakeLists supports change above include to "Reveal/sim/gazebo.h"
 
 //-----------------------------------------------------------------------------
-
 namespace Reveal {
-
 //-----------------------------------------------------------------------------
-
 namespace Client {
-
 //-----------------------------------------------------------------------------
 /// Default Constructor
 client_c::client_c( void ) {
@@ -61,12 +57,20 @@ bool client_c::init( void ) {
   if( !_system->open() ) return false;
 
   Reveal::Core::transport_exchange_c::open();
+
+  if( !get_temp_directory( _working_directory ) ) {
+    return false;
+  }
+
   return true;
 }
 
 //-----------------------------------------------------------------------------
 /// Clean up
 void client_c::terminate( void ) {
+  // prune and remove temporary working directory
+  remove_directory( _working_directory );
+
   // Note: may need to loop on connection close operation if they don't
   // return ERROR_NONE and do return ERROR_INTERRUPT
   _connection.close();
@@ -534,6 +538,27 @@ bool client_c::execute( void ) {
   // MOTD
   printf("Message of the Day\n");
 
+  // get the root paths for the selected package image and the temporary path
+  std::string pkg_root_image_path = _system->package_path();
+  std::string pkg_root_tmp_path = _working_directory;
+
+  // if the package cannot be located, bomb out
+  if( !path_exists( pkg_root_image_path ) ) {
+    std::cerr << "ERROR(client.cpp): Unable to locate the package path." << std::endl;
+    terminate();
+    return false;
+  }
+
+  // if the temporary directory does not exist (should have been created in 
+  // init), bomb out
+  if( !path_exists( pkg_root_tmp_path ) ) {
+    std::cerr << "ERROR(client.cpp): The temporary working directory was not available." << std::endl;
+    terminate();
+    return false;
+  }
+
+  // main loop.  reiterate until either an error occurs or the user chooses not
+  // to recycle the program 
   bool recycle;
   do {
     error_e error;
@@ -579,22 +604,69 @@ bool client_c::execute( void ) {
       // if false, no choice but to bomb with unrecognized/unrecoverable
     }
 
-    // TODO : package parameters.  At this point, now know the package path
-    // via some mechanism
-    std::string pkg_root_path = PACKAGE_ROOT_PATH;
-    std::string pkg_source_path = pkg_root_path + "industrial_arm/shared";
-    std::string pkg_build_path = pkg_root_path + "industrial_arm/shared/build";
+    std::string pkg_image_path, pkg_tmp_path;
+    std::string pkg_source_path, pkg_build_path;
 
+    // create a path to the package image
+    pkg_image_path = combine_path( pkg_root_image_path, scenario->id );
+    // create a path to the package temporary directory
+    pkg_tmp_path = combine_path( pkg_root_tmp_path, scenario->id );
+    // get the package temporary directory
+    if( !get_directory( pkg_tmp_path ) ) {
+      terminate();
+      return false;
+    }
+    // extend those paths to find the shared package component
+    pkg_image_path = combine_path( pkg_image_path, "shared" );
+    pkg_tmp_path = combine_path( pkg_tmp_path, "shared" );
+    // get the temporary shared package component
+    if( !get_directory( pkg_tmp_path ) ) {
+      terminate();
+      return false;
+    }
+
+    // clean the temporary package path to remove any artifacts
+    if( !clean_directory( pkg_tmp_path ) ) {
+      terminate();
+      return false;
+    }
+
+    // copy the package image the temporary path
+    if( !copy_directory( pkg_image_path, pkg_tmp_path ) ) {
+      terminate();
+      return false;
+    }
+    // set the source and build paths to the temporary path
+    pkg_source_path = pkg_tmp_path;
+    pkg_build_path = combine_path( pkg_source_path, "build" );
+   
+    if( path_exists( pkg_build_path ) ) {
+      // if there are build artifacts (copied from the image) clean them
+      if( !clean_directory( pkg_build_path ) ) {
+        terminate();
+        return false;
+      } 
+    } else {
+      // if the build path did not exist, then create it
+      if( !get_directory( pkg_build_path ) ) {
+        terminate();
+        return false;
+      }
+    }
+
+    // build the package in the temporary path
     if( !simulator->build_package( pkg_source_path, pkg_build_path ) ) {
       printf( "Exiting\n" );
       exit( 1 );
     }
 
+    // execute the simulator using the build products in the temporary path
     bool result = simulator->execute( _auth, scenario, experiment );
     if( !result ) {
       // TODO: determine how to recover
     }
 
+    // prompt the user as to whether or not to rerun reveal
     recycle = Reveal::Core::console_c::prompt_yes_no( "Would you like to run another experiment (Y/N)?" );
   } while( recycle );
 
@@ -604,11 +676,7 @@ bool client_c::execute( void ) {
 }
 
 //-----------------------------------------------------------------------------
-
 } // namespace Client
-
 //-----------------------------------------------------------------------------
-
 } // namespace Reveal
-
 //-----------------------------------------------------------------------------

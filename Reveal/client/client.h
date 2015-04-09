@@ -65,6 +65,8 @@ private:
 
   boost::shared_ptr<Reveal::Core::system_c> _system;
 
+  std::string _working_directory;
+
 public:
 
   bool login( void );

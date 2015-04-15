@@ -760,8 +760,8 @@ transport_exchange_c::error_e transport_exchange_c::write_experiment( Reveal::Co
 transport_exchange_c::error_e transport_exchange_c::read_experiment( Reveal::Core::Messages::Net::Message* msg ) {
   _experiment = experiment_ptr( new experiment_c() );
     
-  _experiment->scenario_id = msg->experiment().scenario_id();
   _experiment->experiment_id = msg->experiment().experiment_id();
+  _experiment->scenario_id = msg->experiment().scenario_id();
   _experiment->number_of_trials = msg->experiment().trials();
   _experiment->steps_per_trial = msg->experiment().steps_per_trial();
 

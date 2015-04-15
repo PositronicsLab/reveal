@@ -22,13 +22,9 @@
 #include "Reveal/analytics/worker.h"
 
 //-----------------------------------------------------------------------------
-
 namespace Reveal {
-
 //-----------------------------------------------------------------------------
-
 namespace Server {
-
 //-----------------------------------------------------------------------------
 
 worker_c::worker_c( void* context ) {
@@ -140,6 +136,7 @@ void worker_c::work( void ) {
       if( authorize( auth ) == ERROR_NONE ) {
         // create a solution receipt
         Reveal::Core::experiment_ptr experiment = exchange.get_experiment();
+        experiment->session_id = auth->get_session();
         Reveal::Core::solution_ptr solution = exchange.get_solution();
 
         service_solution_submission( auth, experiment, solution );
@@ -565,27 +562,48 @@ worker_c::error_e worker_c::service_solution_submission( Reveal::Core::authoriza
   // for an initial development, this is the best approach
   // If the trial is the 'last' trial, run analytics.
 
-  std::string session_id = "";
-  std::string scenario_id = solution->scenario_id;
+  //std::string session_id = "";
+  //std::string scenario_id = solution->scenario_id;
 
   // TODO : check anaylitics and check that experiment->number_of_trials is set
 
-  printf( "experiment->number_of_trials: %d\n", experiment->number_of_trials );
+  // TODO : rather than spawn analytics worker in this thread, dispatch to an
+  // existing analytics worker thread source from pool
+  //printf( "experiment->number_of_trials: %d\n", experiment->number_of_trials );
 
   if( solution->trial_id == experiment->number_of_trials - 1 ) {
     printf( "hit analytics\n" );
+    experiment->print();
+    printf( "\n" );
 
     Reveal::Core::analysis_ptr       analysis;
     Reveal::Core::solution_set_ptr   solution_set;
 
     // need a temporary (for this mode only) contructor for passing database and
     // the scenario data in
-    Reveal::Analytics::worker_c analytics_worker( _db, scenario_id, session_id );
+    Reveal::Analytics::worker_c analytics_worker( _db, experiment->experiment_id );
 
-    analytics_worker.query();
-    analytics_worker.load();
-    analytics_worker.analyze();
-    //analytics_worker.insert();
+    Reveal::Analytics::error_e analytics_error;
+
+    analytics_error = analytics_worker.query();
+    if( analytics_error != Reveal::Analytics::ERROR_NONE ) {
+
+    }
+
+    analytics_error = analytics_worker.load();
+    if( analytics_error != Reveal::Analytics::ERROR_NONE ) {
+
+    }
+
+    analytics_error = analytics_worker.analyze();
+    if( analytics_error != Reveal::Analytics::ERROR_NONE ) {
+
+    }
+
+    analytics_error = analytics_worker.insert();
+    if( analytics_error != Reveal::Analytics::ERROR_NONE ) {
+
+    }
 
   }
 
@@ -593,11 +611,7 @@ worker_c::error_e worker_c::service_solution_submission( Reveal::Core::authoriza
 }
 
 //-----------------------------------------------------------------------------
-
 } // namespace Server
-
 //-----------------------------------------------------------------------------
-
 } // namespace Reveal
-
 //-----------------------------------------------------------------------------

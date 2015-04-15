@@ -41,9 +41,11 @@ public:
 
 private:
   boost::shared_ptr<Reveal::DB::database_c> _db;
-  std::string                     _scenario_id; // likely temporary
-  std::string                     _session_id;  // likely temporary
+  std::string                     _experiment_id;
+//  std::string                     _scenario_id; // likely temporary
+//  std::string                     _session_id;  // likely temporary
 
+  Reveal::Core::experiment_ptr                      _experiment;
   Reveal::Core::analyzer_ptr                        _analyzer;
   boost::shared_ptr<Reveal::Analytics::module_c>    _module;
   Reveal::Core::analysis_ptr                        _analysis;
@@ -55,7 +57,7 @@ public:
 public:
 
   worker_c( void );
-  worker_c( boost::shared_ptr<Reveal::DB::database_c> db, const std::string& scenario_id, const std::string& session_id );
+  worker_c( boost::shared_ptr<Reveal::DB::database_c> db, const std::string& experiment_id );
   virtual ~worker_c( void );
 
   error_e init( void );

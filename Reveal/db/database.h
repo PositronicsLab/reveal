@@ -22,13 +22,9 @@ interface
 #include "Reveal/core/solution.h"
 
 //-----------------------------------------------------------------------------
-
 namespace Reveal {
-
 //-----------------------------------------------------------------------------
-
 namespace DB {
-
 //-----------------------------------------------------------------------------
 
 class database_c {
@@ -85,18 +81,14 @@ public:
 
   error_e insert( Reveal::Core::analyzer_ptr analyzer );
   error_e query( Reveal::Core::analyzer_ptr& analyzer, const std::string& scenario_id );
-  error_e query( Reveal::Core::solution_set_ptr& solution_set, const std::string& scenario_id, const std::string& session_id );
+  error_e query( Reveal::Core::solution_set_ptr& solution_set, const std::string& experiment_id );
   error_e insert( Reveal::Core::analysis_ptr analysis );
 };
 
 //-----------------------------------------------------------------------------
-
 } // namespace DB
-
 //-----------------------------------------------------------------------------
-
 } // namespace Reveal
-
 //-----------------------------------------------------------------------------
 
 #endif // _REVEAL_DB_DATABASE_

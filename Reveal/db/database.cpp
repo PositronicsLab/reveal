@@ -26,13 +26,9 @@
 #include "Reveal/core/joint.h"
 
 //-----------------------------------------------------------------------------
-
 namespace Reveal {
-
 //-----------------------------------------------------------------------------
-
 namespace DB {
-
 //-----------------------------------------------------------------------------
 database_c::database_c( void ) {
   _open = false;
@@ -255,9 +251,9 @@ database_c::error_e database_c::query( Reveal::Core::experiment_ptr& experiment,
 
   experiment->experiment_id = record.getField( "experiment_id" ).String();
   experiment->session_id = record.getField( "session_id" ).String();
-  experiment->scenario_id = record.getField( "scenario_id" ).Int();
+  experiment->scenario_id = record.getField( "scenario_id" ).String();
   experiment->number_of_trials = record.getField( "trials" ).Int();
-  experiment->steps_per_trial = record.getField( "steps_pre_trial" ).Int();
+  experiment->steps_per_trial = record.getField( "steps_per_trial" ).Int();
   // TODO : subdocument for trial prescription
   experiment->current_trial_index = record.getField( "current_trial_index" ).Int();
  
@@ -673,18 +669,35 @@ database_c::error_e database_c::insert( Reveal::Core::analyzer_ptr analyzer ) {
 //-----------------------------------------------------------------------------
 database_c::error_e database_c::insert( Reveal::Core::analysis_ptr analysis ) {
 
-// TODO : Add session data
+  for( unsigned i = 0; i < analysis->count_rows(); i++ ) {
 
-  mongo::BSONObjBuilder bob_analysis;
+    mongo::BSONObjBuilder bob_analysis;
+
+    bob_analysis.append( "session_id", analysis->experiment->session_id );
+    bob_analysis.append( "experiment_id", analysis->experiment->experiment_id );
+    bob_analysis.append( "scenario_id", analysis->experiment->scenario_id );
 /*
-  bob_analysis.append( "scenario_id", analysis->scenario_id );
-  bob_analysis.append( "filename", analysis->filename );
-  bob_analysis.append( "type", (int) analysis->type );
+    mongo::BSONArrayBuilder bab_values;
+    for( unsigned j = 0; j < analysis->count_keys(); j++ ) {
+      mongo::BSONObjBuilder bob_value;
+      bob_value.append( analysis->key( j ), analysis->value( i, j ) );
 
-  mongo::BSONObj analysis_query = bob_analysis.obj();
-  
-  insert( "analysis", analysis_query );  
+      bab_values.append( bob_value.obj() );
+    }
+    bob_analysis.appendArray( "values", bab_values.arr() );
 */
+    mongo::BSONArrayBuilder bab_values;
+    mongo::BSONObjBuilder bob_value;
+    for( unsigned j = 0; j < analysis->count_keys(); j++ ) {
+      bob_value.append( analysis->key( j ), analysis->value( i, j ) );
+    }
+    bab_values.append( bob_value.obj() );
+    bob_analysis.appendArray( "values", bab_values.arr() );
+
+    mongo::BSONObj analysis_query = bob_analysis.obj();
+  
+    insert( "analysis", analysis_query );  
+  }
 
   return ERROR_NONE;
 }
@@ -713,10 +726,11 @@ database_c::error_e database_c::query( Reveal::Core::analyzer_ptr& analyzer, con
 }
 
 //-----------------------------------------------------------------------------
-database_c::error_e database_c::query( Reveal::Core::solution_set_ptr& solution_set, const std::string& scenario_id, const std::string& session_id ) {
+database_c::error_e database_c::query( Reveal::Core::solution_set_ptr& solution_set, const std::string& experiment_id ) {
 
   // NOTE: may need to order queries such that indices match up in each query
 
+  Reveal::Core::experiment_ptr experiment;
   Reveal::Core::scenario_ptr scenario;
   Reveal::Core::trial_ptr trial;
   Reveal::Core::solution_ptr solution, model;
@@ -724,12 +738,19 @@ database_c::error_e database_c::query( Reveal::Core::solution_set_ptr& solution_
 
   solution_set = Reveal::Core::solution_set_ptr( new Reveal::Core::solution_set_c() );
 
+  error = query( experiment, experiment_id );
+  if( error != ERROR_NONE ) return error;
+  // TODO : error check and handle
+  // If above succeeds or recovers then proceed else bomb out
+
+  std::string scenario_id = experiment->scenario_id;
   error = query( scenario, scenario_id );
   if( error != ERROR_NONE ) return error;
   // TODO : error check and handle
   // If above succeeds or recovers then proceed else bomb out
 
-  solution_set->scenario = scenario;
+  //solution_set->scenario = scenario;
+  solution_set->experiment = experiment;
 
   for( unsigned i = 0; i < scenario->trials; i++ ) {
     error = query( trial, scenario_id, i );
@@ -753,11 +774,7 @@ database_c::error_e database_c::query( Reveal::Core::solution_set_ptr& solution_
 }
 
 //-----------------------------------------------------------------------------
-
 }  // namespace DB
-
 //-----------------------------------------------------------------------------
-
 }  // namespace Reveal
-
 //-----------------------------------------------------------------------------

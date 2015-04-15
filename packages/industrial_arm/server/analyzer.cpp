@@ -290,6 +290,12 @@ error_e analyze( Reveal::Core::solution_set_ptr input, Reveal::Core::analysis_pt
   // compute the initial energy from initial state.
   get_initial_config( arm_t0, target_t0, c_v_l, c_v_r, c_omega_l, c_omega_r );
 
+  output = Reveal::Core::analysis_ptr( new Reveal::Core::analysis_c() );
+  output->experiment = input->experiment;
+
+  output->add_key( "t" );
+  output->add_key( "KE" );
+
   // iterate over the client solutions and compute the energy for each sample
   for( unsigned i = 0; i < input->solutions.size(); i++ ) {
     Reveal::Core::solution_ptr solution = input->solutions[i];
@@ -316,7 +322,11 @@ error_e analyze( Reveal::Core::solution_set_ptr input, Reveal::Core::analysis_pt
 
     double avg_KE = (KE_l + KE_r) / 2.0;
 
-    printf( "t[%f], avgKE[%f], KE_l[%f], KE_r[%f]\n", t, avg_KE, KE_l, KE_r );
+    //printf( "t[%f], avgKE[%f], KE_l[%f], KE_r[%f]\n", t, avg_KE, KE_l, KE_r );
+    std::vector<double> values;
+    values.push_back( t );
+    values.push_back( avg_KE );
+    output->add_row( values );
   }
   return ERROR_NONE;
 }

@@ -2,6 +2,7 @@
 
 #include "Reveal/analytics/plugin.h"
 #include "Reveal/analytics/script.h"
+#include "Reveal/core/experiment.h"
 
 //-----------------------------------------------------------------------------
 
@@ -17,10 +18,9 @@ worker_c::worker_c( void ) {
 }
 
 //-----------------------------------------------------------------------------
-worker_c::worker_c( boost::shared_ptr<Reveal::DB::database_c> db, const std::string& scenario_id, const std::string& session_id ) {
+worker_c::worker_c( boost::shared_ptr<Reveal::DB::database_c> db, const std::string& experiment_id ) {
   _db = db;
-  _scenario_id = scenario_id;
-  _session_id = session_id;
+  _experiment_id = experiment_id;
 }
 
 //-----------------------------------------------------------------------------
@@ -55,14 +55,18 @@ Reveal::Analytics::error_e worker_c::query( void ) {
 
   Reveal::DB::database_c::error_e db_error;
 
-  db_error = _db->query( _analyzer, _scenario_id );
+  db_error = _db->query( _experiment, _experiment_id );
+  if( db_error != Reveal::DB::database_c::ERROR_NONE )
+    printf( "db_error[%d] fetching experiment\n", db_error );
+
+  db_error = _db->query( _analyzer, _experiment->scenario_id );
   if( db_error != Reveal::DB::database_c::ERROR_NONE )
     printf( "db_error[%d] fetching analyzer\n", db_error );
 
   if( !_analyzer ) 
     printf( "failed to select requested analyzer from db\n" );
 
-  db_error = _db->query( _solution_set, _scenario_id, _session_id );
+  db_error = _db->query( _solution_set, _experiment->experiment_id );
   if( db_error != Reveal::DB::database_c::ERROR_NONE )
     printf( "db_error[%d] fetching solution_set\n", db_error );
 
@@ -104,6 +108,8 @@ Reveal::Analytics::error_e worker_c::analyze( void ) {
     printf( "analyzer failed to complete execution\n" ); 
     return error;
   }
+ 
+  assert( _analysis );
 
   return ERROR_NONE;
 }

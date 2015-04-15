@@ -16,13 +16,9 @@ for a given scenario. The solution_set is passed to the analyzer.
 #include "Reveal/core/state.h"
 
 //-----------------------------------------------------------------------------
-
 namespace Reveal {
-
 //-----------------------------------------------------------------------------
-
 namespace Core {
-
 //-----------------------------------------------------------------------------
 
 class solution_set_c {
@@ -30,7 +26,9 @@ public:
   solution_set_c( void ) {}
   virtual ~solution_set_c( void ) {}
 
-  Reveal::Core::scenario_ptr 	            scenario;  // scenario data
+
+  //Reveal::Core::scenario_ptr 	            scenario;  // scenario data
+  Reveal::Core::experiment_ptr              experiment;// identifiers
   std::vector< Reveal::Core::trial_ptr >    trials;    // set of trials
   std::vector< Reveal::Core::solution_ptr > solutions; // set of solutions
   std::vector< Reveal::Core::solution_ptr > models;    // set of model solutions
@@ -80,13 +78,9 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-
 }  // namespace Core
-
 //-----------------------------------------------------------------------------
-
 }  // namespace Reveal
-
 //-----------------------------------------------------------------------------
 
 #endif // _REVEAL_CORE_SOLUTION_SET_H_

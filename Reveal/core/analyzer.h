@@ -10,20 +10,12 @@ programs to run on a specified scenario
 
 //-----------------------------------------------------------------------------
 
-//#include <Reveal/solution.h>
-//#include <Reveal/trial.h>
-//#include <Reveal/scenario.h>
-
 #include <string>
 
 //-----------------------------------------------------------------------------
-
 namespace Reveal {
-
 //-----------------------------------------------------------------------------
-
 namespace Core {
-
 //-----------------------------------------------------------------------------
 
 class analyzer_c;
@@ -44,16 +36,16 @@ public:
   std::string            scenario_id;
   std::string            filename;
   type_e 	         type;
+
+  // ?
+  std::vector<std::string>  keys;
+  std::vector<std::string>  labels; 
 };
 
 //-----------------------------------------------------------------------------
-
 } // namespace Core
-
 //-----------------------------------------------------------------------------
-
 } // namespace Reveal
-
 //-----------------------------------------------------------------------------
 
 #endif // _REVEAL_CORE_ANALYZER_H_

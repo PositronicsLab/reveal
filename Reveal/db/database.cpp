@@ -659,6 +659,17 @@ database_c::error_e database_c::insert( Reveal::Core::analyzer_ptr analyzer ) {
   bob_analyzer.append( "filename", analyzer->filename );
   bob_analyzer.append( "type", (int) analyzer->type );
 
+  mongo::BSONArrayBuilder bab_keys, bab_labels;
+  for( unsigned i = 0; i < analyzer->keys.size(); i++ ) {
+    bab_keys.append( analyzer->keys[i] );
+  }
+  bob_analyzer.appendArray( "keys", bab_keys.arr() );
+
+  for( unsigned i = 0; i < analyzer->labels.size(); i++ ) {
+    bab_labels.append( analyzer->labels[i] );
+  }
+  bob_analyzer.appendArray( "labels", bab_labels.arr() );
+
   mongo::BSONObj analyzer_query = bob_analyzer.obj();
   
   insert( "analyzer", analyzer_query );  
@@ -676,16 +687,7 @@ database_c::error_e database_c::insert( Reveal::Core::analysis_ptr analysis ) {
     bob_analysis.append( "session_id", analysis->experiment->session_id );
     bob_analysis.append( "experiment_id", analysis->experiment->experiment_id );
     bob_analysis.append( "scenario_id", analysis->experiment->scenario_id );
-/*
-    mongo::BSONArrayBuilder bab_values;
-    for( unsigned j = 0; j < analysis->count_keys(); j++ ) {
-      mongo::BSONObjBuilder bob_value;
-      bob_value.append( analysis->key( j ), analysis->value( i, j ) );
 
-      bab_values.append( bob_value.obj() );
-    }
-    bob_analysis.appendArray( "values", bab_values.arr() );
-*/
     mongo::BSONArrayBuilder bab_values;
     mongo::BSONObjBuilder bob_value;
     for( unsigned j = 0; j < analysis->count_keys(); j++ ) {

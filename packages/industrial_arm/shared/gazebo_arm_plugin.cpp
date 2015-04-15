@@ -316,6 +316,12 @@ namespace gazebo
       analyzer->filename = ANALYZER_PATH;
       analyzer->type = Reveal::Core::analyzer_c::PLUGIN;
 
+      analyzer->keys.push_back( "t" );
+      analyzer->labels.push_back( "Simulaiton time (s)" );
+
+      analyzer->keys.push_back( "KE" );
+      analyzer->labels.push_back( "Average Kinetic Energy of block" );
+
       return analyzer;
     }
 

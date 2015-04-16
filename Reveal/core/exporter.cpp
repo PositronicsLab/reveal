@@ -2,6 +2,8 @@
 
 #include <sstream>
 
+#include "Reveal/core/system.h"
+
 #define DEFINE_COLUMNS
 //#define DEFINE_MAP
 
@@ -23,54 +25,70 @@ exporter_c::~exporter_c( void ) {
 bool exporter_c::write( scenario_ptr scenario, analyzer_ptr analyzer, solution_ptr ex_solution, trial_ptr ex_trial, std::string delimiter ) {
   xml_c xml;
   xml_element_ptr root;
+  bool result;
 
-  std::stringstream ss_scenario_file, ss_trial_file, ss_solution_file;
+  std::stringstream ss_scenario_file, ss_trial_file, ss_solution_file, ss_analyzer_file;
+
   ss_scenario_file << scenario->id << ".scenario";
   _scenario_file = ss_scenario_file.str();
+
   ss_trial_file << scenario->id << ".trials";
   _trial_file = ss_trial_file.str();
+
   ss_solution_file << scenario->id << ".solutions";
   _solution_file = ss_solution_file.str();
 
+  ss_analyzer_file << scenario->id << ".analyzer";
+  _analyzer_file = ss_analyzer_file.str();
+
+  // create the xml root for the scenario file
   root = xml_element_ptr( new xml_element_c() );
   root->set_name( "Reveal" );
 
+  // create column maps for the trial and solution data
   _trial_column_map = datamap_ptr( new datamap_c() );
   _solution_column_map = datamap_ptr( new datamap_c() );
 
-  write_scenario_element( root, scenario, analyzer, ex_trial, ex_solution, delimiter );
+  // write the scenario information to the root
+  result = write_scenario_element( root, scenario, analyzer, ex_trial, ex_solution, delimiter );
+  if( !result ) return result;
 
+  // write the scenario xml file
   xml.root( root );
   xml.write( _scenario_file );
+
+  // write the analyzer file
+  result = write( _analyzer_file, analyzer );
+  if( !result ) return false;
 
   //_trial_column_map->print();
   //_solution_column_map->print();
 
+  // open the trial datawriter to append trial data to a flat file
   _trial_datawriter = Reveal::Core::datawriter_c( _trial_file, delimiter, _trial_column_map );
-  _solution_datawriter = Reveal::Core::datawriter_c( _solution_file, delimiter, _solution_column_map );
+  result = _trial_datawriter.open();
+  if( !result ) return false;
 
-  // TODO error handling
-  _trial_datawriter.open();
-  _solution_datawriter.open();
+  // open the solution datawriter to append solution data to a flat file
+  _solution_datawriter = Reveal::Core::datawriter_c( _solution_file, delimiter, _solution_column_map );
+  result = _solution_datawriter.open();
+  if( !result ) return false;
 
   return true;
 }
 
 //-----------------------------------------------------------------------------
-bool exporter_c::write( analyzer_ptr analyzer ) {
+bool exporter_c::write( std::string analyzer_file, analyzer_ptr analyzer ) {
   xml_c xml;
   xml_element_ptr root;
-
-  std::stringstream ss_analyzer_file;
-  ss_analyzer_file << analyzer->scenario_id << ".analyzer";
 
   root = xml_element_ptr( new xml_element_c() );
   root->set_name( "Reveal" );
 
-  write_analyzer_element( root, analyzer, false );
+  write_analyzer_element( root, analyzer );
 
   xml.root( root );
-  xml.write( ss_analyzer_file.str() );
+  xml.write( analyzer_file );
 
   return true;
 }
@@ -191,9 +209,9 @@ bool exporter_c::write_scenario_element( xml_element_ptr parent, scenario_ptr sc
     top->append( element );
   }
 
-  write_analyzer_element( top, analyzer );
-  write_trial_element( top, trial, scenario->id, delimiter );
-  write_solution_element( top, solution, scenario->id, delimiter );
+  write_analyzer_file_element( top );
+  write_trial_file_element( top, trial, delimiter );
+  write_solution_file_element( top, solution, delimiter );
 
   parent->append( top );
 
@@ -201,7 +219,7 @@ bool exporter_c::write_scenario_element( xml_element_ptr parent, scenario_ptr sc
 }
 
 //-----------------------------------------------------------------------------
-bool exporter_c::write_analyzer_element( xml_element_ptr parent, analyzer_ptr analyzer, bool reference_only ) {
+bool exporter_c::write_analyzer_element( xml_element_ptr parent, analyzer_ptr analyzer ) {
   xml_c xml;
   xml_element_ptr top, element;
   xml_attribute_ptr attribute;
@@ -214,58 +232,117 @@ bool exporter_c::write_analyzer_element( xml_element_ptr parent, analyzer_ptr an
   top = xml_element_ptr( new xml_element_c() );
   top->set_name( "Analyzer" );
 
+  // specify the scenario
   attribute = xml_attribute_ptr( new xml_attribute_c() );
   attribute->set_name( "id" );
   attribute->set_value( analyzer->scenario_id );
   top->append( attribute );
 
-  if( !reference_only ) {
-    attribute = xml_attribute_ptr( new xml_attribute_c() );
-    attribute->set_name( "type" );
-    if( analyzer->type == Reveal::Core::analyzer_c::PLUGIN ) 
-      attribute->set_value( "plugin" );
-    else 
-      attribute->set_value( "script" );
-    top->append( attribute );
+  // specify the type
+  attribute = xml_attribute_ptr( new xml_attribute_c() );
+  attribute->set_name( "type" );
+  if( analyzer->type == Reveal::Core::analyzer_c::PLUGIN ) 
+    attribute->set_value( "plugin" );
+  else 
+    attribute->set_value( "script" );
+  top->append( attribute );
 
+  // specify the anaylzer file path
+  attribute = xml_attribute_ptr( new xml_attribute_c() );
+  attribute->set_name( "file" );
+  attribute->set_value( analyzer->filename );
+  top->append( attribute );
+
+  // iterate over any keys and write them as a new element
+  for( unsigned i = 0; i < analyzer->keys.size(); i++ ) {
+    element = xml_element_ptr( new xml_element_c() );
+    element->set_name( "Datum" );
+
+    // write out any keys
     attribute = xml_attribute_ptr( new xml_attribute_c() );
-    attribute->set_name( "file" );
-    attribute->set_value( analyzer->filename );
-    top->append( attribute );
+    attribute->set_name( "key" );
+    attribute->set_value( analyzer->keys[i] );
+    element->append( attribute );
+
+    if( analyzer->keys.size() == analyzer->labels.size() ) {
+      // if there are the same number of keys and labels, write out labels too
+  
+      attribute = xml_attribute_ptr( new xml_attribute_c() );
+      attribute->set_name( "label" );
+      attribute->set_value( analyzer->labels[i] );
+      element->append( attribute );
+    }
+    top->append( element );
   }
+    
+  parent->append( top );
 
+  return true;
+
+}
+//-----------------------------------------------------------------------------
+bool exporter_c::write_analyzer_file_element( xml_element_ptr parent ) {
+  xml_element_ptr top, element;
+  xml_attribute_ptr attribute;
+  unsigned column = 1;
+
+  // create the file element as the top (root) of this hierarchy
+  top = xml_element_ptr( new xml_element_c() );
+  top->set_name( "File" );
+
+  // specify the type
+  attribute = xml_attribute_ptr( new xml_attribute_c() );
+  attribute->set_name( "type" );
+  attribute->set_value( "analyzer" );
+  top->append( attribute );
+
+  // specify the file name
+  attribute = xml_attribute_ptr( new xml_attribute_c() );
+  attribute->set_name( "name" );
+  attribute->set_value( _analyzer_file );
+  top->append( attribute );
+
+  // add this hierarchy to the parent node
   parent->append( top );
 
   return true;
 }
 
 //-----------------------------------------------------------------------------
-bool exporter_c::write_solution_element( xml_element_ptr parent, solution_ptr ex_solution, std::string scenario_id, std::string delimiter ) {
+bool exporter_c::write_solution_file_element( xml_element_ptr parent, solution_ptr ex_solution, std::string delimiter ) {
   xml_element_ptr top, element;
   xml_attribute_ptr attribute;
   unsigned column = 1;
 
+  // create the file element as the top (root) of this hierarchy
   top = xml_element_ptr( new xml_element_c() );
   top->set_name( "File" );
+
+  // specify the type
   attribute = xml_attribute_ptr( new xml_attribute_c() );
   attribute->set_name( "type" );
   attribute->set_value( "model_solution" );
   top->append( attribute );
+ 
+  // specify the file name
+  attribute = xml_attribute_ptr( new xml_attribute_c() );
+  attribute->set_name( "name" );
+  attribute->set_value( _solution_file );
+  top->append( attribute );
+
+  // specify a delimiter for the flat file
   attribute = xml_attribute_ptr( new xml_attribute_c() );
   attribute->set_name( "delimiter" );
   attribute->set_value( delimiter );
   top->append( attribute );
-  attribute = xml_attribute_ptr( new xml_attribute_c() );
-  attribute->set_name( "name" );
-  std::stringstream filename;
-  filename << scenario_id << ".solutions";
-  attribute->set_value( filename.str() );
-  top->append( attribute );
 
+  // add a time field element as a leaf of top
   add_field_element( top, "time", column );
 
+  // add a time-step field element as a leaf of top
   add_field_element( top, "time-step", column );
 
+  // iterate over the models and add each component
   for( unsigned i = 0; i < ex_solution->models.size(); i++ ) {
     model_ptr model = ex_solution->models[i];
     
@@ -282,40 +359,50 @@ bool exporter_c::write_solution_element( xml_element_ptr parent, solution_ptr ex
     top->append( element );
   }
 
+  // add this hierarchy to the parent node
   parent->append( top );
 
+  // generate the column map
   _solution_column_map->map_solution_element( top );
 
   return true;
 }
 
 //-----------------------------------------------------------------------------
-bool exporter_c::write_trial_element( xml_element_ptr parent, trial_ptr ex_trial, std::string scenario_id, std::string delimiter ) {
+bool exporter_c::write_trial_file_element( xml_element_ptr parent, trial_ptr ex_trial, std::string delimiter ) {
   xml_element_ptr top, element;
   xml_attribute_ptr attribute;
   unsigned column = 1;
 
+  // create the file element as the top (root) of this hierarchy
   top = xml_element_ptr( new xml_element_c() );
   top->set_name( "File" );
+
+  // specify the type
   attribute = xml_attribute_ptr( new xml_attribute_c() );
   attribute->set_name( "type" );
   attribute->set_value( "trial" );
   top->append( attribute );
+
+  // specify the file name
+  attribute = xml_attribute_ptr( new xml_attribute_c() );
+  attribute->set_name( "name" );
+  attribute->set_value( _trial_file );
+  top->append( attribute );
+
+  // specify a delimiter for the flat file
   attribute = xml_attribute_ptr( new xml_attribute_c() );
   attribute->set_name( "delimiter" );
   attribute->set_value( delimiter );
   top->append( attribute );
-  attribute = xml_attribute_ptr( new xml_attribute_c() );
-  attribute->set_name( "name" );
-  std::stringstream filename;
-  filename << scenario_id << ".trials";
-  attribute->set_value( filename.str() );
-  top->append( attribute );
 
+  // add a time field element as a leaf of top
   add_field_element( top, "time", column );
 
+  // add a time-step field element as a leaf of top
   add_field_element( top, "time-step", column );
 
+  // iterate over the models and add each component
   for( unsigned i = 0; i < ex_trial->models.size(); i++ ) {
     model_ptr model = ex_trial->models[i];
     
@@ -336,8 +423,10 @@ bool exporter_c::write_trial_element( xml_element_ptr parent, trial_ptr ex_trial
     top->append( element );
   }
 
+  // add this hierarchy to the parent node
   parent->append( top );
 
+  // generate the column map
   _trial_column_map->map_trial_element( top );
 
   return true;

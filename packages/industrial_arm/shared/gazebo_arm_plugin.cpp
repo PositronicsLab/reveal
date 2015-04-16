@@ -265,11 +265,14 @@ namespace gazebo
 
       _solution = Reveal::Sim::Gazebo::helpers_c::read_model_solution( _world, model_list, _scenario->id, _trial_index++ );
      
+#ifdef DB_DIRECT_INSERT
+      _db->insert( _solution );
+#endif // DB_DIRECT_INSERT
+
       if( _first_iteration ) {
         Reveal::Core::analyzer_ptr analyzer = generate_analyzer( _scenario );
         bool result;
         result = exporter.write( _scenario, analyzer, _solution, _trial );
-        result = exporter.write( analyzer );
         _first_iteration = false;
       }
 
@@ -317,7 +320,7 @@ namespace gazebo
       analyzer->type = Reveal::Core::analyzer_c::PLUGIN;
 
       analyzer->keys.push_back( "t" );
-      analyzer->labels.push_back( "Simulaiton time (s)" );
+      analyzer->labels.push_back( "Simulation time (s)" );
 
       analyzer->keys.push_back( "KE" );
       analyzer->labels.push_back( "Average Kinetic Energy of block" );

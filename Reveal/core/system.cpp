@@ -79,6 +79,18 @@ std::string combine_path( std::string root_path, std::string relative_child ) {
 }
 
 //-----------------------------------------------------------------------------
+std::string get_stem( std::string path ) {
+  boost::filesystem::path _path = path;
+  return _path.stem().string();
+}
+
+//-----------------------------------------------------------------------------
+std::string get_extension( std::string path ) {
+  boost::filesystem::path _path = path;
+  return _path.extension().string();
+}
+
+//-----------------------------------------------------------------------------
 bool get_temp_directory( std::string& path ) {
 
 /*
@@ -410,12 +422,14 @@ bool system_c::open( void ) {
   } else {
     _package_path = package_path;
   }
-  std::cout << "package_path: " << _package_path << std::endl;
+  //std::cout << "package_path: " << _package_path << std::endl;
 
   if( _side == DATABASE && dbname == NULL ) {
     return false;
   } else
     _dbname = dbname;
+
+  //std::cout << "database_name: " << _dbname << std::endl;
 
   return true;
 }

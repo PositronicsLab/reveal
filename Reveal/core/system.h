@@ -38,6 +38,17 @@ bool get_directory( std::string path );
 ///         the root
 std::string combine_path( std::string root_path, std::string relative_child );
 //-----------------------------------------------------------------------------
+/// given a path, returns the file stem including path
+/// @param path a path to a file
+/// @return the stem of the file including the path
+std::string get_stem( std::string path );
+//-----------------------------------------------------------------------------
+/// given a path, returns the file extension
+/// @param path a path to a file
+/// @return the file extension of the file specified by path including the 
+///         preceding dot
+std::string get_extension( std::string path );
+//-----------------------------------------------------------------------------
 /// creates a temporary directory and returns the path to the directory in the 
 /// path parameter
 /// @param path the newly created temporary path.  a return value.

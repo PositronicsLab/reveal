@@ -24,13 +24,13 @@ private:
   Reveal::Core::datamap_ptr _solution_column_map;
 
   std::string _path;
-  std::string _scenario_file;
+  std::string _file;
 
 public:
   importer_c( void );
   virtual ~importer_c( void );
 
-  bool read( std::string path, std::string scenario_file );
+  bool read( std::string path, std::string file );
 
 private:
 #ifdef LOCAL_DB
@@ -38,14 +38,11 @@ private:
 #endif
 
   bool read_scenario_element( Reveal::Core::xml_element_ptr element, Reveal::Core::scenario_ptr& scenario );
-  bool read_analyzer_element( Reveal::Core::xml_element_ptr element, std::string scenario_id );
+  bool read_analyzer_element( Reveal::Core::xml_element_ptr element, Reveal::Core::analyzer_ptr& analyzer );
   bool read_file_element( Reveal::Core::xml_element_ptr element, std::string scenario_id );
   bool read_trial_file_element( Reveal::Core::xml_element_ptr element, std::string scenario_id );
   bool read_solution_file_element( Reveal::Core::xml_element_ptr element, std::string scenario_id );
-/*
-  bool import_trial_file( Reveal::Core::xml_element_ptr map, std::string filename );
-  bool import_solution_file( Reveal::Core::xml_element_ptr map, std::string filename );
-*/
+  bool read_analyzer_file_element( Reveal::Core::xml_element_ptr element );
 };
 
 //-----------------------------------------------------------------------------

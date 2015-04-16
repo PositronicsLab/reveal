@@ -337,7 +337,6 @@ bool datareader_c::read( trial_ptr& trial, std::string scenario_id, unsigned ind
     element = top->element( i );
     name = element->get_name();
     if( name == "Field" ) {
-      //printf( "here\n" );
       read_field( component, element );
     } else if( name == "Model" ) {
       read_model( component, element );

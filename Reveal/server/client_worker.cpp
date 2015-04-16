@@ -461,7 +461,7 @@ worker_c::error_e worker_c::service_experiment_request( Reveal::Core::authorizat
 
 //-----------------------------------------------------------------------------
 worker_c::error_e worker_c::service_trial_request( Reveal::Core::authorization_ptr auth, Reveal::Core::experiment_ptr experiment, int trial_id ) {
-  printf( "trial requested scenario_id[%s], trial_id[%u]\n", experiment->scenario_id.c_str(), trial_id );
+  //printf( "trial requested scenario_id[%s], trial_id[%u]\n", experiment->scenario_id.c_str(), trial_id );
 
   Reveal::Core::transport_exchange_c exchange;
   Reveal::Core::trial_ptr trial;
@@ -516,7 +516,7 @@ worker_c::error_e worker_c::service_trial_request( Reveal::Core::authorization_p
 
 //-----------------------------------------------------------------------------
 worker_c::error_e worker_c::service_solution_submission( Reveal::Core::authorization_ptr auth, Reveal::Core::experiment_ptr experiment, Reveal::Core::solution_ptr solution ) {
-  printf( "solution submitted\n" );
+//  printf( "solution submitted\n" );
 
   Reveal::Core::transport_exchange_c exchange;
   std::string reply;
@@ -572,9 +572,7 @@ worker_c::error_e worker_c::service_solution_submission( Reveal::Core::authoriza
   //printf( "experiment->number_of_trials: %d\n", experiment->number_of_trials );
 
   if( solution->trial_id == experiment->number_of_trials - 1 ) {
-    printf( "hit analytics\n" );
-    experiment->print();
-    printf( "\n" );
+    printf( "Experiment {%s} has completed.  Starting analytics.\n", experiment->experiment_id.c_str() );
 
     Reveal::Core::analysis_ptr       analysis;
     Reveal::Core::solution_set_ptr   solution_set;
@@ -604,7 +602,7 @@ worker_c::error_e worker_c::service_solution_submission( Reveal::Core::authoriza
     if( analytics_error != Reveal::Analytics::ERROR_NONE ) {
 
     }
-
+    printf( "Completed Analytics on Experiment {%s}\n", experiment->experiment_id.c_str() );
   }
 
   return ERROR_NONE;

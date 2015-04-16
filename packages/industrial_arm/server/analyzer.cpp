@@ -272,10 +272,6 @@ error_e analyze( Reveal::Core::solution_set_ptr input, Reveal::Core::analysis_pt
     }
   }
 
-  printf( "trial0[%u]: ", trial0_idx );
-  trial0->print();
-  printf( "\n\n" );
-
   // get the initial state.  Drawn from the trial data.
   arm_t0 = arm_model( trial0 );
   target_t0 = target_model( trial0 );
@@ -302,10 +298,6 @@ error_e analyze( Reveal::Core::solution_set_ptr input, Reveal::Core::analysis_pt
     double t = solution->t;
     double dt = solution->dt;
 
-    if( i == 0 ) {
-      solution->print();
-      printf( "\n\n" );
-    }
     //std::vector<double> avgKEs;
 
     Reveal::Core::model_ptr arm = arm_model( solution );

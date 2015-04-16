@@ -55,7 +55,7 @@ public:
     if( open( filename )  )
       // attempt to read the plugin file
       HANDLE = dlopen( filename, RTLD_LAZY );
-    printf( "plugin: %s\n", filename );
+    //printf( "plugin: %s\n", filename );
 
     if( !HANDLE ) {
       std::cerr << " failed to read plugin from " << filename << std::endl;

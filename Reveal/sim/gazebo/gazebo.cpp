@@ -307,7 +307,7 @@ bool gazebo_c::execute( Reveal::Core::authorization_ptr auth, Reveal::Core::scen
     // write experiment
     exchg.build_server_experiment( msg, auth, scenario, experiment );
 
-    printf( "writing experiment to gazebo\n" );
+    //printf( "writing experiment to gazebo\n" );
     //printf( "experiment->number_of_trials: %d\n", experiment->number_of_trials );
     if( _ipc->write( msg ) != Reveal::Core::pipe_c::ERROR_NONE ) {
       // TODO: trap and recover
@@ -315,7 +315,7 @@ bool gazebo_c::execute( Reveal::Core::authorization_ptr auth, Reveal::Core::scen
 
     unsigned trial_index = 0;
 
-    printf( "Starting Main Loop\n" );
+    printf( "Starting Experiment\n" );
     while( true ) {
 
       if( trial_index < scenario->trials ) {
@@ -334,7 +334,7 @@ bool gazebo_c::execute( Reveal::Core::authorization_ptr auth, Reveal::Core::scen
         // write trial to gzipc
         exchg.build_server_trial( msg, auth, experiment, trial );
 
-        printf( "writing experiment to gazebo\n" );
+        //printf( "writing experiment to gazebo\n" );
         //printf( "experiment->number_of_trials: %d\n", experiment->number_of_trials );
         if( _ipc->write( msg ) != Reveal::Core::pipe_c::ERROR_NONE ) {
           // TODO: trap and recover
@@ -364,7 +364,10 @@ bool gazebo_c::execute( Reveal::Core::authorization_ptr auth, Reveal::Core::scen
           printf( "ERROR: EFAULT a provided channel was NULL\n" );
         } else if( errno == EINTR ) {
           // signal interrupted polling before events were available
-          printf( "ERROR: EINTR signal interrupted polling\n" );
+          //printf( "ERROR: EINTR signal interrupted polling\n" );
+          // Note: print is commented due to current issue with race condition
+          //   in signal handler.  For now, it will be assumed that the
+          //   interrupt signals that gazebo has exited.
           break;  
           // Hack for now as _exit_read event is not triggered as before and
           // _exit_write->close() is locking up when channel simply ignored
@@ -403,6 +406,8 @@ bool gazebo_c::execute( Reveal::Core::authorization_ptr auth, Reveal::Core::scen
         break;
       }
     }
+
+    printf( "Experiment Complete\n" );
 
     // uninstall sighandler
     action.sa_handler = SIG_DFL;

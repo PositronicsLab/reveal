@@ -540,12 +540,13 @@ worker_c::error_e worker_c::service_solution_submission( Reveal::Core::authoriza
   // transactions
 
   // insert the client solution into the database
+  solution->experiment_id = experiment->experiment_id;
   Reveal::DB::database_c::error_e db_error = _db->insert( solution );
 
   // - Analytics -
 
-  Reveal::Core::solution_ptr model;
-  _db->query( model, Reveal::Core::solution_c::MODEL, solution->scenario_id, solution->trial_id );
+  //Reveal::Core::solution_ptr model;
+  //_db->query( model, Reveal::Core::solution_c::MODEL, solution->scenario_id, solution->trial_id );
 
 
   //if( fabs(server_solution->state.q(0) - client_solution->state.q(0)) < server_solution->epsilon.q(0) && fabs(server_solution->state.dq(0) - client_solution->state.dq(0)) < server_solution->epsilon.dq(0) ) {

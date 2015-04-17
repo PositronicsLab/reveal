@@ -10,13 +10,9 @@
 #include "Reveal/core/joint.h"
 
 //----------------------------------------------------------------------------
-
 namespace Reveal {
-
 //----------------------------------------------------------------------------
-
 namespace Core {
-
 //----------------------------------------------------------------------------
 transport_exchange_c::transport_exchange_c( void ) {
   reset();
@@ -326,6 +322,7 @@ transport_exchange_c::error_e transport_exchange_c::parse_client_solution( const
   auth = get_authorization();
   experiment = get_experiment();
   solution = get_solution(); 
+  solution->experiment_id = experiment->experiment_id;
 
   return ERROR_NONE;
 }
@@ -928,11 +925,7 @@ transport_exchange_c::error_e transport_exchange_c::read_solution( Reveal::Core:
 }
 
 //----------------------------------------------------------------------------
-
 } // namespace Core
-
 //----------------------------------------------------------------------------
-
 } // namespace Reveal
-
 //----------------------------------------------------------------------------

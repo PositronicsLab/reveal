@@ -526,6 +526,8 @@ database_c::error_e database_c::insert( Reveal::Core::solution_ptr solution ) {
   std::string table;
 
   mongo::BSONObjBuilder bob_solution;
+  if( solution->type == Reveal::Core::solution_c::CLIENT )
+    bob_solution.append( "experiment_id", solution->experiment_id );
   bob_solution.append( "scenario_id", solution->scenario_id );
   bob_solution.append( "trial_id", solution->trial_id );
   bob_solution.append( "t", solution->t );
@@ -597,6 +599,9 @@ database_c::error_e database_c::query( Reveal::Core::solution_ptr& solution, Rev
   mongo::BSONObj record = cursor->next();
 
   solution = Reveal::Core::solution_ptr( new Reveal::Core::solution_c( type ) );
+
+  if( type == Reveal::Core::solution_c::CLIENT )
+    solution->experiment_id = record.getField( "experiment_id" ).String();
   solution->scenario_id = record.getField( "scenario_id" ).String();
   solution->trial_id = record.getField( "trial_id" ).Int();
   solution->t = record.getField( "t" ).Double();
@@ -634,20 +639,65 @@ database_c::error_e database_c::query( Reveal::Core::solution_ptr& solution, Rev
     solution->models.push_back( model );
   }
 
-  // TODO : replace the below with parsing the models
-/*
-  mongo::BSONObj bson_state_q = record.getObjectField( "state_q" );
-  std::vector<mongo::BSONElement> vec_state_q;
-  bson_state_q.elems( vec_state_q );
-  for( unsigned i = 0; i < vec_state_q.size(); i++ )
-    solution->state.append_q( vec_state_q[i].Double() );
+  return ERROR_NONE;
+}
 
-  mongo::BSONObj bson_state_dq = record.getObjectField( "state_dq" );
-  std::vector<mongo::BSONElement> vec_state_dq;
-  bson_state_dq.elems( vec_state_dq );
-  for( unsigned i = 0; i < vec_state_dq.size(); i++ )
-    solution->state.append_dq( vec_state_dq[i].Double() );
-*/
+//-----------------------------------------------------------------------------
+database_c::error_e database_c::query( Reveal::Core::solution_ptr& solution, const std::string& experiment_id, const std::string& scenario_id, int trial_id ) {
+
+  std::auto_ptr<mongo::DBClientCursor> cursor;
+  Reveal::DB::query_c query;
+  Reveal::Core::scenario_ptr ptr;
+  std::string table = "solution";
+
+  query.solution( experiment_id, scenario_id, trial_id );
+  fetch( cursor, table, query() );
+
+  if( !cursor->more() ) return ERROR_EMPTYSET;
+
+  // add error handling
+  mongo::BSONObj record = cursor->next();
+
+  solution = Reveal::Core::solution_ptr( new Reveal::Core::solution_c( Reveal::Core::solution_c::CLIENT ) );
+
+  solution->experiment_id = record.getField( "experiment_id" ).String();
+  solution->scenario_id = record.getField( "scenario_id" ).String();
+  solution->trial_id = record.getField( "trial_id" ).Int();
+  solution->t = record.getField( "t" ).Double();
+  solution->dt = record.getField( "dt" ).Double();
+
+  mongo::BSONObj bson_models = record.getObjectField( "models" );
+  std::vector<mongo::BSONElement> vec_models;
+  bson_models.elems( vec_models );
+  for( unsigned i = 0; i < vec_models.size(); i++ ) {
+    Reveal::Core::model_ptr model = Reveal::Core::model_ptr( new Reveal::Core::model_c() );
+    mongo::BSONObj bson_model = vec_models[i].Obj();
+    model->id = bson_model.getField( "id" ).String();
+
+    mongo::BSONObj bson_links = bson_model.getObjectField( "links" );
+    std::vector<mongo::BSONElement> vec_links;
+    bson_links.elems( vec_links );
+    for( unsigned j = 0; j < vec_links.size(); j++ ) {
+      Reveal::Core::link_ptr link = Reveal::Core::link_ptr( new Reveal::Core::link_c() );
+      link->id = vec_links[j].Obj().getField( "id" ).String();
+
+      mongo::BSONObj bson_state_q = vec_links[j].Obj().getObjectField( "state_q" );
+      std::vector<mongo::BSONElement> vec_state_q;
+      bson_state_q.elems( vec_state_q );
+      for( unsigned k = 0; k < vec_state_q.size(); k++ )
+        link->state.q( k, vec_state_q[k].Double() );
+
+      mongo::BSONObj bson_state_dq = vec_links[j].Obj().getObjectField( "state_dq" );
+      std::vector<mongo::BSONElement> vec_state_dq;
+      bson_state_dq.elems( vec_state_dq );
+      for( unsigned k = 0; k < vec_state_dq.size(); k++ )
+        link->state.dq( k, vec_state_dq[k].Double() );
+
+      model->links.push_back( link );
+    }
+    solution->models.push_back( model );
+  }
+
   return ERROR_NONE;
 }
 
@@ -760,8 +810,7 @@ database_c::error_e database_c::query( Reveal::Core::solution_set_ptr& solution_
     // contingent on above success
     solution_set->add_trial( trial );
 
-    // TODO: add in session data 
-    error = query( solution, Reveal::Core::solution_c::CLIENT, scenario_id, i );
+    error = query( solution, experiment->experiment_id, scenario_id, i );
     // TODO : error check and handle
     // contingent on above success
     solution_set->add_solution( solution );

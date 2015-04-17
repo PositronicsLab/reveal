@@ -44,6 +44,8 @@ public:
 
   void solution( const std::string& scenario_id, int trial_id );
 
+  void solution( const std::string& experiment_id, const std::string& scenario_id, int trial_id );
+
   void model_solution( const std::string& scenario_id, int trial_id );
 
   void analyzer( const std::string& scenario_id );

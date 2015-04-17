@@ -81,6 +81,10 @@ void query_c::solution( const std::string& scenario ) {
 void query_c::solution( const std::string& scenario_id, int trial_id ) {
   _query = QUERY( "scenario_id" << scenario_id << "trial_id" << trial_id );
 }
+//-----------------------------------------------------------------------------
+void query_c::solution( const std::string& experiment_id, const std::string& scenario_id, int trial_id ) {
+  _query = QUERY( "experiment_id" << experiment_id << "scenario_id" << scenario_id << "trial_id" << trial_id );
+}
 /*
 //-----------------------------------------------------------------------------
 void query_c::model_solution( unsigned scenario_id ) {

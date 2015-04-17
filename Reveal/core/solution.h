@@ -34,6 +34,7 @@ public:
   solution_c( type_e type ) { this->type = type; }
   virtual ~solution_c( void ) {}
 
+  std::string experiment_id;
   std::string scenario_id;
   unsigned trial_id;
   double t;

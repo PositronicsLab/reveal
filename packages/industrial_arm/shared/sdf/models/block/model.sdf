@@ -25,17 +25,17 @@
         <surface>
           <friction>
             <ode>
-              <mu>100</mu>          <!-- DO NOT MODIFY -->
-              <mu2>100</mu2>        <!-- DO NOT MODIFY -->
+              <mu>100</mu>
+              <mu2>100</mu2>
               <fdir1>0 0 0</fdir1>
               <slip1>0.0</slip1>
               <slip2>0.0</slip2>
             </ode>
             <bullet>
-              <friction>100</friction>                  <!-- DO NOT MODIFY -->
-              <friction2>100</friction2>                <!-- DO NOT MODIFY --> 
+              <friction>100</friction>
+              <friction2>100</friction2>
               <fdir1>0 0 0</fdir1>
-              <rolling_friction>100</rolling_friction>  <!-- DO NOT MODIFY -->
+              <rolling_friction>100</rolling_friction>
             </bullet>
           </friction>
           <contact>

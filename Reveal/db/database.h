@@ -77,6 +77,7 @@ public:
   error_e query( Reveal::Core::trial_ptr& trial, const std::string& scenario_id, int trial_id );
 
   error_e insert( Reveal::Core::solution_ptr solution );
+  error_e query( Reveal::Core::solution_ptr& solution, const std::string& experiment_id, const std::string& scenario_id, int trial_id );
   error_e query( Reveal::Core::solution_ptr& solution, Reveal::Core::solution_c::type_e type, const std::string& scenario_id, int trial_id );
 
   error_e insert( Reveal::Core::analyzer_ptr analyzer );

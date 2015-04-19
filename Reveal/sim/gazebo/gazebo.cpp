@@ -12,13 +12,9 @@
 #include <sstream>
 
 //-----------------------------------------------------------------------------
-Reveal::Core::pipe_ptr gzexit_write;
-
-//-----------------------------------------------------------------------------
 namespace Reveal {
 //-----------------------------------------------------------------------------
 namespace Sim {
-
 //-----------------------------------------------------------------------------
 gazebo_c::gazebo_c( void ) {
   _request_trial = NULL;
@@ -50,6 +46,20 @@ void gazebo_c::set_submit_solution( submit_solution_f submit_solution ) {
 //-----------------------------------------------------------------------------
 void gazebo_c::set_ipc_context( void* context ) {
   _ipc_context = context;
+}
+
+//-----------------------------------------------------------------------------
+// Signal Handling : Gazebo process exit detection and 
+//-----------------------------------------------------------------------------
+bool gz_exited;  // exit condition variable for signal handling
+//-----------------------------------------------------------------------------
+// Note: only one instance of gzserver can run at a time at present, so having
+// a static function tied to a global variable for the signal handler is not
+// a major issue as of right now.
+void gazebo_c::exit_sighandler( int signum ) {
+  // update exit condition variable
+  gz_exited = true;
+  assert( signum );  // to suppress compiler warning of unused variable
 }
 
 //-----------------------------------------------------------------------------
@@ -182,28 +192,17 @@ bool gazebo_c::execute( Reveal::Core::authorization_ptr auth, Reveal::Core::scen
 
   printf( "launching gzserver\n" );
 
-  // open ipc channels between this instance and the gazebo process and 
-  // for signal handling
+  // open ipc channels between this instance and the gazebo process 
   _ipc = Reveal::Core::pipe_ptr( new Reveal::Core::pipe_c( system.monitor_port(), _ipc_context ) );
-  _exit_read = Reveal::Core::pipe_ptr( new Reveal::Core::pipe_c( "gzsignal", true, _ipc_context ) );
-  //_exit_write = Reveal::Core::pipe_ptr( new Reveal::Core::pipe_c( "gzsignal", false, _ipc_context ) );
 
   if( _ipc->open() != Reveal::Core::pipe_c::ERROR_NONE ) {
     // TODO: Error handling
     Reveal::Core::error_c::printline( "ERROR: failed to open ipc" );
   }
-  if( _exit_read->open() != Reveal::Core::pipe_c::ERROR_NONE ) {
-    // TODO: Error handling
-    Reveal::Core::error_c::printline( "ERROR: failed to open exit_read" );
-  }
-/*
-  if( _exit_write->open() != Reveal::Core::pipe_c::ERROR_NONE ) {
-    // TODO: Error handling
-    Reveal::Core::error_c::printline( "ERROR: failed to open exit_write" );
-  }
-//  gzexit_write = _exit_write;
-*/
-  printf( "ipc pipes open\n" );
+  printf( "ipc opened\n" );
+
+  // initialize exit condition variable
+  gz_exited = false;
 
   // install sighandler to detect when gazebo finishes
   // TODO: make sighandler class more compatible with using a member function
@@ -340,20 +339,13 @@ bool gazebo_c::execute( Reveal::Core::authorization_ptr auth, Reveal::Core::scen
           // TODO: trap and recover
         }
       }
-
       // TODO : encapsulate in ipc
-      zmq_pollitem_t channels[2];
+      zmq_pollitem_t channels[1];
       channels[0].socket = _ipc->socket();
       channels[0].fd = 0;
       channels[0].events = ZMQ_POLLIN;
       channels[0].revents = 0;
-
-      channels[1].socket = _exit_read->socket();
-      channels[1].fd = 0;
-      channels[1].events = ZMQ_POLLIN;
-      channels[1].revents = 0;
-
-      int rc = zmq_poll( channels, 2, -1);
+      int rc = zmq_poll( channels, 1, -1);
       if( rc == -1 ) {
         if( errno == ETERM ) {
           // At least one member of channels refers to a socket whose context
@@ -363,14 +355,12 @@ bool gazebo_c::execute( Reveal::Core::authorization_ptr auth, Reveal::Core::scen
           // The provided channels was NULL
           printf( "ERROR: EFAULT a provided channel was NULL\n" );
         } else if( errno == EINTR ) {
-          // signal interrupted polling before events were available
-          //printf( "ERROR: EINTR signal interrupted polling\n" );
-          // Note: print is commented due to current issue with race condition
-          //   in signal handler.  For now, it will be assumed that the
-          //   interrupt signals that gazebo has exited.
-          break;  
-          // Hack for now as _exit_read event is not triggered as before and
-          // _exit_write->close() is locking up when channel simply ignored
+          if( gz_exited ) {
+            printf( "Detected Gazebo Exit\n" );
+            break;
+          }
+          // else
+          printf( "ERROR: EINTR signal interrupted polling\n" );
         }
       }
 
@@ -396,15 +386,6 @@ bool gazebo_c::execute( Reveal::Core::authorization_ptr auth, Reveal::Core::scen
         // increment trial
         trial_index++;
       }
-
-      if( channels[1].revents & ZMQ_POLLIN ) {
-        // TODO: signal not being received for some reason after refactor
-        // debug and then get rid of legacy experiment method after solved.
-
-        // received a signal that gazebo has exited therefore kill the loop
-        printf( "Detected Gazebo Exit\n" );
-        break;
-      }
     }
 
     printf( "Experiment Complete\n" );
@@ -413,30 +394,13 @@ bool gazebo_c::execute( Reveal::Core::authorization_ptr auth, Reveal::Core::scen
     action.sa_handler = SIG_DFL;
     sigaction( SIGCHLD, &action, NULL );
 
-    //close gzconnection and gzsignal
+    //close ipc
     _ipc->close();
-    //_exit_write->close(); // 2nd half of hack in EINTR, disabled channel
-    _exit_read->close();
   }
 
   return true;
 
 }
-//-----------------------------------------------------------------------------
-// Note: only one instance of gzserver can run at a time at present, so having
-// a static function tied to a global variable for the signal handler is not
-// a major issue as of right now.
-void gazebo_c::exit_sighandler( int signum ) {
-  // write to gzexit_write
-
-  printf( "exit sighandler called\n" );
-
-  std::string msg = "true";
-  //gzexit_write->write( msg );
-
-  //assert( signum );  // to suppress compiler warning of unused variable
-}
-
 //-----------------------------------------------------------------------------
 void gazebo_c::print_tuning_menu( void ) {
   printf( "- Tuning Menu -\n" );

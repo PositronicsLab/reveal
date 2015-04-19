@@ -54,8 +54,6 @@ private:
   std::string _plugin_path;
 
   Reveal::Core::pipe_ptr _ipc; 
-  Reveal::Core::pipe_ptr _exit_write;
-  Reveal::Core::pipe_ptr _exit_read;
 public:
 
   gazebo_c( void );

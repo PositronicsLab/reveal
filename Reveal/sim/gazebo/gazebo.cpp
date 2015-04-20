@@ -174,10 +174,8 @@ bool gazebo_c::build_package( std::string src_path, std::string build_path ) {
 //-----------------------------------------------------------------------------
 bool gazebo_c::execute( Reveal::Core::authorization_ptr auth, Reveal::Core::scenario_ptr scenario, Reveal::Core::experiment_ptr experiment ) {
 
-  unsigned monitor_port;
   Reveal::Core::system_c system( Reveal::Core::system_c::CLIENT );
   if( !system.open() ) return false;
-  monitor_port = system.monitor_port();
 
   // sanity check
   if( _request_trial == NULL || _submit_solution == NULL || _ipc_context == NULL ) {
@@ -385,6 +383,14 @@ bool gazebo_c::execute( Reveal::Core::authorization_ptr auth, Reveal::Core::scen
 
         // increment trial
         trial_index++;
+      }
+
+      // Theoretically branch will not be entered; however, detecting EINTR is 
+      // not fully reliable and this branch is here to ensure exit if the zmq
+      // approach fails to cause exit.
+      if( gz_exited ) {
+        printf( "Detected Gazebo Exit\n" );
+        break;
       }
     }
 

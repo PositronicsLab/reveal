@@ -187,21 +187,21 @@ bool worker_c::is_session_valid( Reveal::Core::authorization_ptr auth, Reveal::C
 
   return false;
 }
-
+/*
 //-----------------------------------------------------------------------------
 bool worker_c::is_experiment_valid( Reveal::Core::authorization_ptr auth, Reveal::Core::experiment_ptr experiment_request, Reveal::Core::experiment_ptr& experiment_record ) {
-  Reveal::DB::database_c::error_e db_error;
-/*
-  // query the database for user data
-  db_error = _db->query( experiment_record, auth->get_session(), experiment_request->experiment_id, experiment_request->scenario_id );
+//  Reveal::DB::database_c::error_e db_error;
 
-  // Superficial validation: if the session exists in the DB, it is valid
-  if( db_error == Reveal::DB::database_c::ERROR_NONE )
-    return true;
-*/
+//  // query the database for user data
+//  db_error = _db->query( experiment_record, auth->get_session(), experiment_request->experiment_id, experiment_request->scenario_id );
+
+//  // Superficial validation: if the session exists in the DB, it is valid
+//  if( db_error == Reveal::DB::database_c::ERROR_NONE )
+//    return true;
+
   return false;
 }
-
+*/
 //-----------------------------------------------------------------------------
 bool worker_c::create_session( Reveal::Core::authorization_ptr auth, Reveal::Core::session_ptr& session ) {
   Reveal::DB::database_c::error_e db_error;
@@ -244,16 +244,19 @@ bool worker_c::create_experiment( Reveal::Core::authorization_ptr auth, Reveal::
   return false;
 }
 
+
 //-----------------------------------------------------------------------------
 worker_c::error_e worker_c::authorize( Reveal::Core::authorization_ptr auth ) {
+  assert( auth );
   return ERROR_NONE;
 }
 
 //-----------------------------------------------------------------------------
 worker_c::error_e worker_c::service_failed_authorization( Reveal::Core::authorization_ptr auth ) {
-
   Reveal::Core::transport_exchange_c exchange;
   std::string reply;
+
+  assert( auth );
 
   // construct the digest message
   exchange.set_origin( Reveal::Core::transport_exchange_c::ORIGIN_SERVER );
@@ -320,7 +323,7 @@ worker_c::error_e worker_c::service_handshake_request( Reveal::Core::authorizati
   //Reveal::Core::transport_exchange_c exchange;
   //std::string reply;
   Reveal::Core::session_ptr session;
-  Reveal::DB::database_c::error_e db_error;
+//  Reveal::DB::database_c::error_e db_error;
   Reveal::Core::user_ptr user;
  // Reveal::Core::authorization_ptr auth_reply;
 
@@ -542,6 +545,9 @@ worker_c::error_e worker_c::service_solution_submission( Reveal::Core::authoriza
   // insert the client solution into the database
   solution->experiment_id = experiment->experiment_id;
   Reveal::DB::database_c::error_e db_error = _db->insert( solution );
+  if( db_error != Reveal::DB::database_c::ERROR_NONE ) {
+    // TODO: trap and recover
+  }
 
   // - Analytics -
 
@@ -572,7 +578,7 @@ worker_c::error_e worker_c::service_solution_submission( Reveal::Core::authoriza
   // existing analytics worker thread source from pool
   //printf( "experiment->number_of_trials: %d\n", experiment->number_of_trials );
 
-  if( solution->trial_id == experiment->number_of_trials - 1 ) {
+  if( solution->trial_id == (unsigned)experiment->number_of_trials - 1 ) {
     printf( "Experiment {%s} has completed.  Starting analytics.\n", experiment->experiment_id.c_str() );
 
     Reveal::Core::analysis_ptr       analysis;

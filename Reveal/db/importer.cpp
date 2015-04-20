@@ -202,8 +202,10 @@ bool importer_c::read_trial_file_element( Reveal::Core::xml_element_ptr top, std
   Reveal::Core::datareader_c reader( file_path, " ", _trial_column_map );
   bool result = reader.open();
 
-//  if( !result )
-//    printf( "failed to open reader\n" );
+  if( !result ) {
+    //printf( "failed to open reader\n" );
+    return false;
+  }
 
   // read in the trial data and insert it into the database
   unsigned i = 0;
@@ -251,8 +253,10 @@ bool importer_c::read_solution_file_element( Reveal::Core::xml_element_ptr top, 
   Reveal::Core::datareader_c reader( file_path, " ", _solution_column_map );
   bool result = reader.open();
 
-//  if( !result )
+  if( !result ) {
 //    printf( "failed to open reader\n" );
+    return false;
+  }
 
   // read in the solution data and insert it into the database
   unsigned i = 0;

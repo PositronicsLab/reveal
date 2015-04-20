@@ -179,6 +179,8 @@ bool exporter_c::write_scenario_element( xml_element_ptr parent, scenario_ptr sc
   xml_element_ptr top, element;
   xml_attribute_ptr attribute;
 
+  assert( analyzer );  // warning supression
+
   top = xml_element_ptr( new xml_element_c() );
   top->set_name( "Scenario" );
 
@@ -284,7 +286,7 @@ bool exporter_c::write_analyzer_element( xml_element_ptr parent, analyzer_ptr an
 bool exporter_c::write_analyzer_file_element( xml_element_ptr parent ) {
   xml_element_ptr top, element;
   xml_attribute_ptr attribute;
-  unsigned column = 1;
+  //unsigned column = 1;
 
   // create the file element as the top (root) of this hierarchy
   top = xml_element_ptr( new xml_element_c() );
@@ -444,13 +446,13 @@ bool exporter_c::write_link_element( xml_element_ptr parent, link_ptr link, unsi
   attribute->set_value( link->id );
   top->append( attribute );
  
-  add_field_element( top, "position", column, 3, "x y z" );
+  add_field_element( top, "position", column, 3 );
 
-  add_field_element( top, "rotation", column, 4, "x y z w" );
+  add_field_element( top, "rotation", column, 4 );
 
-  add_field_element( top, "linear-velocity", column, 3, "x y z" );
+  add_field_element( top, "linear-velocity", column, 3 );
 
-  add_field_element( top, "angular-velocity", column, 3, "x y z" );
+  add_field_element( top, "angular-velocity", column, 3 );
 
   parent->append( top );
 
@@ -469,7 +471,7 @@ bool exporter_c::write_joint_element( xml_element_ptr parent, joint_ptr joint, u
   attribute->set_value( joint->id );
   top->append( attribute );
  
-  add_field_element( top, "control", column, 6, "u" );
+  add_field_element( top, "control", column, 6 );
 
   parent->append( top );
 
@@ -489,18 +491,7 @@ bool exporter_c::add_column_attribute( xml_element_ptr element, unsigned& column
 }
 
 //-----------------------------------------------------------------------------
-bool exporter_c::add_map_attribute( xml_element_ptr element, std::string map ) {
-#ifdef DEFINE_MAP
-  xml_attribute_ptr attribute = xml_attribute_ptr( new xml_attribute_c() );
-  attribute->set_name( "map" );
-  attribute->set_value( map );
-  element->append( attribute ); 
-#endif
-  return true;
-}
-
-//-----------------------------------------------------------------------------
-bool exporter_c::add_field_element( xml_element_ptr parent, std::string name, unsigned& column, unsigned size, std::string map ) {
+bool exporter_c::add_field_element( xml_element_ptr parent, std::string name, unsigned& column, unsigned size ) {
   xml_element_ptr element;
   xml_attribute_ptr attribute;
 
@@ -511,8 +502,6 @@ bool exporter_c::add_field_element( xml_element_ptr parent, std::string name, un
   attribute->set_value( name );
   element->append( attribute );
   add_column_attribute( element, column, size );
-  if( map != "" )
-    add_map_attribute( element, map );
   parent->append( element );
 
   return true;

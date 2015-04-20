@@ -82,7 +82,7 @@ private:
   bool add_map_attribute( xml_element_ptr element, std::string map );
 
   /// add an xml element defining a field (a range of columns) in a flat file
-  bool add_field_element( xml_element_ptr parent, std::string name, unsigned& column, unsigned size = 1, std::string map = "" );
+  bool add_field_element( xml_element_ptr parent, std::string name, unsigned& column, unsigned size = 1 );
 
 };
 

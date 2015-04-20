@@ -76,8 +76,10 @@ bool importer_c::read_scenario_element( Reveal::Core::xml_element_ptr top, Revea
     attribute = top->attribute( i );
     if( attribute->get_name() == "id" ) {
       scenario->id = attribute->get_value();
+/*
     } else if( attribute->get_name() == "trials" ) {
       scenario->trials = (unsigned)atoi( attribute->get_value().c_str() );
+*/
     } else if( attribute->get_name() == "steps-per-trial" ) {
       scenario->steps_per_trial = (unsigned)atoi( attribute->get_value().c_str() );
     }

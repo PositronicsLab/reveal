@@ -8,16 +8,37 @@ find_package( MongoDB REQUIRED )
 
 #------------------------------------------------------
 # header files
-set( REVEAL_DB_HEADERS 
-  query.h
+set( REVEAL_DB_HEADERS
+  service.h 
   database.h
+  mongo/mongo.h
+  mongo/user.h
+  mongo/session.h
+  mongo/digest.h
+  mongo/scenario.h
+  mongo/experiment.h
+  mongo/trial.h
+  mongo/solution.h
+  mongo/solution_set.h
+  mongo/analyzer.h
+  mongo/analysis.h
   importer.h
 )
 
 # source files
 set( REVEAL_DB_SOURCES 
-  query.cpp
   database.cpp
+  mongo/mongo.cpp
+  mongo/user.cpp
+  mongo/session.cpp
+  mongo/digest.cpp
+  mongo/scenario.cpp
+  mongo/experiment.cpp
+  mongo/trial.cpp
+  mongo/solution.cpp
+  mongo/solution_set.cpp
+  mongo/analyzer.cpp
+  mongo/analysis.cpp
   importer.cpp
 )
 

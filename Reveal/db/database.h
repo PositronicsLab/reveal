@@ -14,7 +14,10 @@ interface
 #include <iostream>
 #include <memory>
 
-#include <mongo/client/dbclient.h>
+#include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
+
+#include "Reveal/db/service.h"
 
 #include "Reveal/core/pointers.h"
 #include "Reveal/core/analysis.h"
@@ -27,14 +30,14 @@ namespace Reveal {
 namespace DB {
 //-----------------------------------------------------------------------------
 
-class database_c {
-private:
-  bool                         _open;
-  std::string                  _dbname;
+class database_c : public boost::enable_shared_from_this<database_c> {
+protected:
 
-  mongo::DBClientConnection    _connection;
+  service_ptr                  _service;
 
 public:
+  // TODO : add friends to access service ptr
+
   enum error_e {
     ERROR_NONE,
     ERROR_EMPTYSET
@@ -43,19 +46,11 @@ public:
   database_c( void );
   virtual ~database_c( void );
 
+  database_ptr ptr( void );
+  service_ptr service( void );
+
   bool open( void );
   void close( void );
-/*
-  error_e update( const std::string query );
-  error_e fetch( const std::string query, table_c& data );
-  error_e insert( const std::string query );
-*/
-
-private:
-  bool insert( const std::string& table, const mongo::BSONObj& query );
-  bool fetch( std::auto_ptr<mongo::DBClientCursor>& cursor, const std::string& table, mongo::Query query );
-  bool update( const std::string& table, const mongo::BSONObj& query, const mongo::BSONObj& where );
-  //bool update( const std::string& table, const mongo::BSON& query, const mongo::BSON& where );
 
 public:
   error_e insert( Reveal::Core::user_ptr user );
@@ -74,7 +69,7 @@ public:
   error_e query( Reveal::Core::scenario_ptr& scenario, const std::string& scenario_id );
 
   error_e insert( Reveal::Core::trial_ptr trial );
-  error_e query( Reveal::Core::trial_ptr& trial, const std::string& scenario_id, int trial_id );
+  error_e query( Reveal::Core::trial_ptr& trial, const std::string& scenario_id, unsigned trial_id );
 
   error_e insert( Reveal::Core::solution_ptr solution );
   error_e query( Reveal::Core::solution_ptr& solution, const std::string& experiment_id, const std::string& scenario_id, int trial_id );

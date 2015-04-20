@@ -5,13 +5,9 @@
 #include "Reveal/core/experiment.h"
 
 //-----------------------------------------------------------------------------
-
 namespace Reveal {
-
 //-----------------------------------------------------------------------------
-
 namespace Analytics {
-
 //-----------------------------------------------------------------------------
 worker_c::worker_c( void ) {
 
@@ -89,6 +85,7 @@ Reveal::Analytics::error_e worker_c::load( void ) {
     boost::shared_ptr<Reveal::Analytics::script_c> script = boost::shared_ptr<Reveal::Analytics::script_c>( new Reveal::Analytics::script_c() );
 
     _module = boost::dynamic_pointer_cast<Reveal::Analytics::module_c>( script );
+
   }
 
   // get the filename of the module and load it
@@ -119,6 +116,8 @@ Reveal::Analytics::error_e worker_c::insert( void ) {
   Reveal::DB::database_c::error_e db_error;
 
   db_error = _db->insert( _analysis );
+  if( db_error != Reveal::DB::database_c::ERROR_NONE )
+    printf( "db_error[%d] inserting analysis\n", db_error );
 
   return ERROR_NONE;
 }
@@ -139,11 +138,7 @@ Reveal::Analytics::error_e worker_c::receive( void ) {
 }
 
 //-----------------------------------------------------------------------------
-
 } // namespace Analytics
-
 //-----------------------------------------------------------------------------
-
 } // namespace Reveal
-
 //-----------------------------------------------------------------------------

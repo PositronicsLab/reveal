@@ -451,6 +451,8 @@ worker_c::error_e worker_c::service_experiment_request( Reveal::Core::authorizat
   exchange.set_scenario( scenario );
   exchange.set_authorization( auth );
 
+  scenario->print();
+
   // serialize the message for transmission
   exchange.build( reply );
 

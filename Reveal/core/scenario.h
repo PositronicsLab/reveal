@@ -30,13 +30,40 @@ class scenario_c {
 public:
   scenario_c( void ) {}
   virtual ~scenario_c( void ) {}
- 
+
+  // database mapped fields 
   std::string id;
   std::string description;
-  unsigned trials;
-  unsigned steps_per_trial;
   std::vector<std::string> uris;
+
+  // virtual fields
+  unsigned trials;  // counted from the number of trials stored in database
+
+  // unclassified fields
+  unsigned steps_per_trial;
+
 /*
+  //------
+  enum continuity_e {
+    INTERVAL,
+    RANDOM
+  };
+
+  std::string scenario_uuid;
+  std::string package_name;
+  std::string short_description;
+  std::string long_description;
+  std::string submitted_by;          //user_c?
+  time_c submission_date;
+  unsigned number_of_trials;         // fetched by query of trials with uuid
+  double sim_start_time;
+  double sim_end_time;
+  bool timestep_is_constant;
+  double time_step;
+  continuity_e continuity;
+  //------
+*/
+///*
   void print( void ) const {
     printf( "id[%s]", id.c_str() );
     printf( ", trials[%u]", trials );
@@ -48,7 +75,8 @@ public:
     }
     printf( "]\n" );
   }
-*/
+//*/
+
   trial_ptr get_trial( unsigned trial_id ) {
     assert( trial_id < trials );
 

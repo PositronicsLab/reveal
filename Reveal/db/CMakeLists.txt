@@ -22,6 +22,9 @@ set( REVEAL_DB_HEADERS
   mongo/solution_set.h
   mongo/analyzer.h
   mongo/analysis.h
+  mongo/link.h
+  mongo/joint.h
+  mongo/model.h
   importer.h
 )
 
@@ -39,6 +42,9 @@ set( REVEAL_DB_SOURCES
   mongo/solution_set.cpp
   mongo/analyzer.cpp
   mongo/analysis.cpp
+  mongo/link.cpp
+  mongo/joint.cpp
+  mongo/model.cpp
   importer.cpp
 )
 

@@ -7,7 +7,15 @@ namespace Reveal {
 //-----------------------------------------------------------------------------
 namespace DB {
 //-----------------------------------------------------------------------------
+namespace Mongo {
+//-----------------------------------------------------------------------------
 bool analysis_c::insert( Reveal::DB::database_ptr db, Reveal::Core::analysis_ptr analysis ) {
+
+  printf( "analysis:rows[%u]\n", analysis->count_rows() );
+
+  // get mongo service and verify
+  mongo_ptr mongo = mongo_c::service( db );
+  if( !mongo ) return false;
 
   for( unsigned i = 0; i < analysis->count_rows(); i++ ) {
 
@@ -25,16 +33,15 @@ bool analysis_c::insert( Reveal::DB::database_ptr db, Reveal::Core::analysis_ptr
     bab_values.append( bob_value.obj() );
     bob.appendArray( "values", bab_values.arr() );
 
-    // get mongo service and verify
-    mongo_ptr mongo = mongo_c::service( db );
-    if( !mongo ) return false;
 
-    return mongo->insert( "analysis", bob.obj() );
+    if( !mongo->insert( "analysis", bob.obj() ) ) return false;
   }
 
   return true;
 }
 
+//-----------------------------------------------------------------------------
+} // namespace Mongo
 //-----------------------------------------------------------------------------
 } // namespace DB
 //-----------------------------------------------------------------------------

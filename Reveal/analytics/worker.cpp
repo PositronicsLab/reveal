@@ -51,10 +51,12 @@ Reveal::Analytics::error_e worker_c::query( void ) {
 
   Reveal::DB::database_c::error_e db_error;
 
+  //printf( "fetching experiment[%s]\n", _experiment_id.c_str() );
   db_error = _db->query( _experiment, _experiment_id );
   if( db_error != Reveal::DB::database_c::ERROR_NONE )
     printf( "db_error[%d] fetching experiment\n", db_error );
 
+  //printf( "fetching analyzer[%s]\n", _experiment->scenario_id.c_str() );
   db_error = _db->query( _analyzer, _experiment->scenario_id );
   if( db_error != Reveal::DB::database_c::ERROR_NONE )
     printf( "db_error[%d] fetching analyzer\n", db_error );
@@ -62,6 +64,7 @@ Reveal::Analytics::error_e worker_c::query( void ) {
   if( !_analyzer ) 
     printf( "failed to select requested analyzer from db\n" );
 
+  //printf( "fetching solution_set\n" );
   db_error = _db->query( _solution_set, _experiment->experiment_id );
   if( db_error != Reveal::DB::database_c::ERROR_NONE )
     printf( "db_error[%d] fetching solution_set\n", db_error );
@@ -100,6 +103,7 @@ Reveal::Analytics::error_e worker_c::load( void ) {
 
 //-----------------------------------------------------------------------------
 Reveal::Analytics::error_e worker_c::analyze( void ) {
+  //printf( "analyzing\n" );
   Reveal::Analytics::error_e error = _module->analyze( _solution_set, _analysis );
   if( error != Reveal::Analytics::ERROR_NONE ) {
     printf( "analyzer failed to complete execution\n" ); 
@@ -115,6 +119,7 @@ Reveal::Analytics::error_e worker_c::analyze( void ) {
 Reveal::Analytics::error_e worker_c::insert( void ) {
   Reveal::DB::database_c::error_e db_error;
 
+  //printf( "inserting\n" );
   db_error = _db->insert( _analysis );
   if( db_error != Reveal::DB::database_c::ERROR_NONE )
     printf( "db_error[%d] inserting analysis\n", db_error );

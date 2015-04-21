@@ -10,6 +10,8 @@ control data
 
 //-----------------------------------------------------------------------------
 
+#include <stdio.h>
+
 #include <vector>
 #include "Reveal/core/serial.h"
 

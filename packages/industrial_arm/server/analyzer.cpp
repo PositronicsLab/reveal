@@ -248,6 +248,9 @@ extern "C" {
 //-------------------------------------------------------------------------
 error_e analyze( Reveal::Core::solution_set_ptr input, Reveal::Core::analysis_ptr& output ) {
 
+  // Note: better handled with a thread pool.  For even moderate data set sizes
+  // this takes a long time as a single thread
+
   Reveal::Core::model_ptr arm_t0, target_t0;
 
   // load model data for inertial properties.  This has to come from client
@@ -291,6 +294,8 @@ error_e analyze( Reveal::Core::solution_set_ptr input, Reveal::Core::analysis_pt
 
   output->add_key( "t" );
   output->add_key( "KE" );
+
+  //printf( "input trials[%u], solutions[%u]", input->trials.size(), input->solutions.size() );
 
   // iterate over the client solutions and compute the energy for each sample
   for( unsigned i = 0; i < input->solutions.size(); i++ ) {

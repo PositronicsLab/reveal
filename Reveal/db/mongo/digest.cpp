@@ -9,6 +9,8 @@ namespace Reveal {
 //-----------------------------------------------------------------------------
 namespace DB {
 //-----------------------------------------------------------------------------
+namespace Mongo {
+//-----------------------------------------------------------------------------
 bool digest_c::fetch( Reveal::Core::digest_ptr& digest, Reveal::DB::database_ptr db ) {
 
   std::auto_ptr<mongo::DBClientCursor> cursor;
@@ -38,6 +40,8 @@ bool digest_c::fetch( Reveal::Core::digest_ptr& digest, Reveal::DB::database_ptr
     scenario->description = record.getField( "description" ).String();
     // number of resources?
 
+    scenario->trials = mongo->count( "trial", BSON( "scenario_id" << scenario->id ) );
+
     // add the scenario to the digest
     digest->add_scenario( scenario );
   }
@@ -45,6 +49,8 @@ bool digest_c::fetch( Reveal::Core::digest_ptr& digest, Reveal::DB::database_ptr
   return true;
 }
 
+//-----------------------------------------------------------------------------
+} // namespace Mongo
 //-----------------------------------------------------------------------------
 } // namespace DB
 //-----------------------------------------------------------------------------

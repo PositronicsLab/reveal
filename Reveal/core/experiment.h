@@ -42,11 +42,26 @@ public:
   std::string       scenario_id;
   int               number_of_trials;
   int               steps_per_trial;
-  std::vector<int>  trial_prescription;
+//  std::vector<int>  trial_prescription;
   int               current_trial_index;
   
   //                creation_timestamp;
-
+/*
+  //------
+  std::string experiment_uuid;
+  std::string session_uuid;
+  std::string scenario_uuid;
+  time_c submission_date;
+  unsigned number_of_trials;
+  unsigned steps_per_trial;
+  unsigned current_trial_index;
+  unsigned start_trial;
+  unsigned end_trial;
+  double sim_start_time;
+  double sim_end_time;
+  double time_step;
+  //------
+*/
   void print( void ) const {
     printf( "experiment_id[%s]", experiment_id.c_str() );
     printf( ", session_id[%s]", session_id.c_str() );

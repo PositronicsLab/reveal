@@ -553,65 +553,23 @@ worker_c::error_e worker_c::service_solution_submission( Reveal::Core::authoriza
 
   // - Analytics -
 
-  //Reveal::Core::solution_ptr model;
-  //_db->query( model, Reveal::Core::solution_c::MODEL, solution->scenario_id, solution->trial_id );
-
-
-  //if( fabs(server_solution->state.q(0) - client_solution->state.q(0)) < server_solution->epsilon.q(0) && fabs(server_solution->state.dq(0) - client_solution->state.dq(0)) < server_solution->epsilon.dq(0) ) {
-
-//    if( fabs(server_solution->state.q(0) - client_solution->state.q(0)) < server_solution->epsilon.q(0) && fabs(server_solution->state.dq(0) - client_solution->state.dq(0)) < server_solution->epsilon.dq(0) ) {
-//      printf( "Client passed pendulum trial[%d]\n", client_solution->trial_id );
-//    } else {
-//      printf( "Client failed pendulum trial[%d]: server(q[%f],dq[%f]:Eq[%f],Edq[%f]), client(q[%f],dq[%f])\n", client_solution->trial_id, server_solution->state.q(0), server_solution->state.dq(0), server_solution->epsilon.q(0), server_solution->epsilon.dq(0), client_solution->state.q(0), client_solution->state.dq(0) );
-//    }
-  //}
-
-
   // A little unsophisticated and won't handle non-conforming scenarios but 
   // for an initial development, this is the best approach
   // If the trial is the 'last' trial, run analytics.
 
-  //std::string session_id = "";
-  //std::string scenario_id = solution->scenario_id;
-
-  // TODO : check anaylitics and check that experiment->number_of_trials is set
-
-  // TODO : rather than spawn analytics worker in this thread, dispatch to an
-  // existing analytics worker thread source from pool
-  //printf( "experiment->number_of_trials: %d\n", experiment->number_of_trials );
-
   if( solution->trial_id == (unsigned)experiment->number_of_trials - 1 ) {
     printf( "Experiment {%s} has completed.  Starting analytics.\n", experiment->experiment_id.c_str() );
 
-    Reveal::Core::analysis_ptr       analysis;
-    Reveal::Core::solution_set_ptr   solution_set;
-
     // need a temporary (for this mode only) contructor for passing database and
     // the scenario data in
-    Reveal::Analytics::worker_c analytics_worker( _db, experiment->experiment_id );
+    Reveal::Analytics::worker_c analytics_worker;
 
-    Reveal::Analytics::error_e analytics_error;
-
-    analytics_error = analytics_worker.query();
-    if( analytics_error != Reveal::Analytics::ERROR_NONE ) {
-
+    if( !analytics_worker.execute( _db, experiment->experiment_id ) ) {
+    //if( !analytics_worker.batch_execute( _db, experiment->experiment_id ) ) {
+      printf( "Analytics failed to complete on Experiment {%s}\n", experiment->experiment_id.c_str() );
+    } else {
+      printf( "Completed Analytics on Experiment {%s}\n", experiment->experiment_id.c_str() );
     }
-
-    analytics_error = analytics_worker.load();
-    if( analytics_error != Reveal::Analytics::ERROR_NONE ) {
-
-    }
-
-    analytics_error = analytics_worker.analyze();
-    if( analytics_error != Reveal::Analytics::ERROR_NONE ) {
-
-    }
-
-    analytics_error = analytics_worker.insert();
-    if( analytics_error != Reveal::Analytics::ERROR_NONE ) {
-
-    }
-    printf( "Completed Analytics on Experiment {%s}\n", experiment->experiment_id.c_str() );
   }
 
   return ERROR_NONE;

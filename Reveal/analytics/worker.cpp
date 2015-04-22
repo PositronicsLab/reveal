@@ -4,6 +4,8 @@
 #include "Reveal/analytics/script.h"
 #include "Reveal/core/experiment.h"
 
+#include "Reveal/core/pointers.h"
+#include "Reveal/core/scenario.h"
 //-----------------------------------------------------------------------------
 namespace Reveal {
 //-----------------------------------------------------------------------------
@@ -14,132 +16,173 @@ worker_c::worker_c( void ) {
 }
 
 //-----------------------------------------------------------------------------
-worker_c::worker_c( boost::shared_ptr<Reveal::DB::database_c> db, const std::string& experiment_id ) {
-  _db = db;
-  _experiment_id = experiment_id;
-}
-
-//-----------------------------------------------------------------------------
 worker_c::~worker_c( void ) {
 
 }
 
 //-----------------------------------------------------------------------------
-Reveal::Analytics::error_e worker_c::init( void ) {
-  return ERROR_NONE;
-}
-
-//-----------------------------------------------------------------------------
-Reveal::Analytics::error_e worker_c::cycle( void ) {
-  return ERROR_NONE;
-}
-
-//-----------------------------------------------------------------------------
-Reveal::Analytics::error_e worker_c::shutdown( void ) {
-  return ERROR_NONE;
-}
-
-//-----------------------------------------------------------------------------
-Reveal::Analytics::error_e worker_c::read( void ) {
-  return ERROR_NONE;
-}
-
-//-----------------------------------------------------------------------------
-Reveal::Analytics::error_e worker_c::query( void ) {
-  // query the database for trial data
-  // TODO : better error handling
-
+bool worker_c::execute( boost::shared_ptr<Reveal::DB::database_c> db, const std::string& experiment_id ) {
+  Reveal::Core::scenario_ptr scenario;
+  Reveal::Core::experiment_ptr experiment;
+  Reveal::Core::analyzer_ptr analyzer;
+  Reveal::Core::trial_ptr initial_trial;
+  boost::shared_ptr<Reveal::Analytics::module_c> module;
+  Reveal::Analytics::error_e error;
   Reveal::DB::database_c::error_e db_error;
 
-  //printf( "fetching experiment[%s]\n", _experiment_id.c_str() );
-  db_error = _db->query( _experiment, _experiment_id );
-  if( db_error != Reveal::DB::database_c::ERROR_NONE )
-    printf( "db_error[%d] fetching experiment\n", db_error );
+  assert( db );
+  db->open();
 
-  //printf( "fetching analyzer[%s]\n", _experiment->scenario_id.c_str() );
-  db_error = _db->query( _analyzer, _experiment->scenario_id );
-  if( db_error != Reveal::DB::database_c::ERROR_NONE )
-    printf( "db_error[%d] fetching analyzer\n", db_error );
+  // fetch the experimental configuration from the database
+  if( !fetch( scenario, experiment, initial_trial, analyzer, db, experiment_id) )
+    return false;
+  assert( scenario && experiment && initial_trial && analyzer );
 
-  if( !_analyzer ) 
-    printf( "failed to select requested analyzer from db\n" );
+  // load the analyzer module
+  if( !load( module, analyzer ) )
+    return false;
+  assert( module );
 
+  // iterate over all the trials, build a solution_set individually for each 
+  // trial, analyze that solution and insert the analysis in the database
+  for( unsigned i = 0; i < scenario->trials; i++ ) {
+    Reveal::Core::solution_set_ptr solution_set;
+    Reveal::Core::analysis_ptr analysis;
+
+    db_error = db->query( solution_set, experiment->experiment_id, i );
+
+    if( !solution_set ) 
+      printf( "failed to select requested solution_set from db\n" );
+
+    solution_set->initial_trial = initial_trial;
+        
+    error = module->analyze( solution_set, analysis );
+    if( error != Reveal::Analytics::ERROR_NONE ) {
+      printf( "analyzer failed to complete execution\n" ); 
+      return false;
+    }
+ 
+    assert( analysis );
+
+    db_error = db->insert( analysis );
+    if( db_error != Reveal::DB::database_c::ERROR_NONE )
+      printf( "db_error[%d] inserting analysis\n", db_error );
+  }
+
+  return true;
+}
+
+//-----------------------------------------------------------------------------
+bool worker_c::batch_execute( boost::shared_ptr<Reveal::DB::database_c> db, const std::string& experiment_id ) {
+  Reveal::Core::scenario_ptr scenario;
+  Reveal::Core::experiment_ptr experiment;
+  Reveal::Core::analyzer_ptr analyzer;
+  Reveal::Core::trial_ptr initial_trial;
+  Reveal::Core::solution_set_ptr solution_set;
+  Reveal::Core::analysis_ptr analysis;
+  boost::shared_ptr<Reveal::Analytics::module_c> module;
+  Reveal::Analytics::error_e error;
+  Reveal::DB::database_c::error_e db_error;
+
+  assert( db );
+  db->open();
+
+  // fetch the experimental configuration from the database
+  if( !fetch( scenario, experiment, initial_trial, analyzer, db, experiment_id) )
+    return false;
+  assert( scenario && experiment && initial_trial && analyzer );
+
+  // load the analyzer module
+  if( !load( module, analyzer ) )
+    return false;
+  assert( module );
+
+  // build a solution set for the entire experiment
   //printf( "fetching solution_set\n" );
-  db_error = _db->query( _solution_set, _experiment->experiment_id );
+  db_error = db->query( solution_set, experiment->experiment_id );
   if( db_error != Reveal::DB::database_c::ERROR_NONE )
     printf( "db_error[%d] fetching solution_set\n", db_error );
 
-  if( !_solution_set ) 
+  if( !solution_set ) 
     printf( "failed to select requested solution_set from db\n" );
+  assert( solution_set );
 
-  return ERROR_NONE;
+  solution_set->initial_trial = initial_trial;
+
+  // submit the comprehensive solution set to the analyzer
+  //printf( "analyzing\n" );
+  error = module->analyze( solution_set, analysis );
+  if( error != Reveal::Analytics::ERROR_NONE ) {
+    printf( "analyzer failed to complete execution\n" ); 
+    return false;
+  }
+  assert( analysis );
+
+  // insert the comprehensive analysis in the database
+  //printf( "inserting\n" );
+  db_error = db->insert( analysis );
+  if( db_error != Reveal::DB::database_c::ERROR_NONE )
+    printf( "db_error[%d] inserting analysis\n", db_error );
+
+  return true;
 }
 
 //-----------------------------------------------------------------------------
-Reveal::Analytics::error_e worker_c::load( void ) {
-  if( _analyzer->type == Reveal::Core::analyzer_c::PLUGIN ) {
+bool worker_c::load( boost::shared_ptr<Reveal::Analytics::module_c>& module, Reveal::Core::analyzer_ptr analyzer ) {
+
+  Reveal::Analytics::error_e error;
+
+  if( analyzer->type == Reveal::Core::analyzer_c::PLUGIN ) {
     // load analyzer as plugin
     boost::shared_ptr<Reveal::Analytics::plugin_c> plugin = boost::shared_ptr<Reveal::Analytics::plugin_c>( new Reveal::Analytics::plugin_c() );
     
-    _module = boost::dynamic_pointer_cast<Reveal::Analytics::module_c>( plugin );
-  } else if( _analyzer->type == Reveal::Core::analyzer_c::SCRIPT ) {
+    module = boost::dynamic_pointer_cast<Reveal::Analytics::module_c>( plugin );
+  } else if( analyzer->type == Reveal::Core::analyzer_c::SCRIPT ) {
     // load analyzer as script
 
     boost::shared_ptr<Reveal::Analytics::script_c> script = boost::shared_ptr<Reveal::Analytics::script_c>( new Reveal::Analytics::script_c() );
 
-    _module = boost::dynamic_pointer_cast<Reveal::Analytics::module_c>( script );
-
+    module = boost::dynamic_pointer_cast<Reveal::Analytics::module_c>( script );
+  } else {
+    return false;
   }
 
   // get the filename of the module and load it
-  Reveal::Analytics::error_e error = _module->load( _analyzer->filename );
+  error = module->load( analyzer->filename );
   if( error != Reveal::Analytics::ERROR_NONE ) {
     printf( "failed to load requested analyzer\n" );
-    return error;
+    return false;
   }
 
-  return ERROR_NONE;
+  return true;
 }
 
 //-----------------------------------------------------------------------------
-Reveal::Analytics::error_e worker_c::analyze( void ) {
-  //printf( "analyzing\n" );
-  Reveal::Analytics::error_e error = _module->analyze( _solution_set, _analysis );
-  if( error != Reveal::Analytics::ERROR_NONE ) {
-    printf( "analyzer failed to complete execution\n" ); 
-    return error;
-  }
- 
-  assert( _analysis );
+bool worker_c::fetch( Reveal::Core::scenario_ptr& scenario, Reveal::Core::experiment_ptr& experiment, Reveal::Core::trial_ptr& initial_trial, Reveal::Core::analyzer_ptr& analyzer, boost::shared_ptr<Reveal::DB::database_c> db, std::string experiment_id ) {
 
-  return ERROR_NONE;
-}
+  Reveal::DB::database_c::error_e error;
 
-//-----------------------------------------------------------------------------
-Reveal::Analytics::error_e worker_c::insert( void ) {
-  Reveal::DB::database_c::error_e db_error;
+  error = db->query( experiment, experiment_id );
+  if( error != Reveal::DB::database_c::ERROR_NONE ) 
+    printf( "db error[%d] fetching experiment\n", error );
+  if( !experiment ) return false;
 
-  //printf( "inserting\n" );
-  db_error = _db->insert( _analysis );
-  if( db_error != Reveal::DB::database_c::ERROR_NONE )
-    printf( "db_error[%d] inserting analysis\n", db_error );
+  error = db->query( scenario, experiment->scenario_id );
+  if( error != Reveal::DB::database_c::ERROR_NONE )
+    printf( "db error[%d] fetching scenario\n", error );
+  if( !scenario ) return false;
 
-  return ERROR_NONE;
-}
+  error = db->query( initial_trial, experiment->scenario_id, 0 );
+  if( error != Reveal::DB::database_c::ERROR_NONE ) 
+    printf( "db error[%d] fetching initial trial\n", error );
+  if( !initial_trial ) return false;
 
-//-----------------------------------------------------------------------------
-Reveal::Analytics::error_e worker_c::idle( void ) {
-  return ERROR_NONE;
-}
+  error = db->query( analyzer, experiment->scenario_id );
+  if( error != Reveal::DB::database_c::ERROR_NONE )
+    printf( "db error[%d] fetching analyzer\n", error );
+  if( !analyzer ) return false;
 
-//-----------------------------------------------------------------------------
-Reveal::Analytics::error_e worker_c::send( void ) {
-  return ERROR_NONE;
-}
-
-//-----------------------------------------------------------------------------
-Reveal::Analytics::error_e worker_c::receive( void ) {
-  return ERROR_NONE;
+  return true;
 }
 
 //-----------------------------------------------------------------------------

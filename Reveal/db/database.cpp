@@ -249,6 +249,15 @@ database_c::error_e database_c::query( Reveal::Core::solution_set_ptr& solution_
 }
 
 //-----------------------------------------------------------------------------
+database_c::error_e database_c::query( Reveal::Core::solution_set_ptr& solution_set, const std::string& experiment_id, unsigned trial_id ) {
+
+  // TODO : error handling
+  Reveal::DB::Mongo::solution_set_c::fetch( solution_set, ptr(), experiment_id, trial_id );
+
+  return ERROR_NONE;
+}
+
+//-----------------------------------------------------------------------------
 }  // namespace DB
 //-----------------------------------------------------------------------------
 }  // namespace Reveal

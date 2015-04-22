@@ -11,7 +11,7 @@ namespace Mongo {
 //-----------------------------------------------------------------------------
 bool analysis_c::insert( Reveal::DB::database_ptr db, Reveal::Core::analysis_ptr analysis ) {
 
-  printf( "analysis:rows[%u]\n", analysis->count_rows() );
+  //printf( "analysis:rows[%u]\n", analysis->count_rows() );
 
   // get mongo service and verify
   mongo_ptr mongo = mongo_c::service( db );

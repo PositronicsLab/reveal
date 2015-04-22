@@ -25,64 +25,31 @@ as a separate thread.
 #include "Reveal/core/solution_set.h"
 
 //-----------------------------------------------------------------------------
-
 namespace Reveal {
-
 //-----------------------------------------------------------------------------
-
 namespace Analytics {
-
 //-----------------------------------------------------------------------------
 
 class worker_c {
 public:
-  Reveal::Core::connection_c _xmitter;
-  Reveal::Core::connection_c _receiver;
-
-private:
-  boost::shared_ptr<Reveal::DB::database_c> _db;
-  std::string                     _experiment_id;
-//  std::string                     _scenario_id; // likely temporary
-//  std::string                     _session_id;  // likely temporary
-
-  Reveal::Core::experiment_ptr                      _experiment;
-  Reveal::Core::analyzer_ptr                        _analyzer;
-  boost::shared_ptr<Reveal::Analytics::module_c>    _module;
-  Reveal::Core::analysis_ptr                        _analysis;
-  Reveal::Core::solution_set_ptr                    _solution_set;
-
-public:
-  status_e status;
-
-public:
 
   worker_c( void );
-  worker_c( boost::shared_ptr<Reveal::DB::database_c> db, const std::string& experiment_id );
   virtual ~worker_c( void );
 
-  error_e init( void );
-  error_e cycle( void );
-  error_e shutdown( void );
+  bool execute( boost::shared_ptr<Reveal::DB::database_c> db, const std::string& experiment_id );
 
-  error_e read( void );  // ( parameter is protocol Message read from socket)
-  error_e query( void );
-  error_e load( void );
-  error_e analyze( void );
-  error_e insert( void );
-  error_e idle( void );
+  bool batch_execute( boost::shared_ptr<Reveal::DB::database_c> db, const std::string& experiment_id );
 
-  error_e send( void );  // ( parameter is protocol Message to send to socket )
-  error_e receive( void );  // ( parameter is protocol Message from socket )
+private:
+  bool load( boost::shared_ptr<Reveal::Analytics::module_c>& module, Reveal::Core::analyzer_ptr analyzer );
+
+  bool fetch( Reveal::Core::scenario_ptr& scenario, Reveal::Core::experiment_ptr& experiment, Reveal::Core::trial_ptr& initial_trial, Reveal::Core::analyzer_ptr& analyzer, boost::shared_ptr<Reveal::DB::database_c> db, std::string experiment_id );
 };
 
 //-----------------------------------------------------------------------------
-
 } // namespace Analytics
-
 //-----------------------------------------------------------------------------
-
 } // namespace Reveal
-
 //-----------------------------------------------------------------------------
 
 #endif // _REVEAL_ANALYTICS_WORKER_H_

@@ -264,6 +264,7 @@ error_e analyze( Reveal::Core::solution_set_ptr input, Reveal::Core::analysis_pt
                    0.0, 0.00001568, 0.0, 
                    0.0, 0.0, 0.00001568 );
 
+/*
   unsigned trial0_idx = 0;
   double min_t = std::numeric_limits<double>::infinity();
   Reveal::Core::trial_ptr trial0;
@@ -274,6 +275,8 @@ error_e analyze( Reveal::Core::solution_set_ptr input, Reveal::Core::analysis_pt
       trial0 = input->trials[i];
     }
   }
+*/
+  Reveal::Core::trial_ptr trial0 = input->initial_trial;
 
   // get the initial state.  Drawn from the trial data.
   arm_t0 = arm_model( trial0 );

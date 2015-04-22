@@ -29,6 +29,8 @@ public:
 
   //Reveal::Core::scenario_ptr 	            scenario;  // scenario data
   Reveal::Core::experiment_ptr              experiment;// identifiers
+
+  Reveal::Core::trial_ptr                   initial_trial;
   std::vector< Reveal::Core::trial_ptr >    trials;    // set of trials
   std::vector< Reveal::Core::solution_ptr > solutions; // set of solutions
   std::vector< Reveal::Core::solution_ptr > models;    // set of model solutions

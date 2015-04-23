@@ -173,6 +173,7 @@ Reveal::Core::solution_ptr helpers_c::read_client_solution( gazebo::physics::Wor
   solution->scenario_id = scenario_id;
   solution->trial_id = trial_id;
   solution->t = sim_time( world );
+  solution->real_time = real_time( world );
   solution->dt = step_size( world );
 
   // map the states of all desired models

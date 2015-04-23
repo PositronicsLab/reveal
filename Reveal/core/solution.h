@@ -39,6 +39,7 @@ public:
   unsigned trial_id;
   double t;
   double dt;
+  double real_time;
   // session identifier
 
   std::vector<model_ptr> models;

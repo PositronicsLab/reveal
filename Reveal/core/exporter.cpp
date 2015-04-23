@@ -142,6 +142,8 @@ bool exporter_c::write( double t, double dt, trial_ptr trial ) {
 bool exporter_c::write( double t, double dt, solution_ptr solution ) {
   _solution_datawriter.write( "time", t );
   _solution_datawriter.write( "time-step", dt );
+  if( solution->type == Reveal::Core::solution_c::CLIENT )
+    _solution_datawriter.write( "real-time", solution->real_time );
 
   for( unsigned i = 0; i < solution->models.size(); i++ ) {
     Reveal::Core::model_ptr model = solution->models[i];

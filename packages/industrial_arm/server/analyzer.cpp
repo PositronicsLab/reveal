@@ -297,6 +297,7 @@ error_e analyze( Reveal::Core::solution_set_ptr input, Reveal::Core::analysis_pt
 
   output->add_key( "t" );
   output->add_key( "KE" );
+  output->add_key( "real-time" );
 
   //printf( "input trials[%u], solutions[%u]", input->trials.size(), input->solutions.size() );
 
@@ -305,6 +306,7 @@ error_e analyze( Reveal::Core::solution_set_ptr input, Reveal::Core::analysis_pt
     Reveal::Core::solution_ptr solution = input->solutions[i];
     double t = solution->t;
     double dt = solution->dt;
+    double real_time = solution->real_time;
 
     //std::vector<double> avgKEs;
 
@@ -326,6 +328,7 @@ error_e analyze( Reveal::Core::solution_set_ptr input, Reveal::Core::analysis_pt
     std::vector<double> values;
     values.push_back( t );
     values.push_back( avg_KE );
+    values.push_back( real_time );
     output->add_row( values );
   }
   return ERROR_NONE;

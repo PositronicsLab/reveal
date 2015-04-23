@@ -21,6 +21,8 @@ bool solution_c::insert( Reveal::DB::database_ptr db, Reveal::Core::solution_ptr
   bob.append( "trial_id", solution->trial_id );
   bob.append( "t", solution->t );
   bob.append( "dt", solution->dt );
+  if( solution->type == Reveal::Core::solution_c::CLIENT )
+    bob.append( "real_time", solution->real_time );
 
   model_c::insert( bob, solution->models, false );
 
@@ -65,6 +67,8 @@ bool solution_c::fetch( Reveal::Core::solution_ptr& solution, Reveal::DB::databa
   solution->trial_id = record.getField( "trial_id" ).Int();
   solution->t = record.getField( "t" ).Double();
   solution->dt = record.getField( "dt" ).Double();
+  if( type == Reveal::Core::solution_c::CLIENT )
+    solution->real_time = record.getField( "real_time" ).Double();
 
   model_c::fetch( solution, record );
 
@@ -94,6 +98,7 @@ bool solution_c::fetch( Reveal::Core::solution_ptr& solution, Reveal::DB::databa
   solution->trial_id = record.getField( "trial_id" ).Int();
   solution->t = record.getField( "t" ).Double();
   solution->dt = record.getField( "dt" ).Double();
+  solution->real_time = record.getField( "real_time" ).Double();
 
   model_c::fetch( solution, record );
 

@@ -320,10 +320,13 @@ namespace gazebo
       analyzer->type = Reveal::Core::analyzer_c::PLUGIN;
 
       analyzer->keys.push_back( "t" );
-      analyzer->labels.push_back( "Simulation time (s)" );
+      analyzer->labels.push_back( "Virtual time (s)" );
 
       analyzer->keys.push_back( "KE" );
-      analyzer->labels.push_back( "Average Kinetic Energy of block" );
+      analyzer->labels.push_back( "Average kinetic energy of block" );
+
+      analyzer->keys.push_back( "real-time" );
+      analyzer->labels.push_back( "Real time (s)" );
 
       return analyzer;
     }

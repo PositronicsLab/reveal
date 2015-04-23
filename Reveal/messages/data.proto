@@ -65,6 +65,7 @@ message Solution {
   required uint32 trial_id = 2;
   optional double t = 3;
   optional double dt = 4;
-  repeated Model model = 5;
+  optional double real_time = 5;
+  repeated Model model = 6;
 }
 

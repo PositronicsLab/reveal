@@ -222,7 +222,7 @@ void datawriter_c::close( void ) {
 bool datawriter_c::write( std::string key, double value, unsigned offset ) {
   unsigned column = _column_map->column( key );
   if( column == 0 ) {
-    printf( "column returned zero\n" );
+    //printf( "column returned zero\n" );
     return false;
   }
   
@@ -501,6 +501,9 @@ bool datareader_c::read_field( component_ptr owner, xml_element_ptr top, std::st
       return true;
     } else if( name == "time-step" ) {
       solution->dt = _cells[column-1];
+      return true;
+    } else if( name == "real-time" ) {
+      solution->real_time = _cells[column-1];
       return true;
     }
   } else if( owner->component_type() == component_c::LINK ) {

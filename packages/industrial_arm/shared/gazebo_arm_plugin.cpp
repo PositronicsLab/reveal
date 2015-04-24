@@ -278,6 +278,11 @@ namespace gazebo
 
       exporter.write( t, dt, _trial );
       exporter.write( t, dt, _solution );
+
+      // exit condition
+      // Note: this is arbitrary at this point.  It assumes that the scenario
+      // has not been tuned and the simulator is ODE.
+      if( t >= 16.0 ) exit( 0 );
 #endif // DATA_GENERATION
     }
 
@@ -301,7 +306,7 @@ namespace gazebo
       scenario->id = "industrial_arm";
       scenario->description = "grasping a block with an industrial arm";
       // TODO : rectify determination of number of trials
-      scenario->trials = 1000;  // NOTE: we don't know this in advance and we don't know when it will exit at this point!.
+      //scenario->trials = 1000;  // NOTE: we don't know this in advance and we don't know when it will exit at this point!.
       // number of trials is arbitrary at this point
       scenario->steps_per_trial = 1;
 

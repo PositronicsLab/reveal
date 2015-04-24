@@ -8,7 +8,7 @@ project( Reveal_Server )
 
 #------------------------------------------------------
 find_package( Pthread REQUIRED )
-find_package( Boost REQUIRED COMPONENTS system )
+find_package( Boost REQUIRED COMPONENTS system thread )
 
 link_directories(
   ${PTHREAD_LIBRARIES}

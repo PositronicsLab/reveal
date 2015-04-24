@@ -4,7 +4,6 @@ project( Reveal_Client )
 
 #------------------------------------------------------
 find_package( Pthread REQUIRED )
-find_package( Boost REQUIRED )
 
 #------------------------------------------------------
 # common header files

@@ -7,7 +7,7 @@ add_definitions( -DMAKE_BIN="${CMAKE_MAKE_PROGRAM}")
 add_definitions( -DCMAKE_BIN="${CMAKE_COMMAND}")
 
 #------------------------------------------------------
-find_package( Boost REQUIRED )
+find_package( Boost REQUIRED COMPONENTS system filesystem )
 find_package( ZeroMQ REQUIRED )
 find_package( TinyXML REQUIRED )
 
@@ -81,7 +81,6 @@ target_link_libraries( reveal_core
   ${Boost_LIBRARIES}
   ${ZeroMQ_LIBRARIES} 
   ${TinyXML_LIBRARIES}
-  boost_filesystem
 )
 
 target_link_libraries( reveal_core 

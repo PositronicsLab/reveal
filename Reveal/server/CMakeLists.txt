@@ -2,9 +2,13 @@ cmake_minimum_required(VERSION 2.8.7)
 
 project( Reveal_Server )
 
+#SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg ")
+#SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg")
+#SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -pg")
+
 #------------------------------------------------------
 find_package( Pthread REQUIRED )
-find_package( Boost REQUIRED )
+find_package( Boost REQUIRED COMPONENTS system )
 
 link_directories(
   ${PTHREAD_LIBRARIES}
@@ -35,7 +39,6 @@ add_dependencies( reveal_server
 target_link_libraries( reveal_server
   ${PTHREAD_LIBRARIES}
   ${Boost_LIBRARIES}
-  boost_system
   reveal_core
   reveal_db
   reveal_analytics

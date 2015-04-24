@@ -5,7 +5,7 @@ project( Reveal_DB )
 #------------------------------------------------------
 # find all packages
 find_package( MongoDB REQUIRED )
-find_package( Boost REQUIRED COMPONENTS thread )
+find_package( Boost REQUIRED COMPONENTS system thread )
 
 #------------------------------------------------------
 # header files

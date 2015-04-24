@@ -5,6 +5,7 @@ project( Reveal_DB )
 #------------------------------------------------------
 # find all packages
 find_package( MongoDB REQUIRED )
+find_package( Boost REQUIRED COMPONENTS thread )
 
 #------------------------------------------------------
 # header files
@@ -55,6 +56,7 @@ add_dependencies( reveal_db reveal_core )
 
 target_link_libraries( reveal_db 
   ${MongoDB_LIBRARIES}
+  ${Boost_LIBRARIES}
   reveal_core
 )
 

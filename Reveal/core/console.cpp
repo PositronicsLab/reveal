@@ -1,6 +1,7 @@
 #include "Reveal/core/console.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <iostream>
 #include <sstream>
 
@@ -11,13 +12,33 @@ namespace Core {
 //-----------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------
-void console_c::print( std::string data ) {
-  printf( "%s", data.c_str() );
+void console_c::print( std::string msg ) {
+  printf( "%s", msg.c_str() );
 }
 
 //-----------------------------------------------------------------------------
-void console_c::printline( std::string data ) {
-  printf( "%s\n", data.c_str() );
+void console_c::print( const std::stringstream& msg ) {
+  printf( "%s", msg.str().c_str() );
+}
+
+//-----------------------------------------------------------------------------
+void console_c::printline( std::string msg ) {
+  printf( "%s\n", msg.c_str() );
+}
+
+//-----------------------------------------------------------------------------
+void console_c::printline( const std::stringstream& msg ) {
+  printf( "%s\n", msg.str().c_str() );
+}
+
+//-----------------------------------------------------------------------------
+void console_c::error( std::string err ) {
+  std::cerr << "ERROR: " << err << std::endl;
+}
+
+//-----------------------------------------------------------------------------
+void console_c::error( const std::stringstream& err ) {
+  std::cerr << "ERROR: " << err.str() << std::endl;
 }
 
 //-----------------------------------------------------------------------------
@@ -38,6 +59,7 @@ bool console_c::prompt_yes_no( std::string prompt ) {
   
   do {
     printf( "%s ", prompt.c_str() );
+    std::cin.clear();
     std::getline( std::cin, input );
 
     if( input == "y" || input == "Y" ) {
@@ -53,10 +75,54 @@ bool console_c::prompt_yes_no( std::string prompt ) {
 }
 
 //-----------------------------------------------------------------------------
-std::string console_c::prompt( std::string prompt ) {
+unsigned console_c::prompt_unsigned( std::string prompt ) {
   std::string input;
   
+  // infinite validation loop.  only way out is for the user to enter a valid
+  // unsigned value
+  do {
+    // print the prompt to the console
+    printf( "%s: ", prompt.c_str() );
+    // clear the input stream
+    std::cin.clear();
+    // get input from standard in
+    std::getline( std::cin, input );
+
+    // assume input is valid and invalidate if erroneous values
+    bool valid = true;
+    // iterate over the input buffer
+    for( unsigned i = 0; i < input.size(); i++ ) {
+      // read the current character
+      char c = input[i];
+      // if EOF and not first character then pass
+      if( i > 0 && c == 0 ) break;
+      // if not numeric, invalidate and fail
+      if( c < '0' || c > '9' ) {
+        valid = false;
+        break;
+      }
+    }
+
+    // if valid, return numeric value of input
+    if( valid ) return (unsigned)atoi( input.c_str() );
+    
+    // if not valid, report and recycle
+    printf( "ERROR: Invalid Input. Enter an unsigned integer\n" );
+
+  } while( true );
+
+  return 0; // unreachable. suppresses warning on return statement 
+}
+
+//-----------------------------------------------------------------------------
+std::string console_c::prompt( std::string prompt ) {
+  std::string input;
+
+  // print the prompt to the console
   printf( "%s ", prompt.c_str() );
+  // clear the input stream
+  std::cin.clear();
+  // get input from standard in
   std::getline( std::cin, input );
 
   return input;
@@ -78,6 +144,7 @@ unsigned console_c::menu( std::string title, std::string prompt, std::vector< st
 
   do {
     printf( "%s: ", prompt.c_str() );
+    std::cin.clear();
     std::getline( std::cin, input );
 
     std::stringstream( input ) >> choice;

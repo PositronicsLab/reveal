@@ -75,7 +75,7 @@ bool console_c::prompt_yes_no( std::string prompt ) {
 }
 
 //-----------------------------------------------------------------------------
-unsigned console_c::prompt_unsigned( std::string prompt ) {
+unsigned console_c::prompt_unsigned( std::string prompt, bool allow_zero ) {
   std::string input;
   
   // infinite validation loop.  only way out is for the user to enter a valid
@@ -96,6 +96,11 @@ unsigned console_c::prompt_unsigned( std::string prompt ) {
       char c = input[i];
       // if EOF and not first character then pass
       if( i > 0 && c == 0 ) break;
+      // if not allow_zero zero is only character then fail
+      if( !allow_zero && i == 0 && c == '0' && input.size() == 1 ) {
+        valid = false;
+        break;
+      }
       // if not numeric, invalidate and fail
       if( c < '0' || c > '9' ) {
         valid = false;
@@ -112,6 +117,72 @@ unsigned console_c::prompt_unsigned( std::string prompt ) {
   } while( true );
 
   return 0; // unreachable. suppresses warning on return statement 
+}
+
+//-----------------------------------------------------------------------------
+float console_c::prompt_float( std::string prompt, bool allow_negative ) {
+  std::string input;
+  unsigned decimal_count = 0;
+  unsigned negative_count = 0;
+  unsigned e_count = 0;
+  unsigned e_pos = 0;
+  
+  // infinite validation loop.  only way out is for the user to enter a valid
+  // float value
+  do {
+    // print the prompt to the console
+    printf( "%s: ", prompt.c_str() );
+    // clear the input stream
+    std::cin.clear();
+    // get input from standard in
+    std::getline( std::cin, input );
+
+    // assume input is valid and invalidate if erroneous values
+    bool valid = true;
+    // iterate over the input buffer
+    for( unsigned i = 0; i < input.size(); i++ ) {
+      // read the current character
+      char c = input[i];
+      // if EOF and not first character then pass
+      if( i > 0 && c == 0 ) break;
+
+      // if not numeric or decimal, invalidate and fail
+      // TODO : handle negative and e
+      if( c == '.' ) {
+        if( ++decimal_count > 1) {
+          valid = false;
+          break;
+        }
+      } else if( allow_negative ) {
+        if( i > 0 && negative_count > 1 ) {
+          valid = false;
+          break;
+        } else if( negative_count == 1 ) {
+          if( input[i-1] != 'e' ) {
+            valid = false;
+            break;
+          }
+        }
+        negative_count++;
+      } else if( c < '0' || c > '9') {
+        valid = false;
+        break;
+      }
+    }
+
+    // if valid, return numeric value of input
+    if( valid ) return (float)atof( input.c_str() );
+    
+    // if not valid, report and recycle
+    if( allow_negative ) {
+      printf( "ERROR: Invalid Input. Enter a floating point number\n" );
+    } else {
+      printf( "ERROR: Invalid Input. Enter an unsigned floating point number\n" );
+    }
+
+  } while( true );
+
+  return 0.0; // unreachable. suppresses warning on return statement 
 }
 
 //-----------------------------------------------------------------------------

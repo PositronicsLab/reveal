@@ -71,8 +71,17 @@ public:
   /// prompts the user to enter an unsigned integer.  If the input is invalid
   /// the prompt will recycle until a valid input is provided
   /// @param prompt the prompt to print preceding release of control to input
+  /// @param allow_zero defines whether a zero value is acceptable as input
   /// @return the validated unsigned input
-  static unsigned prompt_unsigned( std::string prompt );
+  static unsigned prompt_unsigned( std::string prompt, bool allow_zero = false );
+
+  /// prompts the user to enter a floating point number.  If the input is 
+  /// invalid the prompt will recycle until a valid input is provided
+  /// @param prompt the prompt to print preceding release of control to input
+  /// @param allow_negative defines whether a negative value is acceptable as
+  ///        input
+  /// @return the validated floating point input
+  static float prompt_float( std::string prompt, bool allow_negative = false );
 
   /// prompts the user to select from a menu.  If the input is invalid the 
   /// prompt will recycle until a valid input is provided

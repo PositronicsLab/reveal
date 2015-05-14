@@ -35,7 +35,8 @@ public:
   ///        trial to search the table for
   /// @param trial_id the index of the trial to fetch
   /// @return true if the instance was populated OR false if fetch failed
-  static bool fetch( Reveal::Core::trial_ptr& trial, database_ptr db, std::string scenario_id, unsigned trial_id );
+  static bool fetch( Reveal::Core::trial_ptr& trial, database_ptr db, std::string scenario_id, double t );
+  //static bool fetch( Reveal::Core::trial_ptr& trial, database_ptr db, std::string scenario_id, unsigned trial_id );
 
 };
 

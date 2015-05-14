@@ -20,13 +20,9 @@ protocols from class instances
 #include <string>
 
 //----------------------------------------------------------------------------
-
 namespace Reveal {
-
 //----------------------------------------------------------------------------
-
 namespace Core {
-
 //----------------------------------------------------------------------------
 
 class transport_exchange_c {
@@ -55,9 +51,17 @@ public:
     TYPE_DIGEST,
     TYPE_EXPERIMENT,
     TYPE_TRIAL,
-    TYPE_SOLUTION
+    TYPE_SOLUTION,
+    TYPE_STEP,
+    TYPE_EXIT
   };
-
+/*
+  enum command_e {
+    COMMAND_UNDEFINED = 0,
+    COMMAND_STEP,
+    COMMAND_EXIT
+  }
+*/
   transport_exchange_c( void );
   virtual ~transport_exchange_c( void );
 
@@ -102,6 +106,10 @@ public:
 
   error_e build_client_solution( std::string& message, authorization_ptr auth, experiment_ptr experiment, solution_ptr solution );
 
+  error_e build_server_command_step( std::string& message, authorization_ptr auth );
+
+  error_e build_server_command_exit( std::string& message, authorization_ptr auth );
+
   error_e parse_server_experiment( const std::string& message, authorization_ptr& auth, scenario_ptr& scenario, experiment_ptr& experiment );
 
   error_e parse_client_solution( const std::string& message, authorization_ptr& auth, experiment_ptr& experiment, solution_ptr& solution );
@@ -142,13 +150,9 @@ private:
 };
 
 //----------------------------------------------------------------------------
-
 } // namespace Core
-
 //----------------------------------------------------------------------------
-
 } // namespace Reveal
-
 //----------------------------------------------------------------------------
 
 #endif // _REVEAL_CORE_TRANSPORT_EXCHANGE_

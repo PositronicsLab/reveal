@@ -69,7 +69,8 @@ public:
   error_e query( Reveal::Core::scenario_ptr& scenario, const std::string& scenario_id );
 
   error_e insert( Reveal::Core::trial_ptr trial );
-  error_e query( Reveal::Core::trial_ptr& trial, const std::string& scenario_id, unsigned trial_id );
+  //error_e query( Reveal::Core::trial_ptr& trial, const std::string& scenario_id, unsigned trial_id );
+  error_e query( Reveal::Core::trial_ptr& trial, const std::string& scenario_id, double t );
 
   error_e insert( Reveal::Core::solution_ptr solution );
   error_e query( Reveal::Core::solution_ptr& solution, const std::string& experiment_id, const std::string& scenario_id, int trial_id );

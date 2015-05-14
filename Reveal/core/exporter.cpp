@@ -190,17 +190,23 @@ bool exporter_c::write_scenario_element( xml_element_ptr parent, scenario_ptr sc
   attribute->set_name( "id" );
   attribute->set_value( scenario->id );
   top->append( attribute );
+
+  attribute = xml_attribute_ptr( new xml_attribute_c() );
+  attribute->set_name( "sample_rate" );
+  attribute->set_value( scenario->sample_rate );
+  top->append( attribute );
 /*
   attribute = xml_attribute_ptr( new xml_attribute_c() );
   attribute->set_name( "trials" );
   attribute->set_value( scenario->trials );
   top->append( attribute );
 */
+/*
   attribute = xml_attribute_ptr( new xml_attribute_c() );
   attribute->set_name( "steps-per-trial" );
   attribute->set_value( scenario->steps_per_trial );
   top->append( attribute );
-
+*/
   element = xml_element_ptr( new xml_element_c() );
   element->set_name( "Description" );
   element->set_value( scenario->description );

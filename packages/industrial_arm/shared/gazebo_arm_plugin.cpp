@@ -308,7 +308,10 @@ namespace gazebo
       // TODO : rectify determination of number of trials
       //scenario->trials = 1000;  // NOTE: we don't know this in advance and we don't know when it will exit at this point!.
       // number of trials is arbitrary at this point
-      scenario->steps_per_trial = 1;
+      //scenario->steps_per_trial = 1;
+      scenario->sample_rate = 0.001;
+      scenario->sample_start_time = 0.001;
+      scenario->sample_end_time = 16.001;
 
       return scenario;
     }

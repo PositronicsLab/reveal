@@ -124,7 +124,8 @@ void worker_c::work( void ) {
         Reveal::Core::experiment_ptr experiment = exchange.get_experiment();
         Reveal::Core::trial_ptr trial = exchange.get_trial();      
 
-        service_trial_request( auth, experiment, trial->trial_id );
+        trial->print();
+        service_trial_request( auth, experiment, trial->t );
         // TODO : error checking
       } else {
         service_failed_authorization( auth );
@@ -233,8 +234,8 @@ bool worker_c::create_experiment( Reveal::Core::authorization_ptr auth, Reveal::
   experiment->experiment_id = Reveal::Server::generate_uuid();
   experiment->session_id = auth->get_session();
   experiment->scenario_id = scenario->id;
-  experiment->number_of_trials = scenario->trials;
-  experiment->steps_per_trial = scenario->steps_per_trial;
+  //experiment->number_of_trials = scenario->trials;
+  //experiment->steps_per_trial = scenario->steps_per_trial;
   experiment->current_trial_index = 0;
 
   db_error = _db->insert( experiment );
@@ -464,6 +465,7 @@ worker_c::error_e worker_c::service_experiment_request( Reveal::Core::authorizat
   return ERROR_NONE;
 }
 
+/*
 //-----------------------------------------------------------------------------
 worker_c::error_e worker_c::service_trial_request( Reveal::Core::authorization_ptr auth, Reveal::Core::experiment_ptr experiment, int trial_id ) {
   //printf( "trial requested scenario_id[%s], trial_id[%u]\n", experiment->scenario_id.c_str(), trial_id );
@@ -474,6 +476,61 @@ worker_c::error_e worker_c::service_trial_request( Reveal::Core::authorization_p
 
   // query the database for trial data
   Reveal::DB::database_c::error_e db_error = _db->query( trial, experiment->scenario_id, trial_id );
+  // TODO: Validation
+
+  if( db_error == Reveal::DB::database_c::ERROR_NONE ) {
+    // the query was successful
+
+    // construct the trial message
+    exchange.set_origin( Reveal::Core::transport_exchange_c::ORIGIN_SERVER );
+    exchange.set_type( Reveal::Core::transport_exchange_c::TYPE_TRIAL );
+    exchange.set_trial( trial );
+    exchange.set_experiment( experiment );
+    exchange.set_authorization( auth );
+
+    //serialize the message for transmission
+    exchange.build( reply );
+
+    // broadcast the reply message back to the client
+    if( _connection.write( reply ) != Reveal::Core::connection_c::ERROR_NONE ) {
+      // TODO: trap and recover
+    }
+
+    return ERROR_NONE;
+  }
+
+  // otherwise there was an error in the query
+  if( db_error == Reveal::DB::database_c::ERROR_EMPTYSET ) {
+    printf( "ERROR: Failed to find trial\n" );
+    // the query returned an empty set
+
+    // construct an error message
+    exchange.set_origin( Reveal::Core::transport_exchange_c::ORIGIN_SERVER );
+    exchange.set_type( Reveal::Core::transport_exchange_c::TYPE_ERROR );
+    exchange.set_error( Reveal::Core::transport_exchange_c::ERROR_BAD_TRIAL_REQUEST );
+    exchange.set_authorization( auth );
+
+    //serialize the message for transmission
+    exchange.build( reply );
+
+    // broadcast the reply message back to the client
+    if( _connection.write( reply ) != Reveal::Core::connection_c::ERROR_NONE ) {
+      // TODO: trap and recover
+    }
+  }
+  return ERROR_NONE;  // temporary until any error enumeration is determined
+}
+*/
+//-----------------------------------------------------------------------------
+worker_c::error_e worker_c::service_trial_request( Reveal::Core::authorization_ptr auth, Reveal::Core::experiment_ptr experiment, double t ) {
+  //printf( "trial requested scenario_id[%s], trial_id[%u]\n", experiment->scenario_id.c_str(), trial_id );
+
+  Reveal::Core::transport_exchange_c exchange;
+  Reveal::Core::trial_ptr trial;
+  std::string reply;
+
+  // query the database for trial data
+  Reveal::DB::database_c::error_e db_error = _db->query( trial, experiment->scenario_id, t );
   // TODO: Validation
 
   if( db_error == Reveal::DB::database_c::ERROR_NONE ) {
@@ -557,7 +614,8 @@ worker_c::error_e worker_c::service_solution_submission( Reveal::Core::authoriza
   // for an initial development, this is the best approach
   // If the trial is the 'last' trial, run analytics.
 
-  if( solution->trial_id == (unsigned)experiment->number_of_trials - 1 ) {
+  //TODO:
+  //if( solution->trial_id == (unsigned)experiment->number_of_trials - 1 ) {
     printf( "Experiment {%s} has completed.  Starting analytics.\n", experiment->experiment_id.c_str() );
 
     // need a temporary (for this mode only) contructor for passing database and
@@ -570,7 +628,7 @@ worker_c::error_e worker_c::service_solution_submission( Reveal::Core::authoriza
     } else {
       printf( "Completed Analytics on Experiment {%s}\n", experiment->experiment_id.c_str() );
     }
-  }
+  //}
 
   return ERROR_NONE;
 }

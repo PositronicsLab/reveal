@@ -35,6 +35,18 @@ public:
   /// @return true if the instance was populated OR false if fetch failed
   static bool fetch( Reveal::Core::scenario_ptr& scenario, database_ptr db, std::string scenario_id );
 
+  /// maps the bson object into a new instance of a scenario
+  /// @param scenario instance created and populated on success
+  /// @param obj the bson object to map data from
+  /// @return true if the instance was populated OR false if mapping failed
+  static bool map( Reveal::Core::scenario_ptr& scenario, mongo::BSONObj obj );
+
+  /// maps the scenario instance into a bson object 
+  /// @param obj the bson object to map data into
+  /// @param scenario the scenario pointer to map data from
+  /// @return true if the instance was populated OR false if mapping failed
+  static bool map( mongo::BSONObj& obj, Reveal::Core::scenario_ptr scenario );
+
 };
 
 //-----------------------------------------------------------------------------

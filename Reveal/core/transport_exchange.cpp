@@ -301,6 +301,24 @@ transport_exchange_c::error_e transport_exchange_c::build_client_solution( std::
 }
 
 //----------------------------------------------------------------------------
+transport_exchange_c::error_e transport_exchange_c::build_server_command_step( std::string& msg, Reveal::Core::authorization_ptr auth ) {
+  reset();
+  set_authorization( auth );
+  set_origin( Reveal::Core::transport_exchange_c::ORIGIN_SERVER );
+  set_type( Reveal::Core::transport_exchange_c::TYPE_STEP );
+  return build( msg );
+}
+
+//----------------------------------------------------------------------------
+transport_exchange_c::error_e transport_exchange_c::build_server_command_exit( std::string& msg, Reveal::Core::authorization_ptr auth ) {
+  reset();
+  set_authorization( auth );
+  set_origin( Reveal::Core::transport_exchange_c::ORIGIN_SERVER );
+  set_type( Reveal::Core::transport_exchange_c::TYPE_EXIT );
+  return build( msg );
+}
+
+//----------------------------------------------------------------------------
 transport_exchange_c::error_e transport_exchange_c::parse_server_experiment( const std::string& msg, Reveal::Core::authorization_ptr& auth, Reveal::Core::scenario_ptr& scenario, Reveal::Core::experiment_ptr& experiment ) {
 
   error_e ex_err = parse( msg );
@@ -480,6 +498,10 @@ transport_exchange_c::error_e transport_exchange_c::build_server_message( Reveal
     header->set_type( Messages::Net::Message::SOLUTION );
 
     // TODO : More comprehensive receipt including session, experiment id,  and               trial
+  } else if( _type == TYPE_STEP ) {
+    header->set_type( Messages::Net::Message::STEP );
+  } else if( _type == TYPE_EXIT ) {
+    header->set_type( Messages::Net::Message::EXIT );
   } else {
     _error = ERROR_BUILD;
     return ERROR_BUILD;
@@ -519,6 +541,10 @@ transport_exchange_c::error_e transport_exchange_c::map_type( Reveal::Core::Mess
     _type = TYPE_TRIAL;
   } else if( msg->header().type() == Messages::Net::Message::SOLUTION ) {
     _type = TYPE_SOLUTION;
+  } else if( msg->header().type() == Messages::Net::Message::STEP ) {
+    _type = TYPE_STEP;
+  } else if( msg->header().type() == Messages::Net::Message::EXIT ) {
+    _type = TYPE_EXIT;
   } else {
     // UNDEFINED
     // set error
@@ -661,6 +687,10 @@ transport_exchange_c::error_e transport_exchange_c::map_server_message( Reveal::
 
   } else if( _type == TYPE_SOLUTION ) {
     // accept the receipt.  Note: already handled in map_type
+  } else if( _type == TYPE_STEP ) {
+    // accept the command.  Note: already handled in map_type
+  } else if( _type == TYPE_EXIT ) {
+    // accept the command.  Note: already handled in map_type
   }
 
   return ERROR_NONE;
@@ -677,7 +707,10 @@ transport_exchange_c::error_e transport_exchange_c::write_digest( Reveal::Core::
     Messages::Data::Scenario* msg_scenario = msg_digest->add_scenario();
     msg_scenario->set_id( scenario->id );
     msg_scenario->set_description( scenario->description );
-    msg_scenario->set_trials( scenario->trials );
+    msg_scenario->set_sample_rate( scenario->sample_rate );
+    msg_scenario->set_sample_start_time( scenario->sample_start_time );
+    msg_scenario->set_sample_end_time( scenario->sample_end_time );
+    //msg_scenario->set_trials( scenario->trials );
     for( unsigned j = 0; j < scenario->uris.size(); j++ ) {
       msg_scenario->add_uri( scenario->uris.at(j) );
     }
@@ -697,7 +730,10 @@ transport_exchange_c::error_e transport_exchange_c::read_digest( Reveal::Core::M
 
     scenario->id = msg->digest().scenario(i).id();
     scenario->description = msg->digest().scenario(i).description();
-    scenario->trials = msg->digest().scenario(i).trials();
+    scenario->sample_rate = msg->digest().scenario(i).sample_rate();
+    scenario->sample_start_time = msg->digest().scenario(i).sample_start_time();
+    scenario->sample_end_time = msg->digest().scenario(i).sample_end_time();
+    //scenario->trials = msg->digest().scenario(i).trials();
     for( int j = 0; j < msg->digest().scenario(i).uri().size(); j++ ) {
       scenario->uris.push_back( msg->digest().scenario(i).uri(j) );
     }
@@ -715,8 +751,10 @@ transport_exchange_c::error_e transport_exchange_c::write_scenario( Reveal::Core
 
   msg_scenario->set_id( scenario->id );
   msg_scenario->set_description( scenario->description );
-  msg_scenario->set_trials( scenario->trials );
-  msg_scenario->set_steps_per_trial( scenario->steps_per_trial );
+  msg_scenario->set_sample_rate( scenario->sample_rate );
+  msg_scenario->set_sample_start_time( scenario->sample_start_time );
+  msg_scenario->set_sample_end_time( scenario->sample_end_time );
+  //msg_scenario->set_trials( scenario->trials );
   for( unsigned j = 0; j < scenario->uris.size(); j++ ) {
     msg_scenario->add_uri( scenario->uris.at(j) );
   }
@@ -731,8 +769,10 @@ transport_exchange_c::error_e transport_exchange_c::read_scenario( Reveal::Core:
   
   _scenario->id = msg->scenario().id();
   _scenario->description = msg->scenario().description();
-  _scenario->trials = msg->scenario().trials();
-  _scenario->steps_per_trial = msg->scenario().steps_per_trial();
+  _scenario->sample_rate = msg->scenario().sample_rate();
+  _scenario->sample_start_time = msg->scenario().sample_start_time();
+  _scenario->sample_end_time = msg->scenario().sample_end_time();
+  //_scenario->trials = msg->scenario().trials();
   for( int j = 0; j < msg->scenario().uri().size(); j++ ) {
     _scenario->uris.push_back( msg->scenario().uri(j) );
   }
@@ -747,8 +787,8 @@ transport_exchange_c::error_e transport_exchange_c::write_experiment( Reveal::Co
 
   msg_experiment->set_experiment_id( experiment->experiment_id );
   msg_experiment->set_scenario_id( experiment->scenario_id );
-  msg_experiment->set_trials( experiment->number_of_trials );
-  msg_experiment->set_steps_per_trial( experiment->steps_per_trial );
+  //msg_experiment->set_trials( experiment->number_of_trials );
+  msg_experiment->set_time_step( experiment->time_step );
 
   return ERROR_NONE;
 }
@@ -759,8 +799,8 @@ transport_exchange_c::error_e transport_exchange_c::read_experiment( Reveal::Cor
     
   _experiment->experiment_id = msg->experiment().experiment_id();
   _experiment->scenario_id = msg->experiment().scenario_id();
-  _experiment->number_of_trials = msg->experiment().trials();
-  _experiment->steps_per_trial = msg->experiment().steps_per_trial();
+  //_experiment->number_of_trials = msg->experiment().trials();
+  _experiment->time_step = msg->experiment().time_step();
 
   return ERROR_NONE;
 }

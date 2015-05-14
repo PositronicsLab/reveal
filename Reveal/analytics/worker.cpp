@@ -45,6 +45,8 @@ bool worker_c::execute( boost::shared_ptr<Reveal::DB::database_c> db, const std:
 
   // iterate over all the trials, build a solution_set individually for each 
   // trial, analyze that solution and insert the analysis in the database
+  //TODO:
+/*
   for( unsigned i = 0; i < scenario->trials; i++ ) {
     Reveal::Core::solution_set_ptr solution_set;
     Reveal::Core::analysis_ptr analysis;
@@ -68,7 +70,7 @@ bool worker_c::execute( boost::shared_ptr<Reveal::DB::database_c> db, const std:
     if( db_error != Reveal::DB::database_c::ERROR_NONE )
       printf( "db_error[%d] inserting analysis\n", db_error );
   }
-
+*/
   return true;
 }
 

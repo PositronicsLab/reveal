@@ -8,6 +8,7 @@
 
 #include "Reveal/core/transport_exchange.h"
 #include "Reveal/core/scenario.h"
+#include "Reveal/core/experiment.h"
 
 #include <sstream>
 
@@ -174,6 +175,8 @@ bool gazebo_c::build_package( std::string src_path, std::string build_path ) {
 //-----------------------------------------------------------------------------
 bool gazebo_c::execute( Reveal::Core::authorization_ptr auth, Reveal::Core::scenario_ptr scenario, Reveal::Core::experiment_ptr experiment ) {
 
+  scenario->print();
+
   Reveal::Core::system_c system( Reveal::Core::system_c::CLIENT );
   if( !system.open() ) return false;
 
@@ -310,33 +313,89 @@ bool gazebo_c::execute( Reveal::Core::authorization_ptr auth, Reveal::Core::scen
       // TODO: trap and recover
     }
 
-    unsigned trial_index = 0;
+    //unsigned trial_index = 0;
+    double sample_rate = scenario->sample_rate;
+    double time_step = experiment->time_step;
+    double experiment_start_time = scenario->sample_start_time;
+    double experiment_end_time = scenario->sample_end_time;
+    double trial_start_time = experiment_start_time;
+    double trial_end_time;
+    double trial_duration;
+
+    scenario->print();
+
+    if( time_step < sample_rate ) 
+      trial_duration = sample_rate;
+    else
+      trial_duration = time_step;
+
+    trial_end_time = trial_start_time + trial_duration;
+
+    bool get_trial, terminate = false;
 
     printf( "Starting Experiment\n" );
     while( true ) {
+      get_trial = false;
 
-      if( trial_index < scenario->trials ) {
-        // request trial from revealserver
-        // create a trial
-        trial = scenario->get_trial( trial_index );
+      if( solution && solution->t == trial_end_time ) {
+        // recompute trial times
+        trial_start_time = solution->t;
+        trial_end_time = trial_start_time + trial_duration;
+
+        trial = Reveal::Core::trial_ptr( new Reveal::Core::trial_c() );
+        trial->scenario_id = scenario->id;
+        trial->t = trial_start_time;
+
+        get_trial = true;
+      } else if( !trial ) {
+        // first pass so request initial trial
+        trial = Reveal::Core::trial_ptr( new Reveal::Core::trial_c() );
+        trial->scenario_id = scenario->id;
+        trial->t = trial_start_time;
+
+        get_trial = true;
+      }
+
+      // client is block waiting for either a trial or a step command
+      if( get_trial ) {
+        // if it another trial is due, send it
+        trial->print();
 
         bool result = _request_trial( auth, experiment, trial );
         if( !result ) {
           // TODO: error handling
           Reveal::Core::console_c::printline( "request_trial failed" );
+          terminate = true;
         }
 
-        //trial->print();
+        trial->print();
 
-        // write trial to gzipc
-        exchg.build_server_trial( msg, auth, experiment, trial );
+        if( !terminate ) {
+          // write trial to gzipc
+          exchg.build_server_trial( msg, auth, experiment, trial );
 
-        //printf( "writing experiment to gazebo\n" );
-        //printf( "experiment->number_of_trials: %d\n", experiment->number_of_trials );
+          //printf( "writing experiment to gazebo\n" );
+          //printf( "experiment->number_of_trials: %d\n", experiment->number_of_trials );
+          if( _ipc->write( msg ) != Reveal::Core::pipe_c::ERROR_NONE ) {
+            // TODO: trap and recover
+          }
+        } else {
+          exchg.build_server_command_exit( msg, auth );
+
+          if( _ipc->write( msg ) != Reveal::Core::pipe_c::ERROR_NONE ) {
+            // TODO: trap and recover
+          }  
+        }
+      } else {
+        // otherwise send a step command
+
+        exchg.build_server_command_step( msg, auth );
+
         if( _ipc->write( msg ) != Reveal::Core::pipe_c::ERROR_NONE ) {
           // TODO: trap and recover
         }
       }
+
       // TODO : encapsulate in ipc
       zmq_pollitem_t channels[1];
       channels[0].socket = _ipc->socket();
@@ -369,20 +428,24 @@ bool gazebo_c::execute( Reveal::Core::authorization_ptr auth, Reveal::Core::scen
           // TODO: trap and recover
         }
 
-        // forward solution to revealserver
+        // get the solution
         exchg.parse_client_solution( msg, auth, experiment, solution );
 
-        //solution->print();
+        // publish to revealserver if the end of trial is reached
+        if( solution && solution->t == trial_end_time ) {
 
-        // submit the solution to the server
-        bool result = _submit_solution( auth, experiment, solution );
-        if( !result ) {
-          // TODO: error handling
-          Reveal::Core::console_c::printline( "submit_solution failed" );
+          //solution->print();
+
+          // submit the solution to the server
+          bool result = _submit_solution( auth, experiment, solution );
+          if( !result ) {
+            // TODO: error handling
+            Reveal::Core::console_c::printline( "submit_solution failed" );
+          }
+        } else {
+          // the solution is effectively ignored until the simulator has reached
+          // the desired trial_end_time
         }
-
-        // increment trial
-        trial_index++;
       }
 
       // Theoretically branch will not be entered; however, detecting EINTR is 

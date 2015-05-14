@@ -80,8 +80,8 @@ bool importer_c::read_scenario_element( Reveal::Core::xml_element_ptr top, Revea
     } else if( attribute->get_name() == "trials" ) {
       scenario->trials = (unsigned)atoi( attribute->get_value().c_str() );
 */
-    } else if( attribute->get_name() == "steps-per-trial" ) {
-      scenario->steps_per_trial = (unsigned)atoi( attribute->get_value().c_str() );
+    } else if( attribute->get_name() == "sample-rate" ) {
+      scenario->sample_rate = (double)atof( attribute->get_value().c_str() );
     }
   }
 

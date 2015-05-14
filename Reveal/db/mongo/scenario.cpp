@@ -19,24 +19,15 @@ unsigned scenario_c::count( Reveal::DB::database_ptr db ) {
 }
 //-----------------------------------------------------------------------------
 bool scenario_c::insert( Reveal::DB::database_ptr db, Reveal::Core::scenario_ptr scenario ) {
-  mongo::BSONObjBuilder bob;
-  mongo::BSONArrayBuilder bab;
 
-  bob.append( "scenario_id", scenario->id );
-  bob.append( "description", scenario->description );
-  //bob.append( "trials", scenario->trials );
-  bob.append( "steps_per_trial", scenario->steps_per_trial );
-
-  for( unsigned uri = 0; uri < scenario->uris.size(); uri++ )
-    bab.append( scenario->uris[uri] );
-  bob.appendArray( "uris", bab.arr() );
+  mongo::BSONObj obj;
+  map( obj, scenario );
 
   // get mongo service and verify
   mongo_ptr mongo = mongo_c::service( db );
   if( !mongo ) return false;
 
-  // ask mongo to insert
-  return mongo->insert( "scenario", bob.obj() );
+  return mongo->insert( "scenario", obj );
 }
 
 //-----------------------------------------------------------------------------
@@ -58,24 +49,49 @@ bool scenario_c::fetch( Reveal::Core::scenario_ptr& scenario, Reveal::DB::databa
   // TODO:add error handling
   mongo::BSONObj record = cursor->next();
 
-  scenario = Reveal::Core::scenario_ptr( new Reveal::Core::scenario_c() );
-  scenario->id = record.getField( "scenario_id" ).String();
-  scenario->description = record.getField( "description" ).String();
-//  scenario->trials = record.getField( "trials" ).Int();
-  scenario->steps_per_trial = record.getField( "steps_per_trial" ).Int();
+  map( scenario, record );
 
-  mongo::BSONObj bson_uris = record.getObjectField( "uris" );
+  return true;
+}
+
+//-----------------------------------------------------------------------------
+bool scenario_c::map( Reveal::Core::scenario_ptr& scenario, mongo::BSONObj obj ) {
+  scenario = Reveal::Core::scenario_ptr( new Reveal::Core::scenario_c() );
+
+  scenario->id = obj.getField( "scenario_id" ).String();
+  scenario->description = obj.getField( "description" ).String();
+  scenario->sample_rate = obj.getField( "sample_rate" ).Double();
+  scenario->sample_start_time = obj.getField( "sample_start_time" ).Double();
+  scenario->sample_end_time = obj.getField( "sample_end_time" ).Double();
+
+  mongo::BSONObj bson_uris = obj.getObjectField( "uris" );
   std::vector<mongo::BSONElement> vec_uris;
   bson_uris.elems( vec_uris );
 
   for( unsigned i = 0; i < vec_uris.size(); i++ )
     scenario->uris.push_back( vec_uris[i].String() );
 
-  scenario->trials = mongo->count( "trial", BSON( "scenario_id" << scenario_id ) );
+  return true; 
+}
 
-  //printf( "number_of_trials: %u\n", scenario->trials );
+//-----------------------------------------------------------------------------
+bool scenario_c::map( mongo::BSONObj& obj, Reveal::Core::scenario_ptr scenario ) {
+  mongo::BSONObjBuilder bob;
+  mongo::BSONArrayBuilder bab;
 
-  return true;
+  bob.append( "scenario_id", scenario->id );
+  bob.append( "description", scenario->description );
+  bob.append( "sample_rate", scenario->sample_rate );
+  bob.append( "sample_start_time", scenario->sample_start_time );
+  bob.append( "sample_end_time", scenario->sample_end_time );
+
+  for( unsigned uri = 0; uri < scenario->uris.size(); uri++ )
+    bab.append( scenario->uris[uri] );
+  bob.appendArray( "uris", bab.arr() );
+
+  obj = bob.obj();
+
+  return true; 
 }
 
 //-----------------------------------------------------------------------------

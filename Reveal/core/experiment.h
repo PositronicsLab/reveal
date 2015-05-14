@@ -40,8 +40,9 @@ public:
   std::string       experiment_id;
   std::string       session_id;
   std::string       scenario_id;
-  int               number_of_trials;
-  int               steps_per_trial;
+  double            time_step;
+  //int               number_of_trials;
+  //int               steps_per_trial;
 //  std::vector<int>  trial_prescription;
   int               current_trial_index;
   
@@ -66,8 +67,8 @@ public:
     printf( "experiment_id[%s]", experiment_id.c_str() );
     printf( ", session_id[%s]", session_id.c_str() );
     printf( ", scenario_id[%s]", scenario_id.c_str() );
-    printf( ", number_of_trials[%u]", number_of_trials );
-    printf( ", steps_per_trial[%u]", steps_per_trial );
+    //printf( ", number_of_trials[%u]", number_of_trials );
+    //printf( ", steps_per_trial[%u]", steps_per_trial );
   }
 };
 

@@ -37,6 +37,39 @@ bool trial_c::insert( Reveal::DB::database_ptr db, Reveal::Core::trial_ptr trial
 }
 
 //-----------------------------------------------------------------------------
+bool trial_c::fetch( Reveal::Core::trial_ptr& trial, Reveal::DB::database_ptr db, std::string scenario_id, double t ) {
+  std::auto_ptr<mongo::DBClientCursor> cursor;
+//  Reveal::DB::query_c query;
+  Reveal::Core::scenario_ptr ptr;
+
+//  query.trial( scenario_id, trial_id );
+//  fetch( cursor, "trial", query() );
+
+  // get mongo service and verify
+  mongo_ptr mongo = mongo_c::service( db );
+  if( !mongo ) return false;
+
+  mongo->fetch( cursor, "trial", QUERY( "scenario_id" << scenario_id << "t" << t ) );
+
+  if( !cursor->more() ) return false;
+
+  // add error handling
+  mongo::BSONObj record = cursor->next();
+
+  trial = Reveal::Core::trial_ptr( new Reveal::Core::trial_c() );
+  trial->scenario_id = record.getField( "scenario_id" ).String();
+  trial->trial_id = record.getField( "trial_id" ).Int();
+  trial->t = record.getField( "t" ).Double();
+  trial->dt = record.getField( "dt" ).Double();
+
+  model_c::fetch( trial, record );
+
+  trial->print();
+
+  return true;
+}
+/*
+//-----------------------------------------------------------------------------
 bool trial_c::fetch( Reveal::Core::trial_ptr& trial, Reveal::DB::database_ptr db, std::string scenario_id, unsigned trial_id ) {
   std::auto_ptr<mongo::DBClientCursor> cursor;
 //  Reveal::DB::query_c query;
@@ -66,7 +99,7 @@ bool trial_c::fetch( Reveal::Core::trial_ptr& trial, Reveal::DB::database_ptr db
 
   return true;
 }
-
+*/
 //-----------------------------------------------------------------------------
 } // namespace Mongo
 //-----------------------------------------------------------------------------

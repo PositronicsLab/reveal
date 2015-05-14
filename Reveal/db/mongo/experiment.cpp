@@ -24,8 +24,8 @@ bool experiment_c::insert( Reveal::DB::database_ptr db, Reveal::Core::experiment
   bob.append( "experiment_id", experiment->experiment_id );
   bob.append( "session_id", experiment->session_id );
   bob.append( "scenario_id", experiment->scenario_id );
-  bob.append( "trials", experiment->number_of_trials );
-  bob.append( "steps_per_trial", experiment->steps_per_trial );
+  //bob.append( "trials", experiment->number_of_trials );
+  bob.append( "time_step", experiment->time_step );
 
   // TODO: need a loop to serialize or a subdocument
   //bob_experiment.append( "trial_prescription", experiment->trial_prescription );
@@ -61,8 +61,7 @@ bool experiment_c::fetch( Reveal::Core::experiment_ptr& experiment, Reveal::DB::
   experiment->experiment_id = record.getField( "experiment_id" ).String();
   experiment->session_id = record.getField( "session_id" ).String();
   experiment->scenario_id = record.getField( "scenario_id" ).String();
-  experiment->number_of_trials = record.getField( "trials" ).Int();
-  experiment->steps_per_trial = record.getField( "steps_per_trial" ).Int();
+  experiment->time_step = record.getField( "time_step" ).Double();
   // TODO : subdocument for trial prescription
   experiment->current_trial_index = record.getField( "current_trial_index" ).Int();
  

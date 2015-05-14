@@ -125,7 +125,7 @@ namespace gazebo
       //printf( "preupdate called\n" );
 
       // if in the middle of evaluating a trial, get out
-      if( steps_this_trial > 0 ) return;
+      //if( steps_this_trial > 0 ) return;
 
       // otherwise, read next trial state message from reveal client (blocking) 
 //--- monitor
@@ -140,10 +140,17 @@ namespace gazebo
       if( ex_err != Reveal::Core::transport_exchange_c::ERROR_NONE ) {
         //TODO: error handling
       }
-      trial = ex.get_trial();
+      if( ex.get_type() == Reveal::Core::transport_exchange_c::TYPE_TRIAL ) {
+        trial = ex.get_trial();
 //---
-      // set the simulation state from the trial
-      Reveal::Sim::Gazebo::helpers_c::write_trial( trial, _world );
+        // set the simulation state from the trial
+        Reveal::Sim::Gazebo::helpers_c::write_trial( trial, _world );
+      } else if( ex.get_type() == Reveal::Core::transport_exchange_c::TYPE_STEP ) {
+        // do not set state and simply let the simulator continue
+      } else if( ex.get_type() == Reveal::Core::transport_exchange_c::TYPE_EXIT ) {
+        // instruct gazebo to exit
+        exit( 0 );
+      }
     }
 
     //-------------------------------------------------------------------------
@@ -155,11 +162,15 @@ namespace gazebo
       std::string msg;
 
       // if reached the end of the set of steps in the trial
-      if( steps_this_trial == experiment->steps_per_trial ) {
+      //if( steps_this_trial == experiment->steps_per_trial ) {
 
         // get the solution from the simulator
         double t = Reveal::Sim::Gazebo::helpers_c::sim_time( _world );
-        solution = scenario->get_solution( Reveal::Core::solution_c::CLIENT, trial, t );
+        //solution = scenario->get_solution( Reveal::Core::solution_c::CLIENT, trial, t );
+
+        //solution = Reveal::Core::solution_ptr( new Reveal::Core::solution_c( Reveal::Core::solution_c::CLIENT ) );
+        //solution->scenario_id = trial->scenario_id;
+        //solution->t = t;
 
         //_world->extract_solution( trial, solution );
         std::vector<std::string> model_list;
@@ -178,16 +189,15 @@ namespace gazebo
           //TODO: error handling
         }
 //---
-        // if last trial, then exit gazebo
-        if( trial->trial_id == scenario->trials - 1 ) exit( 0 );
 
         // otherwise, we need to reset the trial state, so reset the steps
         steps_this_trial = 0;
-
+/*
       } else {
         // otherwise advance to the next step
         steps_this_trial++;
       }
+*/
     }
   };
 

@@ -37,10 +37,10 @@ public:
   std::vector<std::string> uris;
 
   // virtual fields
-  unsigned trials;  // counted from the number of trials stored in database
-
-  // unclassified fields
-  unsigned steps_per_trial;
+  //unsigned trials;  // counted from the number of trials stored in database
+  double sample_rate;
+  double sample_start_time;
+  double sample_end_time;
 
 /*
   //------
@@ -66,8 +66,9 @@ public:
 ///*
   void print( void ) const {
     printf( "id[%s]", id.c_str() );
-    printf( ", trials[%u]", trials );
-    printf( ", steps_per_trial[%u]", steps_per_trial );
+    printf( ", sample_rate[%f]", sample_rate );
+    printf( ", sample_start_time[%f]", sample_start_time );
+    printf( ", sample_end_time[%f]", sample_end_time );
     printf( ", uris[" );
     for( unsigned i = 0; i < uris.size(); i++ ) {
       if( i > 0 ) printf( ", " );
@@ -76,31 +77,22 @@ public:
     printf( "]\n" );
   }
 //*/
-
-  trial_ptr get_trial( unsigned trial_id ) {
-    assert( trial_id < trials );
-
-    trial_ptr trial = trial_ptr( new trial_c() );
-    trial->scenario_id = id;
-    trial->trial_id = trial_id;
-
-    return trial;
-  }
-
+/*
   solution_ptr get_solution( Reveal::Core::solution_c::type_e type, trial_ptr trial, double t ) {
     assert( trial->scenario_id == id );
-    assert( trial->trial_id < trials );
+    //assert( trial->trial_id < trials );
 
     // TODO : temporary change of adding type into solution constructor.
     solution_ptr solution = solution_ptr( new solution_c( type ) );
     // !!
 
     solution->scenario_id = id;
-    solution->trial_id = trial->trial_id;
+    //solution->trial_id = trial->trial_id;
     solution->t = t;
 
     return solution;
   }
+*/
 };
 
 //-----------------------------------------------------------------------------

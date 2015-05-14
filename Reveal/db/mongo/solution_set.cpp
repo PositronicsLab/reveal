@@ -48,6 +48,8 @@ bool solution_set_c::fetch( Reveal::Core::solution_set_ptr& solution_set, Reveal
   //solution_set->scenario = scenario;
   solution_set->experiment = experiment;
 
+  //TODO:
+/*
   for( unsigned i = 0; i < scenario->trials; i++ ) {
     result = trial_c::fetch( trial, db, scenario_id, i );
     if( !result ) return false;
@@ -61,7 +63,7 @@ bool solution_set_c::fetch( Reveal::Core::solution_set_ptr& solution_set, Reveal
     if( !result ) return false;
     solution_set->add_model( model );
   }
-
+*/
   return true;
 }
 

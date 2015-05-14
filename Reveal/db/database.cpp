@@ -176,11 +176,24 @@ database_c::error_e database_c::insert( Reveal::Core::trial_ptr trial ) {
   return ERROR_NONE;
 }
 
+/*
 //-----------------------------------------------------------------------------
 database_c::error_e database_c::query( Reveal::Core::trial_ptr& trial, const std::string& scenario_id, unsigned trial_id ) {
 
   // TODO : error handling
   Reveal::DB::Mongo::trial_c::fetch( trial, ptr(), scenario_id, trial_id );
+
+  return ERROR_NONE;
+}
+*/
+//-----------------------------------------------------------------------------
+database_c::error_e database_c::query( Reveal::Core::trial_ptr& trial, const std::string& scenario_id, double t ) {
+
+  printf( "t: %f\n", t );
+
+  // TODO : error handling
+  if( !Reveal::DB::Mongo::trial_c::fetch( trial, ptr(), scenario_id, t ) )
+    return ERROR_EMPTYSET;
 
   return ERROR_NONE;
 }

@@ -592,6 +592,8 @@ bool client_c::execute( void ) {
       // TODO: convert error reporting over to Core::error_c
     }
 
+    scenario->print();
+
     // user selects any engine specific parameters
     if( !simulator->ui_select_configuration() ) {
       // TODO: error handling.

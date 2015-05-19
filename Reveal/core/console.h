@@ -78,10 +78,20 @@ public:
   /// prompts the user to enter a floating point number.  If the input is 
   /// invalid the prompt will recycle until a valid input is provided
   /// @param prompt the prompt to print preceding release of control to input
+  /// @param epsilon the computed epsilon value for input value
   /// @param allow_negative defines whether a negative value is acceptable as
   ///        input
   /// @return the validated floating point input
-  static float prompt_float( std::string prompt, bool allow_negative = false );
+  static float prompt_float( std::string prompt, float& epsilon, bool allow_negative = false );
+
+  /// prompts the user to enter a double precision float.  If the input is 
+  /// invalid the prompt will recycle until a valid input is provided
+  /// @param prompt the prompt to print preceding release of control to input
+  /// @param epsilon the computed epsilon value for input value
+  /// @param allow_negative defines whether a negative value is acceptable as
+  ///        input
+  /// @return the validated double precision floating point input
+  static double prompt_double( std::string prompt, double& epsilon, bool allow_negative = false );
 
   /// prompts the user to select from a menu.  If the input is invalid the 
   /// prompt will recycle until a valid input is provided

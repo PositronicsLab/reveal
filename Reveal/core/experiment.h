@@ -14,6 +14,7 @@ by a client to solve a scenario.
 #include <stdio.h>
 #include <string>
 #include "Reveal/core/pointers.h"
+#include "Reveal/core/scenario.h"
 
 //----------------------------------------------------------------------------
 namespace Reveal {
@@ -33,6 +34,12 @@ public:
   };
 
   experiment_c( void ) {}
+  experiment_c( Reveal::Core::scenario_ptr scenario ) {
+    scenario_id = scenario->id;
+    start_time = scenario->sample_start_time;
+    end_time = scenario->sample_end_time;
+    time_step = scenario->sample_rate;
+  }
   virtual ~experiment_c( void ) {}
 
   error_e _error;
@@ -40,18 +47,18 @@ public:
   std::string       experiment_id;
   std::string       session_id;
   std::string       scenario_id;
+  double            start_time;
+  double            end_time;
   double            time_step;
+  double            epsilon;
   //int               number_of_trials;
   //int               steps_per_trial;
 //  std::vector<int>  trial_prescription;
-  int               current_trial_index;
+//  int               current_trial_index;
   
   //                creation_timestamp;
 /*
   //------
-  std::string experiment_uuid;
-  std::string session_uuid;
-  std::string scenario_uuid;
   time_c submission_date;
   unsigned number_of_trials;
   unsigned steps_per_trial;
@@ -67,8 +74,10 @@ public:
     printf( "experiment_id[%s]", experiment_id.c_str() );
     printf( ", session_id[%s]", session_id.c_str() );
     printf( ", scenario_id[%s]", scenario_id.c_str() );
-    //printf( ", number_of_trials[%u]", number_of_trials );
-    //printf( ", steps_per_trial[%u]", steps_per_trial );
+    printf( ", start_time[%f]", start_time );
+    printf( ", end_time[%f]", end_time );
+    printf( ", time_step[%f]", time_step );
+    printf( ", epsilon[%f]\n", epsilon );
   }
 };
 

@@ -66,6 +66,7 @@ set_target_properties( reveal_db PROPERTIES SOVERSION ${REVEAL_MAJOR_VERSION} VE
 install( TARGETS reveal_db DESTINATION ${LIB_INSTALL_DIR} COMPONENT shlib )
 install( FILES ${REVEAL_DB_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/db COMPONENT headers )
 
-#add_subdirectory( test )
-
+if( BUILD_TESTS )
+  add_subdirectory( test )
+endif()
 

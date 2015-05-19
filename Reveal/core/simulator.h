@@ -29,7 +29,7 @@ public:
   typedef boost::function<bool(Reveal::Core::authorization_ptr&, Reveal::Core::experiment_ptr, Reveal::Core::solution_ptr&)> submit_solution_f;
 
   // simulator specific configuration menu(s)
-  virtual bool ui_select_configuration( void ) = 0;
+  virtual bool ui_select_configuration( Reveal::Core::scenario_ptr scenario, Reveal::Core::experiment_ptr experiment ) = 0;
   // simulator tuning menu
   virtual bool ui_select_tuning( void ) = 0;
   // build package command

@@ -5,6 +5,7 @@
 #include <sstream>
 
 #include "Reveal/core/model.h"
+#include "Reveal/core/experiment.h"
 #include "Reveal/core/trial.h"
 #include "Reveal/core/solution.h"
 
@@ -52,10 +53,10 @@ bool helpers_c::write_model( Reveal::Core::model_ptr model, gazebo::physics::Wor
 }
 
 //-----------------------------------------------------------------------------
-bool helpers_c::write_trial( Reveal::Core::trial_ptr trial, gazebo::physics::WorldPtr world ) {
+bool helpers_c::write_trial( Reveal::Core::trial_ptr trial, Reveal::Core::experiment_ptr experiment, gazebo::physics::WorldPtr world ) {
 
   world->SetSimTime( trial->t );
-  world->GetPhysicsEngine()->SetMaxStepSize( trial->dt );
+  world->GetPhysicsEngine()->SetMaxStepSize( experiment->time_step );
 
   for( unsigned i = 0; i < trial->models.size(); i++ ) {
     Reveal::Core::model_ptr model = trial->models[i];
@@ -142,16 +143,16 @@ Reveal::Core::model_ptr helpers_c::read_model( gazebo::physics::WorldPtr world, 
 }
 
 //-----------------------------------------------------------------------------
-Reveal::Core::solution_ptr helpers_c::read_model_solution( gazebo::physics::WorldPtr world, std::vector<std::string> model_list, std::string scenario_id, unsigned trial_id ) {
+Reveal::Core::solution_ptr helpers_c::read_model_solution( gazebo::physics::WorldPtr world, std::vector<std::string> model_list, std::string scenario_id ) {
 
   // create a model solution
   Reveal::Core::solution_ptr solution = Reveal::Core::solution_ptr( new Reveal::Core::solution_c( Reveal::Core::solution_c::MODEL ) );
 
   // map required parameters
   solution->scenario_id = scenario_id;
-  solution->trial_id = trial_id;
+//  solution->trial_id = trial_id;
   solution->t = sim_time( world );
-  solution->dt = step_size( world );
+//  solution->dt = step_size( world );
 
   // map the states of all desired models
   for( unsigned i = 0; i < model_list.size(); i++ ) {
@@ -164,17 +165,17 @@ Reveal::Core::solution_ptr helpers_c::read_model_solution( gazebo::physics::Worl
 }
 
 //-----------------------------------------------------------------------------
-Reveal::Core::solution_ptr helpers_c::read_client_solution( gazebo::physics::WorldPtr world, std::vector<std::string> model_list, std::string scenario_id, unsigned trial_id ) {
+Reveal::Core::solution_ptr helpers_c::read_client_solution( gazebo::physics::WorldPtr world, std::vector<std::string> model_list, std::string scenario_id ) {
 
   // create a client solution
   Reveal::Core::solution_ptr solution = Reveal::Core::solution_ptr( new Reveal::Core::solution_c( Reveal::Core::solution_c::CLIENT ) );
 
   // map required parameters
   solution->scenario_id = scenario_id;
-  solution->trial_id = trial_id;
+//  solution->trial_id = trial_id;
   solution->t = sim_time( world );
   solution->real_time = real_time( world );
-  solution->dt = step_size( world );
+//  solution->dt = step_size( world );
 
   // map the states of all desired models
   for( unsigned i = 0; i < model_list.size(); i++ ) {

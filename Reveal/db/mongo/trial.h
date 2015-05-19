@@ -35,8 +35,20 @@ public:
   ///        trial to search the table for
   /// @param trial_id the index of the trial to fetch
   /// @return true if the instance was populated OR false if fetch failed
-  static bool fetch( Reveal::Core::trial_ptr& trial, database_ptr db, std::string scenario_id, double t );
+  static bool fetch( Reveal::Core::trial_ptr& trial, database_ptr db, std::string scenario_id, double t, double epsilon );
   //static bool fetch( Reveal::Core::trial_ptr& trial, database_ptr db, std::string scenario_id, unsigned trial_id );
+
+  /// maps the bson object into a new instance of a trial
+  /// @param trial instance created and populated on success
+  /// @param obj the bson object to map data from
+  /// @return true if the instance was populated OR false if mapping failed
+  static bool map( Reveal::Core::trial_ptr& trial, mongo::BSONObj obj );
+
+  /// maps the trial instance into a bson object 
+  /// @param obj the bson object to map data into
+  /// @param trial the trial pointer to map data from
+  /// @return true if the instance was populated OR false if mapping failed
+  static bool map( mongo::BSONObj& obj, Reveal::Core::trial_ptr trial );
 
 };
 

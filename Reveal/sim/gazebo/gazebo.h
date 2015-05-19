@@ -24,7 +24,7 @@ class gazebo_c : public Reveal::Core::simulator_c {
 public:
 
   // implementing the simulator_c interface
-  virtual bool ui_select_configuration( void );
+  virtual bool ui_select_configuration( Reveal::Core::scenario_ptr scenario, Reveal::Core::experiment_ptr experiment );
   virtual bool ui_select_tuning( void );
   virtual bool build_package( std::string src_path, std::string build_path );
   virtual bool execute( Reveal::Core::authorization_ptr auth, Reveal::Core::scenario_ptr scenario, Reveal::Core::experiment_ptr experiment );
@@ -61,9 +61,11 @@ public:
   virtual ~gazebo_c( void );
 
 private:
+  double prompt_time_step( Reveal::Core::scenario_ptr scenario, Reveal::Core::experiment_ptr experiment );
   dynamics_e prompt_dynamics( void );
   std::vector< std::string > environment_keys( void );
 
+  double _desired_time_step;
   bool child_quit;
   void child_sighandler( int signum );
   void print_tuning_menu( void ); 

@@ -141,10 +141,11 @@ namespace gazebo
         //TODO: error handling
       }
       if( ex.get_type() == Reveal::Core::transport_exchange_c::TYPE_TRIAL ) {
+        //experiment = ex.get_experiment();
         trial = ex.get_trial();
 //---
         // set the simulation state from the trial
-        Reveal::Sim::Gazebo::helpers_c::write_trial( trial, _world );
+        Reveal::Sim::Gazebo::helpers_c::write_trial( trial, experiment, _world );
       } else if( ex.get_type() == Reveal::Core::transport_exchange_c::TYPE_STEP ) {
         // do not set state and simply let the simulator continue
       } else if( ex.get_type() == Reveal::Core::transport_exchange_c::TYPE_EXIT ) {
@@ -177,7 +178,7 @@ namespace gazebo
         model_list.push_back( "ur10_schunk_arm" );
         model_list.push_back( "block" );
 
-        solution = Reveal::Sim::Gazebo::helpers_c::read_client_solution( _world, model_list, trial->scenario_id, trial->trial_id );
+        solution = Reveal::Sim::Gazebo::helpers_c::read_client_solution( _world, model_list, trial->scenario_id );
 
 //--- monitor
         // and broadcast the solution to the reveal client.

@@ -37,6 +37,7 @@ public:
   virtual ~worker_c( void );
 
   bool execute( boost::shared_ptr<Reveal::DB::database_c> db, const std::string& experiment_id );
+  bool execute( boost::shared_ptr<Reveal::DB::database_c> db, const std::string& experiment_id, double trial_time );
 
   bool batch_execute( boost::shared_ptr<Reveal::DB::database_c> db, const std::string& experiment_id );
 

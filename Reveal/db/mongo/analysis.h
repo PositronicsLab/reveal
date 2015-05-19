@@ -23,7 +23,6 @@ public:
   /// @return true if the record was inserted OR false if insertion failed
   static bool insert( database_ptr db, Reveal::Core::analysis_ptr analysis );
 };
-
 //-----------------------------------------------------------------------------
 } // namespace Mongo
 //-----------------------------------------------------------------------------

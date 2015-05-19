@@ -35,6 +35,17 @@ public:
   /// @return true if the instance was populated OR false if fetch failed
   static bool fetch( Reveal::Core::session_ptr& session, database_ptr db, std::string session_id );
 
+  /// maps the bson object into a new instance of a session
+  /// @param session instance created and populated on success
+  /// @param obj the bson object to map data from
+  /// @return true if the instance was populated OR false if mapping failed
+  static bool map( Reveal::Core::session_ptr& session, mongo::BSONObj obj );
+
+  /// maps the session instance into a bson object 
+  /// @param obj the bson object to map data into
+  /// @param session the session pointer to map data from
+  /// @return true if the instance was populated OR false if mapping failed
+  static bool map( mongo::BSONObj& obj, Reveal::Core::session_ptr session );
 };
 
 //-----------------------------------------------------------------------------

@@ -11,6 +11,8 @@
 #include "Reveal/core/experiment.h"
 
 #include <sstream>
+#include <limits>
+#include <math.h>
 
 //-----------------------------------------------------------------------------
 namespace Reveal {
@@ -102,10 +104,76 @@ gazebo_c::dynamics_e gazebo_c::prompt_dynamics( void ) {
 }
 
 //-----------------------------------------------------------------------------
-bool gazebo_c::ui_select_configuration( void ) {
+bool gazebo_c::ui_select_configuration( Reveal::Core::scenario_ptr scenario, Reveal::Core::experiment_ptr experiment ) {
   _dynamics = prompt_dynamics();
+  _desired_time_step = prompt_time_step( scenario, experiment );
+
+  std::ostringstream ss;
+  ss << _desired_time_step;
+
+  //printf( "Using a time-step of %1.9f\n.", _desired_time_step );
+  //printf( "Using a time-step of %f\n.", _desired_time_step );
+  printf( "Using a time-step of %s\n.", ss.str().c_str() );
 
   return true; 
+}
+
+//-----------------------------------------------------------------------------
+double gazebo_c::prompt_time_step( Reveal::Core::scenario_ptr scenario, Reveal::Core::experiment_ptr experiment ) {
+
+  bool valid = false;
+  double candidate_time_step;
+  double x;
+  std::stringstream ratemsg;
+  ratemsg << "The sample rate is " << scenario->sample_rate;
+
+  //double EPSILON = std::numeric_limits<double>::epsilon();
+  //double EPSILON = 1e-8;
+  //double EPSILON = std::numeric_limits<float>::epsilon();
+ 
+  double epsilon;
+
+  do {
+    Reveal::Core::console_c::printline( ratemsg );
+    //candidate_time_step = (double)Reveal::Core::console_c::prompt_float( "What time-step would you like the experiment to use", false );
+    candidate_time_step = (double)Reveal::Core::console_c::prompt_double( "What time-step would you like the experiment to use", epsilon, false );
+
+    if( candidate_time_step == 0.0 ) {
+      Reveal::Core::console_c::printline( "INVALID: The time-step cannot be zero!" );
+      continue;
+    }
+
+    if( scenario->sample_rate > candidate_time_step ) {
+      //x = scenario->sample_rate / candidate_time_step;
+      x = scenario->sample_rate;
+
+      do {
+        x -= candidate_time_step;
+      } while( x > epsilon );
+    } else if( candidate_time_step > scenario->sample_rate ) {
+      //x = candidate_time_step / scenario->sample_rate;
+      x = candidate_time_step;
+
+      do {
+        x -= scenario->sample_rate;
+      } while( x > epsilon );
+    } else {
+      x = 0.0;
+    }
+    //double m = floor(x);
+    //printf( "sample_rate[%1.24f], time_step[%1.24f], x[%1.24f], EPSILON[%1.24f]\n", scenario->sample_rate, candidate_time_step, x, epsilon );
+    if( fabs(x) <= epsilon ) {
+      valid = true;
+    } else {
+      Reveal::Core::console_c::printline( "INVALID: The time-step must be a factor of the sample rate!" );
+      continue;
+    }
+  } while( !valid );
+
+  experiment->time_step = candidate_time_step;
+  experiment->epsilon = epsilon;
+
+  return candidate_time_step; 
 }
 
 //-----------------------------------------------------------------------------
@@ -176,6 +244,7 @@ bool gazebo_c::build_package( std::string src_path, std::string build_path ) {
 bool gazebo_c::execute( Reveal::Core::authorization_ptr auth, Reveal::Core::scenario_ptr scenario, Reveal::Core::experiment_ptr experiment ) {
 
   scenario->print();
+  printf( "eps[%1.24f]\n", experiment->epsilon );
 
   Reveal::Core::system_c system( Reveal::Core::system_c::CLIENT );
   if( !system.open() ) return false;
@@ -316,9 +385,8 @@ bool gazebo_c::execute( Reveal::Core::authorization_ptr auth, Reveal::Core::scen
     //unsigned trial_index = 0;
     double sample_rate = scenario->sample_rate;
     double time_step = experiment->time_step;
-    double experiment_start_time = scenario->sample_start_time;
-    double experiment_end_time = scenario->sample_end_time;
-    double trial_start_time = experiment_start_time;
+    double epsilon = experiment->epsilon;
+    double trial_start_time = experiment->start_time;
     double trial_end_time;
     double trial_duration;
 
@@ -337,16 +405,20 @@ bool gazebo_c::execute( Reveal::Core::authorization_ptr auth, Reveal::Core::scen
     while( true ) {
       get_trial = false;
 
-      if( solution && solution->t == trial_end_time ) {
-        // recompute trial times
-        trial_start_time = solution->t;
-        trial_end_time = trial_start_time + trial_duration;
+      if( solution ) {
+        double delta = fabs( trial_end_time - solution->t  );
+        printf( "delta[%1.24f], eps[%1.24f]\n", delta, experiment->epsilon );
+        if( fabs(trial_end_time - solution->t ) <= experiment->epsilon ) {
+          // recompute trial times
+          trial_start_time = solution->t;
+          trial_end_time = trial_start_time + trial_duration;
 
-        trial = Reveal::Core::trial_ptr( new Reveal::Core::trial_c() );
-        trial->scenario_id = scenario->id;
-        trial->t = trial_start_time;
+          trial = Reveal::Core::trial_ptr( new Reveal::Core::trial_c() );
+          trial->scenario_id = scenario->id;
+          trial->t = trial_start_time;
 
-        get_trial = true;
+          get_trial = true;
+        }
       } else if( !trial ) {
         // first pass so request initial trial
         trial = Reveal::Core::trial_ptr( new Reveal::Core::trial_c() );
@@ -359,7 +431,7 @@ bool gazebo_c::execute( Reveal::Core::authorization_ptr auth, Reveal::Core::scen
       // client is block waiting for either a trial or a step command
       if( get_trial ) {
         // if it another trial is due, send it
-        trial->print();
+        //trial->print();
 
         bool result = _request_trial( auth, experiment, trial );
         if( !result ) {
@@ -368,9 +440,11 @@ bool gazebo_c::execute( Reveal::Core::authorization_ptr auth, Reveal::Core::scen
           terminate = true;
         }
 
-        trial->print();
+        //trial->print();
 
         if( !terminate ) {
+          printf( "(client) forwarding trial\n" );
+
           // write trial to gzipc
           exchg.build_server_trial( msg, auth, experiment, trial );
 
@@ -380,6 +454,7 @@ bool gazebo_c::execute( Reveal::Core::authorization_ptr auth, Reveal::Core::scen
             // TODO: trap and recover
           }
         } else {
+          printf( "(client) issuing terminate command\n" );
           exchg.build_server_command_exit( msg, auth );
 
           if( _ipc->write( msg ) != Reveal::Core::pipe_c::ERROR_NONE ) {
@@ -388,6 +463,8 @@ bool gazebo_c::execute( Reveal::Core::authorization_ptr auth, Reveal::Core::scen
         }
       } else {
         // otherwise send a step command
+
+        printf( "(client) issuing step command\n" );
 
         exchg.build_server_command_step( msg, auth );
 
@@ -422,7 +499,6 @@ bool gazebo_c::execute( Reveal::Core::authorization_ptr auth, Reveal::Core::scen
       }
 
       if( channels[0].revents & ZMQ_POLLIN ) {
-
         // read solution from message
         if( _ipc->read( msg ) != Reveal::Core::pipe_c::ERROR_NONE ) {
           // TODO: trap and recover
@@ -432,15 +508,20 @@ bool gazebo_c::execute( Reveal::Core::authorization_ptr auth, Reveal::Core::scen
         exchg.parse_client_solution( msg, auth, experiment, solution );
 
         // publish to revealserver if the end of trial is reached
-        if( solution && solution->t == trial_end_time ) {
+        //if( solution && solution->t == trial_end_time ) {
+        if( solution ) {
+          printf( "(client) received solution\n" );
+          if( fabs(trial_end_time - solution->t ) <= experiment->epsilon ) {
+            printf( "(client) fowarding solution\n" );
 
-          //solution->print();
+            //solution->print();
 
-          // submit the solution to the server
-          bool result = _submit_solution( auth, experiment, solution );
-          if( !result ) {
-            // TODO: error handling
-            Reveal::Core::console_c::printline( "submit_solution failed" );
+            // submit the solution to the server
+            bool result = _submit_solution( auth, experiment, solution );
+            if( !result ) {
+              // TODO: error handling
+              Reveal::Core::console_c::printline( "submit_solution failed" );
+            }
           }
         } else {
           // the solution is effectively ignored until the simulator has reached

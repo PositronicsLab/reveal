@@ -13,18 +13,7 @@ namespace Mongo {
 //-----------------------------------------------------------------------------
 bool solution_c::insert( Reveal::DB::database_ptr db, Reveal::Core::solution_ptr solution ) {
   std::string table;
-
-  mongo::BSONObjBuilder bob;
-  if( solution->type == Reveal::Core::solution_c::CLIENT )
-    bob.append( "experiment_id", solution->experiment_id );
-  bob.append( "scenario_id", solution->scenario_id );
-  bob.append( "trial_id", solution->trial_id );
-  bob.append( "t", solution->t );
-  bob.append( "dt", solution->dt );
-  if( solution->type == Reveal::Core::solution_c::CLIENT )
-    bob.append( "real_time", solution->real_time );
-
-  model_c::insert( bob, solution->models, false );
+  mongo::BSONObj obj;
 
   if( solution->type == Reveal::Core::solution_c::CLIENT )
     table = "solution";
@@ -35,11 +24,13 @@ bool solution_c::insert( Reveal::DB::database_ptr db, Reveal::Core::solution_ptr
   mongo_ptr mongo = mongo_c::service( db );
   if( !mongo ) return false;
 
-  return mongo->insert( table, bob.obj() );
+  map( obj, solution );
+
+  return mongo->insert( table, obj );
 }
 
 //-----------------------------------------------------------------------------
-bool solution_c::fetch( Reveal::Core::solution_ptr& solution, Reveal::DB::database_ptr db, Reveal::Core::solution_c::type_e type, std::string scenario_id, unsigned trial_id ) {
+bool solution_c::fetch( Reveal::Core::solution_ptr& solution, Reveal::DB::database_ptr db, Reveal::Core::solution_c::type_e type, std::string scenario_id, double t, double epsilon ) {
   std::auto_ptr<mongo::DBClientCursor> cursor;
   Reveal::Core::scenario_ptr ptr;
   std::string table;
@@ -52,31 +43,23 @@ bool solution_c::fetch( Reveal::Core::solution_ptr& solution, Reveal::DB::databa
   mongo_ptr mongo = mongo_c::service( db );
   if( !mongo ) return false;
 
-  mongo->fetch( cursor, table, QUERY( "scenario_id" << scenario_id << "trial_id" << trial_id ) );
+  double lbound = t - epsilon;
+  double ubound = t + epsilon;
+
+  mongo->fetch( cursor, table, QUERY( "scenario_id" << scenario_id << "t" << mongo::GTE << lbound << mongo::LTE << ubound ) );
 
   if( !cursor->more() ) return false;
 
-  // add error handling
+  // TODO: add error handling
   mongo::BSONObj record = cursor->next();
 
-  solution = Reveal::Core::solution_ptr( new Reveal::Core::solution_c( type ) );
-
-  if( type == Reveal::Core::solution_c::CLIENT )
-    solution->experiment_id = record.getField( "experiment_id" ).String();
-  solution->scenario_id = record.getField( "scenario_id" ).String();
-  solution->trial_id = record.getField( "trial_id" ).Int();
-  solution->t = record.getField( "t" ).Double();
-  solution->dt = record.getField( "dt" ).Double();
-  if( type == Reveal::Core::solution_c::CLIENT )
-    solution->real_time = record.getField( "real_time" ).Double();
-
-  model_c::fetch( solution, record );
+  map( solution, record, type );
 
   return true;
 }
 
 //-----------------------------------------------------------------------------
-bool solution_c::fetch( Reveal::Core::solution_ptr& solution, Reveal::DB::database_ptr db, std::string experiment_id, std::string scenario_id, unsigned trial_id ) {
+bool solution_c::fetch( Reveal::Core::solution_ptr& solution, Reveal::DB::database_ptr db, std::string experiment_id, std::string scenario_id, double t, double epsilon ) {
   std::auto_ptr<mongo::DBClientCursor> cursor;
   Reveal::Core::scenario_ptr ptr;
   std::string table = "solution";
@@ -84,23 +67,54 @@ bool solution_c::fetch( Reveal::Core::solution_ptr& solution, Reveal::DB::databa
   mongo_ptr mongo = mongo_c::service( db );
   if( !mongo ) return false;
 
-  mongo->fetch( cursor, table, QUERY( "experiment_id" << experiment_id << "scenario_id" << scenario_id << "trial_id" << trial_id ) );
+  double lbound = t - epsilon;
+  double ubound = t + epsilon;
+
+  mongo->fetch( cursor, table, QUERY( "experiment_id" << experiment_id << "scenario_id" << scenario_id << "t" << mongo::GTE << lbound << mongo::LTE << ubound ) );
 
   if( !cursor->more() ) return false;
 
-  // add error handling
+  // TODO: add error handling
   mongo::BSONObj record = cursor->next();
 
-  solution = Reveal::Core::solution_ptr( new Reveal::Core::solution_c( Reveal::Core::solution_c::CLIENT ) );
+  map( solution, record, Reveal::Core::solution_c::CLIENT );
 
-  solution->experiment_id = record.getField( "experiment_id" ).String();
-  solution->scenario_id = record.getField( "scenario_id" ).String();
-  solution->trial_id = record.getField( "trial_id" ).Int();
-  solution->t = record.getField( "t" ).Double();
-  solution->dt = record.getField( "dt" ).Double();
-  solution->real_time = record.getField( "real_time" ).Double();
+  return true;
+}
 
-  model_c::fetch( solution, record );
+//-----------------------------------------------------------------------------
+bool solution_c::map( Reveal::Core::solution_ptr& solution, mongo::BSONObj obj, Reveal::Core::solution_c::type_e type ) { 
+  solution = Reveal::Core::solution_ptr( new Reveal::Core::solution_c( type ) );
+
+  if( type == Reveal::Core::solution_c::CLIENT )
+    solution->experiment_id = obj.getField( "experiment_id" ).String();
+  solution->scenario_id = obj.getField( "scenario_id" ).String();
+//  solution->trial_id = obj.getField( "trial_id" ).Int();
+  solution->t = obj.getField( "t" ).Double();
+//  solution->dt = obj.getField( "dt" ).Double();
+  if( type == Reveal::Core::solution_c::CLIENT )
+    solution->real_time = obj.getField( "real_time" ).Double();
+
+  model_c::fetch( solution, obj );
+
+  return true;
+}
+
+//-----------------------------------------------------------------------------
+bool solution_c::map( mongo::BSONObj& obj, Reveal::Core::solution_ptr solution ) {
+  mongo::BSONObjBuilder bob;
+  if( solution->type == Reveal::Core::solution_c::CLIENT )
+    bob.append( "experiment_id", solution->experiment_id );
+  bob.append( "scenario_id", solution->scenario_id );
+//  bob.append( "trial_id", solution->trial_id );
+  bob.append( "t", solution->t );
+//  bob.append( "dt", solution->dt );
+  if( solution->type == Reveal::Core::solution_c::CLIENT )
+    bob.append( "real_time", solution->real_time );
+
+  model_c::insert( bob, solution->models, false );
+
+  obj = bob.obj();
 
   return true;
 }

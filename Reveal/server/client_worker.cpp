@@ -111,7 +111,7 @@ void worker_c::work( void ) {
         //printf( "client_scenario:\n" );
         //scenario->print();
 
-        service_experiment_request( auth, scenario_name );
+        service_experiment_request( auth, scenario_name, experiment );
         // TODO : error checking
       } else {
         service_failed_authorization( auth );
@@ -125,7 +125,7 @@ void worker_c::work( void ) {
         Reveal::Core::trial_ptr trial = exchange.get_trial();      
 
         trial->print();
-        service_trial_request( auth, experiment, trial->t );
+        service_trial_request( auth, experiment, trial->t, experiment->epsilon );
         // TODO : error checking
       } else {
         service_failed_authorization( auth );
@@ -230,13 +230,15 @@ bool worker_c::create_session( Reveal::Core::authorization_ptr auth, Reveal::Cor
 bool worker_c::create_experiment( Reveal::Core::authorization_ptr auth, Reveal::Core::scenario_ptr scenario, Reveal::Core::experiment_ptr& experiment ) {
   Reveal::DB::database_c::error_e db_error;
 
-  experiment = Reveal::Core::experiment_ptr( new Reveal::Core::experiment_c() );
+  //experiment = Reveal::Core::experiment_ptr( new Reveal::Core::experiment_c() );
   experiment->experiment_id = Reveal::Server::generate_uuid();
   experiment->session_id = auth->get_session();
-  experiment->scenario_id = scenario->id;
-  //experiment->number_of_trials = scenario->trials;
-  //experiment->steps_per_trial = scenario->steps_per_trial;
-  experiment->current_trial_index = 0;
+  //TODO: validate that experiment values within bounds of scenario
+
+  //experiment->scenario_id = scenario->id;
+  //experiment->start_time = scenario->sample_start_time;
+  //experiment->end_time = scenario->sample_end_time;
+  //experiment->current_trial_index = 0;
 
   db_error = _db->insert( experiment );
   if( db_error == Reveal::DB::database_c::ERROR_NONE )
@@ -425,12 +427,12 @@ worker_c::error_e worker_c::service_digest_request( Reveal::Core::authorization_
 }
 
 //-----------------------------------------------------------------------------
-worker_c::error_e worker_c::service_experiment_request( Reveal::Core::authorization_ptr auth, std::string scenario_id ) {
+worker_c::error_e worker_c::service_experiment_request( Reveal::Core::authorization_ptr auth, std::string scenario_id, Reveal::Core::experiment_ptr experiment ) {
   printf( "experiment requested\n" );
+  printf( "eps[%1.32f]\n", experiment->epsilon );
 
   Reveal::Core::transport_exchange_c exchange;
   Reveal::Core::scenario_ptr scenario;
-  Reveal::Core::experiment_ptr experiment;
   std::string reply;
 
   Reveal::DB::database_c::error_e db_error = _db->query( scenario, scenario_id );
@@ -522,7 +524,7 @@ worker_c::error_e worker_c::service_trial_request( Reveal::Core::authorization_p
 }
 */
 //-----------------------------------------------------------------------------
-worker_c::error_e worker_c::service_trial_request( Reveal::Core::authorization_ptr auth, Reveal::Core::experiment_ptr experiment, double t ) {
+worker_c::error_e worker_c::service_trial_request( Reveal::Core::authorization_ptr auth, Reveal::Core::experiment_ptr experiment, double t, double epsilon ) {
   //printf( "trial requested scenario_id[%s], trial_id[%u]\n", experiment->scenario_id.c_str(), trial_id );
 
   Reveal::Core::transport_exchange_c exchange;
@@ -530,7 +532,7 @@ worker_c::error_e worker_c::service_trial_request( Reveal::Core::authorization_p
   std::string reply;
 
   // query the database for trial data
-  Reveal::DB::database_c::error_e db_error = _db->query( trial, experiment->scenario_id, t );
+  Reveal::DB::database_c::error_e db_error = _db->query( trial, experiment->scenario_id, t, epsilon );
   // TODO: Validation
 
   if( db_error == Reveal::DB::database_c::ERROR_NONE ) {
@@ -614,15 +616,17 @@ worker_c::error_e worker_c::service_solution_submission( Reveal::Core::authoriza
   // for an initial development, this is the best approach
   // If the trial is the 'last' trial, run analytics.
 
-  //TODO:
+  //TODO: FIX
   //if( solution->trial_id == (unsigned)experiment->number_of_trials - 1 ) {
+  //if( solution->t + experiment->time_step > experiment->end_time ) {
     printf( "Experiment {%s} has completed.  Starting analytics.\n", experiment->experiment_id.c_str() );
 
     // need a temporary (for this mode only) contructor for passing database and
     // the scenario data in
     Reveal::Analytics::worker_c analytics_worker;
 
-    if( !analytics_worker.execute( _db, experiment->experiment_id ) ) {
+    if( !analytics_worker.execute( _db, experiment->experiment_id, solution->t ) ) {
+    //if( !analytics_worker.execute( _db, experiment->experiment_id ) ) {
     //if( !analytics_worker.batch_execute( _db, experiment->experiment_id ) ) {
       printf( "Analytics failed to complete on Experiment {%s}\n", experiment->experiment_id.c_str() );
     } else {

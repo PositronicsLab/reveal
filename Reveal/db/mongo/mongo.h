@@ -66,6 +66,8 @@ public:
   /// @return false if update succeeded OR false if failed for any reason
   bool update( std::string table, mongo::BSONObj query, mongo::BSONObj where );
 
+  bool create_index( std::string table, mongo::BSONObj keys, bool unique = false );
+
 private:
   /// indicates whether the database connection is currently open
   bool                         _open;

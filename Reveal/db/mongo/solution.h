@@ -29,10 +29,10 @@ public:
   /// @param type the type of solution CLIENT or MODEL to fetch
   /// @param scenario_id the unique identifier of the scenario that owns the 
   ///        solution to search the table for
-  /// @param trial_id the index of the trial associated with the solution to 
-  ///        fetch
+  /// @param t the time of the trial associated with the solution to fetch
+  /// @param epsilon the error allowed in the time computation
   /// @return true if the instance was populated OR false if fetch failed
-  static bool fetch( Reveal::Core::solution_ptr& solution, database_ptr db, Reveal::Core::solution_c::type_e type, std::string scenario_id, unsigned trial_id );
+  static bool fetch( Reveal::Core::solution_ptr& solution, database_ptr db, Reveal::Core::solution_c::type_e type, std::string scenario_id, double t, double epsilon );
 
   /// fetches an instance of a CLIENT solution specified from the database
   /// @param solution instance populated with data on success
@@ -41,10 +41,22 @@ public:
   ///        the solution to search the table for
   /// @param scenario_id the unique identifier of the scenario that owns the 
   ///        solution to search the table for
-  /// @param trial_id the index of the trial associated with the solution to 
-  ///        fetch
+  /// @param t the time of the trial associated with the solution to fetch
+  /// @param epsilon the error allowed in the time computation
   /// @return true if the instance was populated OR false if fetch failed
-  static bool fetch( Reveal::Core::solution_ptr& solution, database_ptr db, std::string experiment_id, std::string scenario_id, unsigned trial_id );
+  static bool fetch( Reveal::Core::solution_ptr& solution, database_ptr db, std::string experiment_id, std::string scenario_id, double t, double epsilon );
+
+  /// maps the bson object into a new instance of a solution
+  /// @param solution instance created and populated on success
+  /// @param obj the bson object to map data from
+  /// @return true if the instance was populated OR false if mapping failed
+  static bool map( Reveal::Core::solution_ptr& solution, mongo::BSONObj obj, Reveal::Core::solution_c::type_e type );
+
+  /// maps the solution instance into a bson object 
+  /// @param obj the bson object to map data into
+  /// @param solution the solution pointer to map data from
+  /// @return true if the instance was populated OR false if mapping failed
+  static bool map( mongo::BSONObj& obj, Reveal::Core::solution_ptr solution );
 
 };
 

@@ -117,6 +117,14 @@ bool mongo_c::update( const std::string table, mongo::BSONObj query, mongo::BSON
 }
 
 //-----------------------------------------------------------------------------
+bool mongo_c::create_index( const std::string table, mongo::BSONObj keys, bool unique ) {
+  if( !_open ) return false;
+
+  std::string document = _dbname + "." + table;
+  return _connection.ensureIndex( document, keys, unique );
+}
+
+//-----------------------------------------------------------------------------
 } // namespace Mongo
 //-----------------------------------------------------------------------------
 } // namespace DB

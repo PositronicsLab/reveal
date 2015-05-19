@@ -264,9 +264,7 @@ client_c::error_e client_c::request_experiment( Reveal::Core::authorization_ptr&
   client_exchange.set_error( Reveal::Core::transport_exchange_c::ERROR_NONE );
 
   client_exchange.set_authorization( auth );
-
-  experiment = Reveal::Core::experiment_ptr( new Reveal::Core::experiment_c() );
-  experiment->scenario_id = scenario->id;
+  client_exchange.set_scenario( scenario );
   client_exchange.set_experiment( experiment );
 
   // build the request message
@@ -583,19 +581,13 @@ bool client_c::execute( void ) {
 
     // fetch scenario
     scenario = digest->get_scenario( scenario_choice );
-
-    // request experiment
-    error = request_experiment( _auth, scenario, experiment );
-    if( error != ERROR_NONE ) {
-      printf( "ERROR: client failed to receive experiment\n" );
-      // TODO: error handling
-      // TODO: convert error reporting over to Core::error_c
-    }
-
     scenario->print();
 
+    // create an experiment
+    experiment = Reveal::Core::experiment_ptr( new Reveal::Core::experiment_c( scenario ) );
+
     // user selects any engine specific parameters
-    if( !simulator->ui_select_configuration() ) {
+    if( !simulator->ui_select_configuration( scenario, experiment ) ) {
       // TODO: error handling.
       // if false, no choice but to bomb with unrecognized/unrecoverable
     }
@@ -605,6 +597,17 @@ bool client_c::execute( void ) {
       // TODO: error handling.
       // if false, no choice but to bomb with unrecognized/unrecoverable
     }
+
+    // request experiment
+    error = request_experiment( _auth, scenario, experiment );
+    if( error != ERROR_NONE ) {
+      printf( "ERROR: client failed to receive experiment\n" );
+      // TODO: error handling
+      // TODO: convert error reporting over to Core::error_c
+    }
+
+    experiment->print();
+    printf( "eps[%1.24f]\n", experiment->epsilon );
 
     std::string pkg_image_path, pkg_tmp_path;
     std::string pkg_source_path, pkg_build_path;

@@ -24,7 +24,7 @@ public:
   static bool write_model( Reveal::Core::model_ptr model, gazebo::physics::WorldPtr world );
 
   // write a reveal trial into gazebo to update the simulator
-  static bool write_trial( Reveal::Core::trial_ptr trial, gazebo::physics::WorldPtr world );
+  static bool write_trial( Reveal::Core::trial_ptr trial, Reveal::Core::experiment_ptr experiment, gazebo::physics::WorldPtr world );
 
   // read out a gazebo state as a gazebo trial
 
@@ -32,10 +32,10 @@ public:
   static Reveal::Core::model_ptr read_model( gazebo::physics::WorldPtr world, std::string model_name, std::map<std::string,double> control );
 
   // read out a gazebo state as a reveal model solution
-  static Reveal::Core::solution_ptr read_model_solution( gazebo::physics::WorldPtr world, std::vector<std::string> model_list, std::string scenario_id, unsigned trial_id );
+  static Reveal::Core::solution_ptr read_model_solution( gazebo::physics::WorldPtr world, std::vector<std::string> model_list, std::string scenario_id );
 
   // read out a gazebo state as a reveal client solution
-  static Reveal::Core::solution_ptr read_client_solution( gazebo::physics::WorldPtr world, std::vector<std::string> model_list, std::string scenario_id, unsigned trial_id );
+  static Reveal::Core::solution_ptr read_client_solution( gazebo::physics::WorldPtr world, std::vector<std::string> model_list, std::string scenario_id );
 
   // map a reveal state's angular velocity into a gazebo vector
   static gazebo::math::Vector3 position( const Reveal::Core::state_c& state );

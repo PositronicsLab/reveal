@@ -32,16 +32,16 @@ public:
   virtual ~trial_c( void ) {}
 
   std::string scenario_id;
-  unsigned trial_id;
+//  unsigned trial_id;
   double t;
-  double dt;
+  //double dt;
   std::vector<model_ptr> models;
 
   void print( void ) {
     printf( "scenario_id[%s]", scenario_id.c_str() );
-    printf( ", trial_id[%u]", trial_id );
+//    printf( ", trial_id[%u]", trial_id );
     printf( ", t[%f]", t );
-    printf( ", dt[%f]", dt );
+    //printf( ", dt[%f]", dt );
 
     printf( ", models { " );
     for( unsigned i = 0; i < models.size(); i++ ) {

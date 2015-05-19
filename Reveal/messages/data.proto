@@ -47,25 +47,27 @@ message Digest {
 message Experiment {
   optional string experiment_id = 1;
   optional string scenario_id = 2;
-  //optional int32 trials = 3;
-  optional double time_step = 3;
+  optional double start_time = 3;
+  optional double end_time = 4;
+  optional double time_step = 5;
+  optional double epsilon = 6;
 }
 
 // A single trial within a scenario
 message Trial {
   required string scenario_id = 1;
-  required uint32 trial_id = 2;
+//  required uint32 trial_id = 2;
   optional double t = 3;
-  optional double dt = 4;
+//  optional double dt = 4;
   repeated Model model = 5;
 }
 
 // A single solution for a given trial within a scenario
 message Solution {
   required string scenario_id = 1;
-  required uint32 trial_id = 2;
+//  required uint32 trial_id = 2;
   optional double t = 3;
-  optional double dt = 4;
+//  optional double dt = 4;
   optional double real_time = 5;
   repeated Model model = 6;
 }

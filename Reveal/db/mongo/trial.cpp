@@ -20,86 +20,74 @@ unsigned trial_c::count( Reveal::DB::database_ptr db ) {
 }
 //-----------------------------------------------------------------------------
 bool trial_c::insert( Reveal::DB::database_ptr db, Reveal::Core::trial_ptr trial ) {
+  mongo::BSONObj obj;
+
+  // get mongo service and verify
+  mongo_ptr mongo = mongo_c::service( db );
+  if( !mongo ) return false;
+
+  map( obj, trial );
+
+  return mongo->insert( "trial", obj );
+}
+
+//-----------------------------------------------------------------------------
+bool trial_c::fetch( Reveal::Core::trial_ptr& trial, Reveal::DB::database_ptr db, std::string scenario_id, double t, double epsilon ) {
+  std::auto_ptr<mongo::DBClientCursor> cursor;
+//  Reveal::DB::query_c query;
+  Reveal::Core::scenario_ptr ptr;
+
+  // get mongo service and verify
+  mongo_ptr mongo = mongo_c::service( db );
+  if( !mongo ) return false;
+
+  double lbound = t - epsilon;
+  double ubound = t + epsilon;
+
+  //mongo->fetch( cursor, "trial", QUERY( "scenario_id" << scenario_id << "t" << t ) );
+  mongo->fetch( cursor, "trial", QUERY( "scenario_id" << scenario_id << "t" << mongo::GTE << lbound << mongo::LTE << ubound) );
+
+  if( !cursor->more() ) return false;
+
+  // add error handling
+  mongo::BSONObj record = cursor->next();
+
+  map( trial, record );
+
+  return true;
+}
+
+//-----------------------------------------------------------------------------
+bool trial_c::map( Reveal::Core::trial_ptr& trial, mongo::BSONObj obj ) { 
+
+  trial = Reveal::Core::trial_ptr( new Reveal::Core::trial_c() );
+
+  trial->scenario_id = obj.getField( "scenario_id" ).String();
+//  trial->trial_id = obj.getField( "trial_id" ).Int();
+  trial->t = obj.getField( "t" ).Double();
+//  trial->dt = obj.getField( "dt" ).Double();
+
+  model_c::fetch( trial, obj );
+
+  return true;
+}
+
+//-----------------------------------------------------------------------------
+bool trial_c::map( mongo::BSONObj& obj, Reveal::Core::trial_ptr trial ) {
 
   mongo::BSONObjBuilder bob;
   bob.append( "scenario_id", trial->scenario_id );
-  bob.append( "trial_id", trial->trial_id );
+//  bob.append( "trial_id", trial->trial_id );
   bob.append( "t", trial->t );
-  bob.append( "dt", trial->dt );
+//  bob.append( "dt", trial->dt );
 
   model_c::insert( bob, trial->models, true );
 
-  // get mongo service and verify
-  mongo_ptr mongo = mongo_c::service( db );
-  if( !mongo ) return false;
-
-  return mongo->insert( "trial", bob.obj() );
-}
-
-//-----------------------------------------------------------------------------
-bool trial_c::fetch( Reveal::Core::trial_ptr& trial, Reveal::DB::database_ptr db, std::string scenario_id, double t ) {
-  std::auto_ptr<mongo::DBClientCursor> cursor;
-//  Reveal::DB::query_c query;
-  Reveal::Core::scenario_ptr ptr;
-
-//  query.trial( scenario_id, trial_id );
-//  fetch( cursor, "trial", query() );
-
-  // get mongo service and verify
-  mongo_ptr mongo = mongo_c::service( db );
-  if( !mongo ) return false;
-
-  mongo->fetch( cursor, "trial", QUERY( "scenario_id" << scenario_id << "t" << t ) );
-
-  if( !cursor->more() ) return false;
-
-  // add error handling
-  mongo::BSONObj record = cursor->next();
-
-  trial = Reveal::Core::trial_ptr( new Reveal::Core::trial_c() );
-  trial->scenario_id = record.getField( "scenario_id" ).String();
-  trial->trial_id = record.getField( "trial_id" ).Int();
-  trial->t = record.getField( "t" ).Double();
-  trial->dt = record.getField( "dt" ).Double();
-
-  model_c::fetch( trial, record );
-
-  trial->print();
+  obj = bob.obj();
 
   return true;
 }
-/*
-//-----------------------------------------------------------------------------
-bool trial_c::fetch( Reveal::Core::trial_ptr& trial, Reveal::DB::database_ptr db, std::string scenario_id, unsigned trial_id ) {
-  std::auto_ptr<mongo::DBClientCursor> cursor;
-//  Reveal::DB::query_c query;
-  Reveal::Core::scenario_ptr ptr;
 
-//  query.trial( scenario_id, trial_id );
-//  fetch( cursor, "trial", query() );
-
-  // get mongo service and verify
-  mongo_ptr mongo = mongo_c::service( db );
-  if( !mongo ) return false;
-
-  mongo->fetch( cursor, "trial", QUERY( "scenario_id" << scenario_id << "trial_id" << trial_id ) );
-
-  if( !cursor->more() ) return false;
-
-  // add error handling
-  mongo::BSONObj record = cursor->next();
-
-  trial = Reveal::Core::trial_ptr( new Reveal::Core::trial_c() );
-  trial->scenario_id = record.getField( "scenario_id" ).String();
-  trial->trial_id = record.getField( "trial_id" ).Int();
-  trial->t = record.getField( "t" ).Double();
-  trial->dt = record.getField( "dt" ).Double();
-
-  model_c::fetch( trial, record );
-
-  return true;
-}
-*/
 //-----------------------------------------------------------------------------
 } // namespace Mongo
 //-----------------------------------------------------------------------------

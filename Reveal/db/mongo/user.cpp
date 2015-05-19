@@ -19,15 +19,15 @@ unsigned user_c::count( Reveal::DB::database_ptr db ) {
 }
 //-----------------------------------------------------------------------------
 bool user_c::insert( Reveal::DB::database_ptr db, Reveal::Core::user_ptr user ) {
-  mongo::BSONObjBuilder bob;
-
-  bob.append( "user_id", user->id );
+  mongo::BSONObj obj;
 
   // get mongo service and verify
   mongo_ptr mongo = mongo_c::service( db );
   if( !mongo ) return false;
 
-  return mongo->insert( "user", bob.obj() );
+  map( obj, user );
+
+  return mongo->insert( "user", obj );
 }
 
 //-----------------------------------------------------------------------------
@@ -46,9 +46,28 @@ bool user_c::fetch( Reveal::Core::user_ptr& user, Reveal::DB::database_ptr db, s
   // TODO:add error handling
   mongo::BSONObj record = cursor->next();
 
+  map( user, record );
+
+  return true;
+}
+
+//-----------------------------------------------------------------------------
+bool user_c::map( Reveal::Core::user_ptr& user, mongo::BSONObj obj ) { 
+
   user = Reveal::Core::user_ptr( new Reveal::Core::user_c() );
-  user->id = record.getField( "user_id" ).String();
-  // TODO expand as needed
+  user->id = obj.getField( "user_id" ).String();
+
+  return true;
+}
+
+//-----------------------------------------------------------------------------
+bool user_c::map( mongo::BSONObj& obj, Reveal::Core::user_ptr user ) {
+
+  mongo::BSONObjBuilder bob;
+
+  bob.append( "user_id", user->id );
+
+  obj = bob.obj();
 
   return true;
 }

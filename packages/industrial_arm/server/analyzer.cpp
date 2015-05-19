@@ -248,6 +248,8 @@ extern "C" {
 //-------------------------------------------------------------------------
 error_e analyze( Reveal::Core::solution_set_ptr input, Reveal::Core::analysis_ptr& output ) {
 
+  printf( "(analyzer) analyze started\n" );
+
   // Note: better handled with a thread pool.  For even moderate data set sizes
   // this takes a long time as a single thread
 
@@ -305,7 +307,7 @@ error_e analyze( Reveal::Core::solution_set_ptr input, Reveal::Core::analysis_pt
   for( unsigned i = 0; i < input->solutions.size(); i++ ) {
     Reveal::Core::solution_ptr solution = input->solutions[i];
     double t = solution->t;
-    double dt = solution->dt;
+    double dt = input->experiment->time_step;//TODO:WARNING:this dt may be wrong
     double real_time = solution->real_time;
 
     //std::vector<double> avgKEs;
@@ -331,6 +333,9 @@ error_e analyze( Reveal::Core::solution_set_ptr input, Reveal::Core::analysis_pt
     values.push_back( real_time );
     output->add_row( values );
   }
+
+  printf( "(analyzer) analyze finished\n" );
+
   return ERROR_NONE;
 }
 

@@ -36,6 +36,17 @@ public:
   /// @return true if the instance was populated OR false if fetch failed
   static bool fetch( Reveal::Core::analyzer_ptr& analyzer, database_ptr db, std::string scenario_id );
 
+  /// maps the bson object into a new instance of an analyzer
+  /// @param analyzer instance created and populated on success
+  /// @param obj the bson object to map data from
+  /// @return true if the instance was populated OR false if mapping failed
+  static bool map( Reveal::Core::analyzer_ptr& analyzer, mongo::BSONObj obj );
+
+  /// maps the analyzer instance into a bson object 
+  /// @param obj the bson object to map data into
+  /// @param analyzer the analyzer pointer to map data from
+  /// @return true if the instance was populated OR false if mapping failed
+  static bool map( mongo::BSONObj& obj, Reveal::Core::analyzer_ptr analyzer );
 };
 
 //-----------------------------------------------------------------------------

@@ -31,9 +31,12 @@ public:
   /// @param db the reveal/mongo database to fetch the record from
   /// @param experiment_id the unique experiment identifier to search over all
   ///        solutions
-  /// @param trial_id the trial index to search over all solutions
+  /// @param t the time to search over all solutions
+  /// @param epsilon the error allowed in the temporal search
   /// @return true if the instance was populated OR false if fetch failed
-  static bool fetch( Reveal::Core::solution_set_ptr& solution_set, database_ptr db, std::string experiment_id, unsigned trial_id );
+  static bool fetch( Reveal::Core::solution_set_ptr& solution_set, database_ptr db, std::string experiment_id, double t, double epsilon );
+
+  static bool fetch( Reveal::Core::solution_set_ptr& solution_set, database_ptr db, std::string experiment_id, double trial_time, double solution_time, double epsilon );
 
 };
 

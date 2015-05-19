@@ -263,7 +263,7 @@ namespace gazebo
       model_list.push_back( "ur10_schunk_arm" );
       model_list.push_back( "block" );
 
-      _solution = Reveal::Sim::Gazebo::helpers_c::read_model_solution( _world, model_list, _scenario->id, _trial_index++ );
+      _solution = Reveal::Sim::Gazebo::helpers_c::read_model_solution( _world, model_list, _scenario->id );
      
 #ifdef DB_DIRECT_INSERT
       _db->insert( _solution );
@@ -345,9 +345,9 @@ namespace gazebo
       Reveal::Core::trial_ptr trial = Reveal::Core::trial_ptr( new Reveal::Core::trial_c() );
  
       trial->scenario_id = scenario->id;
-      trial->trial_id = trial_index;
+      //trial->trial_id = trial_index;
       trial->t = Reveal::Sim::Gazebo::helpers_c::sim_time( _world );
-      trial->dt = Reveal::Sim::Gazebo::helpers_c::step_size( _world );
+      //trial->dt = Reveal::Sim::Gazebo::helpers_c::step_size( _world );
 
       std::map<std::string,double> arm_controls;
       arm_controls.insert( std::pair<std::string,double>( "ur10::shoulder_pan_joint", sh_pan_f ) );

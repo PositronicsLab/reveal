@@ -48,10 +48,10 @@ private:
   error_e service_handshake_request( Reveal::Core::authorization_ptr auth );
 
   error_e service_digest_request( Reveal::Core::authorization_ptr auth );
-  error_e service_experiment_request( Reveal::Core::authorization_ptr auth, std::string scenario_id );
+  error_e service_experiment_request( Reveal::Core::authorization_ptr auth, std::string scenario_id, Reveal::Core::experiment_ptr experiment );
   //error_e service_scenario_request( int scenario_id );
   //error_e service_trial_request( Reveal::Core::authorization_ptr auth, Reveal::Core::experiment_ptr experiment, int trial_id );
-  error_e service_trial_request( Reveal::Core::authorization_ptr auth, Reveal::Core::experiment_ptr experiment, double t );
+  error_e service_trial_request( Reveal::Core::authorization_ptr auth, Reveal::Core::experiment_ptr experiment, double t, double epsilon );
   error_e service_solution_submission( Reveal::Core::authorization_ptr auth, Reveal::Core::experiment_ptr, Reveal::Core::solution_ptr solution );
 //  error_e analyze_solution( void );
 

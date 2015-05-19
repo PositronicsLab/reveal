@@ -41,6 +41,18 @@ public:
   /// @param db the reveal/mongo database to update
   /// @param experiment the instance of the experiment to update
   static bool update_increment_trial_index( database_ptr db, Reveal::Core::experiment_ptr experiment );
+
+  /// maps the bson object into a new instance of an experiment
+  /// @param experiment instance created and populated on success
+  /// @param obj the bson object to map data from
+  /// @return true if the instance was populated OR false if mapping failed
+  static bool map( Reveal::Core::experiment_ptr& experiment, mongo::BSONObj obj );
+
+  /// maps the experiment instance into a bson object 
+  /// @param obj the bson object to map data into
+  /// @param experiment the experiment pointer to map data from
+  /// @return true if the instance was populated OR false if mapping failed
+  static bool map( mongo::BSONObj& obj, Reveal::Core::experiment_ptr experiment );
 };
 
 //-----------------------------------------------------------------------------

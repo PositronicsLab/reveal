@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <iostream>
 #include <sstream>
+#include <limits>
+#include <cmath>
 
 //-----------------------------------------------------------------------------
 namespace Reveal {
@@ -120,12 +122,10 @@ unsigned console_c::prompt_unsigned( std::string prompt, bool allow_zero ) {
 }
 
 //-----------------------------------------------------------------------------
-float console_c::prompt_float( std::string prompt, bool allow_negative ) {
+float console_c::prompt_float( std::string prompt, float& epsilon, bool allow_negative ) {
   std::string input;
-  unsigned decimal_count = 0;
-  unsigned negative_count = 0;
-  unsigned e_count = 0;
-  unsigned e_pos = 0;
+  float value;
+  float machine_epsilon = std::numeric_limits<float>::epsilon();
   
   // infinite validation loop.  only way out is for the user to enter a valid
   // float value
@@ -137,49 +137,67 @@ float console_c::prompt_float( std::string prompt, bool allow_negative ) {
     // get input from standard in
     std::getline( std::cin, input );
 
-    // assume input is valid and invalidate if erroneous values
-    bool valid = true;
-    // iterate over the input buffer
-    for( unsigned i = 0; i < input.size(); i++ ) {
-      // read the current character
-      char c = input[i];
-      // if EOF and not first character then pass
-      if( i > 0 && c == 0 ) break;
+    // send the input to an input stream for validation
+    std::istringstream ss(input);
 
-      // if not numeric or decimal, invalidate and fail
-      // TODO : handle negative and e
-      if( c == '.' ) {
-        if( ++decimal_count > 1) {
-          valid = false;
-          break;
-        }
-      } else if( allow_negative ) {
-        if( i > 0 && negative_count > 1 ) {
-          valid = false;
-          break;
-        } else if( negative_count == 1 ) {
-          if( input[i-1] != 'e' ) {
-            valid = false;
-            break;
-          }
-        }
-        negative_count++;
-      } else if( c < '0' || c > '9') {
-        valid = false;
-        break;
+    if( ss >> value ) {
+      // if valid conversion of input to value
+      if( !allow_negative && value < 0.0 ) {
+        // if negatives are invalid and input was negative, error and recycle
+        printf( "ERROR: Invalid Input. Enter a floating point number\n" );
+      } else {
+        // if otherwise valid, compute epsilon and return value
+        if( value > 10.0)
+          epsilon = machine_epsilon * pow( 10.0, (int)log10( value ) );
+        else
+          epsilon = machine_epsilon * 10.0;
+        return value;
       }
-    }
-
-    // if valid, return numeric value of input
-    if( valid ) return (float)atof( input.c_str() );
-    
-    // if not valid, report and recycle
-    if( allow_negative ) {
-      printf( "ERROR: Invalid Input. Enter a floating point number\n" );
     } else {
+      // the user entered invalid input
       printf( "ERROR: Invalid Input. Enter an unsigned floating point number\n" );
     }
+  } while( true );
 
+  return 0.0; // unreachable. suppresses warning on return statement 
+}
+
+//-----------------------------------------------------------------------------
+double console_c::prompt_double( std::string prompt, double& epsilon, bool allow_negative ) {
+  std::string input;
+  double value;
+  double machine_epsilon = std::numeric_limits<double>::epsilon();
+  
+  // infinite validation loop.  only way out is for the user to enter a valid
+  // double value
+  do {
+    // print the prompt to the console
+    printf( "%s: ", prompt.c_str() );
+    // clear the input stream
+    std::cin.clear();
+    // get input from standard in
+    std::getline( std::cin, input );
+
+    // send the input to an input stream for validation
+    std::istringstream ss(input);
+
+    if( ss >> value ) {
+      // if valid conversion of input to value
+      if( !allow_negative && value < 0.0 ) {
+        // if negatives are invalid and input was negative, error and recycle
+        printf( "ERROR: Invalid Input. Enter a floating point number\n" );
+      } else {
+        // if otherwise valid, compute epsilon and return value
+        if( value > 10.0)
+          epsilon = machine_epsilon * pow( 10.0, (int)log10( value ) );
+        else
+          epsilon = machine_epsilon * 10.0;
+        return value;
+      }
+    } else {
+      // the user entered invalid input
+      printf( "ERROR: Invalid Input. Enter an unsigned floating point number\n" );
+    }
   } while( true );
 
   return 0.0; // unreachable. suppresses warning on return statement 

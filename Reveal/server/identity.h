@@ -16,14 +16,13 @@ identity.h defines identity functions.
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
-//-----------------------------------------------------------------------------
+// NOTE: generate_uuid added to core/system.h
+// TODO: remove from here and refactor references to core
 
+//-----------------------------------------------------------------------------
 namespace Reveal {
-
 //-----------------------------------------------------------------------------
-
 namespace Server {
-
 //-----------------------------------------------------------------------------
 std::string generate_uuid( void ) {
 
@@ -34,13 +33,9 @@ std::string generate_uuid( void ) {
 }
 
 //-----------------------------------------------------------------------------
-
 }  // namespace Server
-
 //-----------------------------------------------------------------------------
-
 }  // namespace Reveal
-
 //-----------------------------------------------------------------------------
 
 #endif // _REVEAL_SERVER_IDENTITY_H_

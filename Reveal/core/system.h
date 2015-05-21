@@ -97,6 +97,9 @@ bool change_working_dir( std::string path );
 bool split_uri( std::string uri, std::string& protocol, std::string& host, unsigned& port );
 
 //-----------------------------------------------------------------------------
+std::string generate_uuid( void );
+
+//-----------------------------------------------------------------------------
 namespace Reveal {
 //-----------------------------------------------------------------------------
 namespace Core {

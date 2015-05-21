@@ -15,6 +15,10 @@
 
 #include <boost/filesystem.hpp>
 
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
+
 //-----------------------------------------------------------------------------
 bool path_exists( std::string path ) {
   boost::system::error_code ec;
@@ -330,6 +334,15 @@ bool split_uri( std::string uri, std::string& protocol, std::string& host, unsig
   port = (unsigned) atoi( uri.substr( index2 + 1 ).c_str() );
 
   return true;
+}
+
+//-----------------------------------------------------------------------------
+std::string generate_uuid( void ) {
+
+  std::stringstream ss;
+  boost::uuids::uuid uuid = boost::uuids::random_generator()();
+  ss << uuid;
+  return ss.str();
 }
 
 //-----------------------------------------------------------------------------

@@ -29,11 +29,14 @@
 #include <Reveal/db/database.h>
 #endif  // DB_DIRECT_INSERT
 
+#include <Reveal/core/system.h>
 #include <Reveal/core/exporter.h>
 #include <Reveal/core/analyzer.h>
 #endif // DATA_GENERATION
 
 #include "arm_controller.h"
+
+#define MAX_TIME 16.000
 
 //-----------------------------------------------------------------------------
 namespace gazebo 
@@ -182,8 +185,6 @@ namespace gazebo
 
 #ifdef DATA_GENERATION
 
-      _scenario = generate_scenario( );
-
       // write the initial trial.  State at t = 0 and no controls
 //      _world->write_trial( 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 );
       // TODO : rectify whether it is correct to write a trial here when a 
@@ -282,7 +283,7 @@ namespace gazebo
       // exit condition
       // Note: this is arbitrary at this point.  It assumes that the scenario
       // has not been tuned and the simulator is ODE.
-      if( t >= 16.0 ) exit( 0 );
+      if( t >= MAX_TIME ) exit( 0 );
 #endif // DATA_GENERATION
     }
 
@@ -303,15 +304,12 @@ namespace gazebo
       Reveal::Core::scenario_ptr scenario;
       scenario = Reveal::Core::scenario_ptr( new Reveal::Core::scenario_c() );
 
-      scenario->id = "industrial_arm";
+      scenario->id = generate_uuid();
+      scenario->package_id = "industrial_arm";
       scenario->description = "grasping a block with an industrial arm";
-      // TODO : rectify determination of number of trials
-      //scenario->trials = 1000;  // NOTE: we don't know this in advance and we don't know when it will exit at this point!.
-      // number of trials is arbitrary at this point
-      //scenario->steps_per_trial = 1;
-      scenario->sample_rate = 0.001;
-      scenario->sample_start_time = 0.001;
-      scenario->sample_end_time = 16.001;
+      scenario->sample_rate = Reveal::Sim::Gazebo::helpers_c::step_size(_world);
+      scenario->sample_start_time = scenario->sample_rate;
+      scenario->sample_end_time = MAX_TIME + scenario->sample_rate;
 
       return scenario;
     }

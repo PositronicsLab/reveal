@@ -59,6 +59,7 @@ bool scenario_c::map( Reveal::Core::scenario_ptr& scenario, mongo::BSONObj obj )
   scenario = Reveal::Core::scenario_ptr( new Reveal::Core::scenario_c() );
 
   scenario->id = obj.getField( "scenario_id" ).String();
+  scenario->package_id = obj.getField( "package_id" ).String();
   scenario->description = obj.getField( "description" ).String();
   scenario->sample_rate = obj.getField( "sample_rate" ).Double();
   scenario->sample_start_time = obj.getField( "sample_start_time" ).Double();
@@ -80,6 +81,7 @@ bool scenario_c::map( mongo::BSONObj& obj, Reveal::Core::scenario_ptr scenario )
   mongo::BSONArrayBuilder bab;
 
   bob.append( "scenario_id", scenario->id );
+  bob.append( "package_id", scenario->package_id );
   bob.append( "description", scenario->description );
   bob.append( "sample_rate", scenario->sample_rate );
   bob.append( "sample_start_time", scenario->sample_start_time );

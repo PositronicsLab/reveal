@@ -32,11 +32,12 @@ message Model {
 // A given scenario to evaluate
 message Scenario {
   required string id = 1;
-  optional string description = 2 [default = ""];
-  optional double sample_rate = 3;
-  optional double sample_start_time = 4;
-  optional double sample_end_time = 5;
-  repeated string uri = 6;
+  required string package_id = 2;
+  optional string description = 3 [default = ""];
+  optional double sample_rate = 4;
+  optional double sample_start_time = 5;
+  optional double sample_end_time = 6;
+  repeated string uri = 7;
 }
 
 // The set of all scenarios.

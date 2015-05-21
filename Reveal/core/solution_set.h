@@ -23,6 +23,10 @@ namespace Core {
 
 class solution_set_c {
 public:
+
+  double time_step;
+  double epsilon;
+
   solution_set_c( void ) {}
   virtual ~solution_set_c( void ) {}
 

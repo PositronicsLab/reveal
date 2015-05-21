@@ -40,6 +40,8 @@ bool worker_c::execute( boost::shared_ptr<Reveal::DB::database_c> db, const std:
   if( !fetch( scenario, experiment, initial_trial, analyzer, db, experiment_id) )
     return false;
   assert( scenario && experiment && initial_trial && analyzer );
+  printf( "initial_trial t[%f]\n", initial_trial->t );
+
 
   // load the analyzer module
   if( !load( module, analyzer ) )
@@ -69,6 +71,9 @@ bool worker_c::execute( boost::shared_ptr<Reveal::DB::database_c> db, const std:
     if( !solution_set ) 
       printf( "failed to select requested solution_set from db\n" );
 
+    //solution_set->time_step = dt;
+    solution_set->time_step = scenario->sample_rate;
+    solution_set->epsilon = EPSILON;
     solution_set->initial_trial = initial_trial;
         
     error = module->analyze( solution_set, analysis );

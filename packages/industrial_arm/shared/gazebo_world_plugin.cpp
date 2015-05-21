@@ -190,10 +190,9 @@ namespace gazebo
           //TODO: error handling
         }
 //---
-
+/*
         // otherwise, we need to reset the trial state, so reset the steps
         steps_this_trial = 0;
-/*
       } else {
         // otherwise advance to the next step
         steps_this_trial++;

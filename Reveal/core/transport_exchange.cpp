@@ -706,6 +706,7 @@ transport_exchange_c::error_e transport_exchange_c::write_digest( Reveal::Core::
     scenario_ptr scenario = digest->get_scenario( i );
     Messages::Data::Scenario* msg_scenario = msg_digest->add_scenario();
     msg_scenario->set_id( scenario->id );
+    msg_scenario->set_package_id( scenario->package_id );
     msg_scenario->set_description( scenario->description );
     msg_scenario->set_sample_rate( scenario->sample_rate );
     msg_scenario->set_sample_start_time( scenario->sample_start_time );
@@ -729,6 +730,7 @@ transport_exchange_c::error_e transport_exchange_c::read_digest( Reveal::Core::M
     _digest->add_scenario( scenario );
 
     scenario->id = msg->digest().scenario(i).id();
+    scenario->package_id = msg->digest().scenario(i).package_id();
     scenario->description = msg->digest().scenario(i).description();
     scenario->sample_rate = msg->digest().scenario(i).sample_rate();
     scenario->sample_start_time = msg->digest().scenario(i).sample_start_time();
@@ -750,6 +752,7 @@ transport_exchange_c::error_e transport_exchange_c::write_scenario( Reveal::Core
   Messages::Data::Scenario* msg_scenario = msg->mutable_scenario();
 
   msg_scenario->set_id( scenario->id );
+  msg_scenario->set_package_id( scenario->package_id );
   msg_scenario->set_description( scenario->description );
   msg_scenario->set_sample_rate( scenario->sample_rate );
   msg_scenario->set_sample_start_time( scenario->sample_start_time );
@@ -768,6 +771,7 @@ transport_exchange_c::error_e transport_exchange_c::read_scenario( Reveal::Core:
   _scenario = scenario_ptr( new scenario_c() );
   
   _scenario->id = msg->scenario().id();
+  _scenario->package_id = msg->scenario().package_id();
   _scenario->description = msg->scenario().description();
   _scenario->sample_rate = msg->scenario().sample_rate();
   _scenario->sample_start_time = msg->scenario().sample_start_time();

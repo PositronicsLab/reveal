@@ -33,6 +33,7 @@ public:
 
   // database mapped fields 
   std::string id;
+  std::string package_id;
   std::string description;
   std::vector<std::string> uris;
 

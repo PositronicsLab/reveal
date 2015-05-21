@@ -581,7 +581,9 @@ bool client_c::execute( void ) {
 
     // fetch scenario
     scenario = digest->get_scenario( scenario_choice );
+    // --
     scenario->print();
+    // --
 
     // create an experiment
     experiment = Reveal::Core::experiment_ptr( new Reveal::Core::experiment_c( scenario ) );
@@ -613,9 +615,9 @@ bool client_c::execute( void ) {
     std::string pkg_source_path, pkg_build_path;
 
     // create a path to the package image
-    pkg_image_path = combine_path( pkg_root_image_path, scenario->id );
+    pkg_image_path = combine_path( pkg_root_image_path, scenario->package_id );
     // create a path to the package temporary directory
-    pkg_tmp_path = combine_path( pkg_root_tmp_path, scenario->id );
+    pkg_tmp_path = combine_path( pkg_root_tmp_path, scenario->package_id );
     // get the package temporary directory
     if( !get_directory( pkg_tmp_path ) ) {
       terminate();

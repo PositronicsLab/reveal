@@ -36,11 +36,8 @@ public:
 
   std::string experiment_id;
   std::string scenario_id;
-//  unsigned trial_id;
   double t;
-  //double dt;
   double real_time;
-  // session identifier
 
   std::vector<model_ptr> models;
   type_e type;
@@ -51,9 +48,7 @@ public:
 
   void print( void ) {
     printf( "scenario_id[%s]", scenario_id.c_str() );
-//    printf( ", trial_id[%u]", trial_id );
     printf( ", t[%f]", t );
-    //printf( ", dt[%f]", dt );
 
     printf( ", models { " );
     for( unsigned i = 0; i < models.size(); i++ ) {

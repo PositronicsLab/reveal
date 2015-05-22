@@ -321,12 +321,11 @@ void datareader_c::print_cells( void ) {
 }
 
 //-----------------------------------------------------------------------------
-bool datareader_c::read( trial_ptr& trial, std::string scenario_id, unsigned index, xml_element_ptr top ) {
+bool datareader_c::read( trial_ptr& trial, std::string scenario_id, xml_element_ptr top ) {
   if( !buffer_line() ) return false;
   //print_cells();
 
   trial = trial_ptr( new trial_c() );
-//  trial->trial_id = index;
   trial->scenario_id = scenario_id;
   component_ptr component = boost::dynamic_pointer_cast<trial_c>( trial );
 
@@ -347,13 +346,12 @@ bool datareader_c::read( trial_ptr& trial, std::string scenario_id, unsigned ind
 }
 
 //-----------------------------------------------------------------------------
-bool datareader_c::read( solution_ptr& solution, std::string scenario_id, unsigned index, xml_element_ptr top ) {
+bool datareader_c::read( solution_ptr& solution, std::string scenario_id, xml_element_ptr top ) {
   if( !buffer_line() ) return false;
   //print_cells();
 
   solution = solution_ptr( new solution_c( solution_c::MODEL ) );
   solution->scenario_id = scenario_id;
-//  solution->trial_id = index;
   component_ptr component = boost::dynamic_pointer_cast<solution_c>( solution );
 
   xml_element_ptr element;

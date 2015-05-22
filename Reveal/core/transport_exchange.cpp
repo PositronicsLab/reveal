@@ -823,9 +823,7 @@ transport_exchange_c::error_e transport_exchange_c::write_trial( Reveal::Core::M
 
   Messages::Data::Trial* msg_trial = msg->mutable_trial();
   msg_trial->set_scenario_id( trial->scenario_id );
-//  msg_trial->set_trial_id( trial->trial_id );
   msg_trial->set_t( trial->t );
-  //msg_trial->set_dt( trial->dt );
 
   for( unsigned i = 0; i < trial->models.size(); i++ ) {
     model_ptr model = trial->models[i];
@@ -865,9 +863,7 @@ transport_exchange_c::error_e transport_exchange_c::read_trial( Reveal::Core::Me
   _trial = trial_ptr( new trial_c() );
 
   _trial->scenario_id = msg->trial().scenario_id();
-//  _trial->trial_id = msg->trial().trial_id();
   _trial->t = msg->trial().t();
-//  _trial->dt = msg->trial().dt();
   for( int i = 0; i < msg->trial().model_size(); i++ ) {
     model_ptr model = model_ptr( new model_c() );
     Messages::Data::Model msg_model = msg->trial().model(i);
@@ -912,9 +908,7 @@ transport_exchange_c::error_e transport_exchange_c::write_solution( Reveal::Core
   solution_ptr solution = get_solution();    // accessed by method to use asserts
   Messages::Data::Solution* msg_solution = msg->mutable_solution();
   msg_solution->set_scenario_id( solution->scenario_id );
-//  msg_solution->set_trial_id( solution->trial_id );
   msg_solution->set_t( solution->t );
-//  msg_solution->set_dt( solution->dt );
   msg_solution->set_real_time( solution->real_time );
 
   for( unsigned i = 0; i < solution->models.size(); i++ ) {
@@ -945,9 +939,7 @@ transport_exchange_c::error_e transport_exchange_c::read_solution( Reveal::Core:
   _solution = solution_ptr( new solution_c( Reveal::Core::solution_c::CLIENT ) );
 
   _solution->scenario_id = msg->solution().scenario_id();
-//  _solution->trial_id = msg->solution().trial_id();
   _solution->t = msg->solution().t();
-//  _solution->dt = msg->solution().dt();
   _solution->real_time = msg->solution().real_time();
 
   for( int i = 0; i < msg->solution().model_size(); i++ ) {

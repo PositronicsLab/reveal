@@ -63,13 +63,11 @@ public:
 
   error_e insert( Reveal::Core::experiment_ptr experiment );
   error_e query( Reveal::Core::experiment_ptr& experiment, std::string experiment_id );
-  error_e update_increment_trial_index( Reveal::Core::experiment_ptr experiment );
 
   error_e insert( Reveal::Core::scenario_ptr scenario );
   error_e query( Reveal::Core::scenario_ptr& scenario, const std::string& scenario_id );
 
   error_e insert( Reveal::Core::trial_ptr trial );
-  //error_e query( Reveal::Core::trial_ptr& trial, const std::string& scenario_id, unsigned trial_id );
   error_e query( Reveal::Core::trial_ptr& trial, const std::string& scenario_id, double t, double epsilon );
 
   error_e insert( Reveal::Core::solution_ptr solution );

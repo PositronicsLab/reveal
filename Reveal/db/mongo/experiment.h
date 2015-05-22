@@ -36,12 +36,6 @@ public:
   /// @return true if the instance was populated OR false if fetch failed
   static bool fetch( Reveal::Core::experiment_ptr& experiment, database_ptr db, std::string experiment_id );
 
-  /// issues an update command and increments the current_trial_index for a 
-  ///        given experiment
-  /// @param db the reveal/mongo database to update
-  /// @param experiment the instance of the experiment to update
-  static bool update_increment_trial_index( database_ptr db, Reveal::Core::experiment_ptr experiment );
-
   /// maps the bson object into a new instance of an experiment
   /// @param experiment instance created and populated on success
   /// @param obj the bson object to map data from

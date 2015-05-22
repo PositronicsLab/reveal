@@ -51,36 +51,6 @@ public:
     models.push_back( model );
   }
   
-
-/*
-  unsigned scenario_id;
-  unsigned trial_id;
-  // user identifier
-  double t;
-  state_c state;
-
-  void print( void ) {
-    printf( "scenario_id[%u]", scenario_id );
-    printf( ", trial_id[%u]", trial_id );
-    printf( ", t[%f]", t );
-
-    // State 
-    printf( ", state[" );
-    printf( " q[" );
-    for( unsigned i = 0; i < state.size_q(); i++ ) {
-      if( i > 0 ) printf( ", " );
-      printf( "%f", state.q(i) );
-    }
-    printf( "]" );
-    printf( ", dq[" );
-    for( unsigned i = 0; i < state.size_dq(); i++ ) {
-      if( i > 0 ) printf( ", " );
-      printf( "%f", state.dq(i) );
-    }
-    printf( "] " );
-    printf( "]" );
-  }
- */
 };
 
 //-----------------------------------------------------------------------------

@@ -470,7 +470,7 @@ bool client_c::submit_solution( Reveal::Core::authorization_ptr& auth, Reveal::C
   if( transport_error != Reveal::Core::transport_exchange_c::ERROR_NONE ) {
     if( transport_error == Reveal::Core::transport_exchange_c::ERROR_BAD_SOLUTION_SUBMISSION ) {
       // The server rejected the solution because the message contained invalid
-      // data, e.g. scenario_id or trial_id invalid or the solution state was
+      // data, e.g. scenario or trial keys invalid or the solution state was
       // not formatted properly
       //return ERROR_INVALID_SOLUTION;
       return false;

@@ -63,9 +63,7 @@ bool trial_c::map( Reveal::Core::trial_ptr& trial, mongo::BSONObj obj ) {
   trial = Reveal::Core::trial_ptr( new Reveal::Core::trial_c() );
 
   trial->scenario_id = obj.getField( "scenario_id" ).String();
-//  trial->trial_id = obj.getField( "trial_id" ).Int();
   trial->t = obj.getField( "t" ).Double();
-//  trial->dt = obj.getField( "dt" ).Double();
 
   model_c::fetch( trial, obj );
 
@@ -77,9 +75,7 @@ bool trial_c::map( mongo::BSONObj& obj, Reveal::Core::trial_ptr trial ) {
 
   mongo::BSONObjBuilder bob;
   bob.append( "scenario_id", trial->scenario_id );
-//  bob.append( "trial_id", trial->trial_id );
   bob.append( "t", trial->t );
-//  bob.append( "dt", trial->dt );
 
   model_c::insert( bob, trial->models, true );
 

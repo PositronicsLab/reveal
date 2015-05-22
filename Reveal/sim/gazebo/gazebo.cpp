@@ -385,7 +385,7 @@ bool gazebo_c::execute( Reveal::Core::authorization_ptr auth, Reveal::Core::scen
     //unsigned trial_index = 0;
     double sample_rate = scenario->sample_rate;
     double time_step = experiment->time_step;
-    double epsilon = experiment->epsilon;
+    double EPSILON = experiment->epsilon;
     double trial_start_time = experiment->start_time;
     double trial_end_time;
     double trial_duration;
@@ -407,8 +407,8 @@ bool gazebo_c::execute( Reveal::Core::authorization_ptr auth, Reveal::Core::scen
 
       if( solution ) {
         double delta = fabs( trial_end_time - solution->t  );
-        printf( "delta[%1.24f], eps[%1.24f]\n", delta, experiment->epsilon );
-        if( fabs(trial_end_time - solution->t ) <= experiment->epsilon ) {
+        printf( "delta[%1.24f], eps[%1.24f]\n", delta, EPSILON );
+        if( fabs(trial_end_time - solution->t ) <= EPSILON ) {
           // recompute trial times
           trial_start_time = solution->t;
           trial_end_time = trial_start_time + trial_duration;
@@ -511,7 +511,7 @@ bool gazebo_c::execute( Reveal::Core::authorization_ptr auth, Reveal::Core::scen
         //if( solution && solution->t == trial_end_time ) {
         if( solution ) {
           printf( "(client) received solution\n" );
-          if( fabs(trial_end_time - solution->t ) <= experiment->epsilon ) {
+          if( fabs(trial_end_time - solution->t ) <= EPSILON ) {
             printf( "(client) fowarding solution\n" );
 
             //solution->print();

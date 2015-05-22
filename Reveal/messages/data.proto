@@ -57,19 +57,15 @@ message Experiment {
 // A single trial within a scenario
 message Trial {
   required string scenario_id = 1;
-//  required uint32 trial_id = 2;
-  optional double t = 3;
-//  optional double dt = 4;
-  repeated Model model = 5;
+  optional double t = 2;
+  repeated Model model = 3;
 }
 
 // A single solution for a given trial within a scenario
 message Solution {
   required string scenario_id = 1;
-//  required uint32 trial_id = 2;
-  optional double t = 3;
-//  optional double dt = 4;
-  optional double real_time = 5;
-  repeated Model model = 6;
+  optional double t = 2;
+  optional double real_time = 3;
+  repeated Model model = 4;
 }
 

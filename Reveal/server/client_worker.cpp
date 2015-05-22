@@ -467,65 +467,8 @@ worker_c::error_e worker_c::service_experiment_request( Reveal::Core::authorizat
   return ERROR_NONE;
 }
 
-/*
-//-----------------------------------------------------------------------------
-worker_c::error_e worker_c::service_trial_request( Reveal::Core::authorization_ptr auth, Reveal::Core::experiment_ptr experiment, int trial_id ) {
-  //printf( "trial requested scenario_id[%s], trial_id[%u]\n", experiment->scenario_id.c_str(), trial_id );
-
-  Reveal::Core::transport_exchange_c exchange;
-  Reveal::Core::trial_ptr trial;
-  std::string reply;
-
-  // query the database for trial data
-  Reveal::DB::database_c::error_e db_error = _db->query( trial, experiment->scenario_id, trial_id );
-  // TODO: Validation
-
-  if( db_error == Reveal::DB::database_c::ERROR_NONE ) {
-    // the query was successful
-
-    // construct the trial message
-    exchange.set_origin( Reveal::Core::transport_exchange_c::ORIGIN_SERVER );
-    exchange.set_type( Reveal::Core::transport_exchange_c::TYPE_TRIAL );
-    exchange.set_trial( trial );
-    exchange.set_experiment( experiment );
-    exchange.set_authorization( auth );
-
-    //serialize the message for transmission
-    exchange.build( reply );
-
-    // broadcast the reply message back to the client
-    if( _connection.write( reply ) != Reveal::Core::connection_c::ERROR_NONE ) {
-      // TODO: trap and recover
-    }
-
-    return ERROR_NONE;
-  }
-
-  // otherwise there was an error in the query
-  if( db_error == Reveal::DB::database_c::ERROR_EMPTYSET ) {
-    printf( "ERROR: Failed to find trial\n" );
-    // the query returned an empty set
-
-    // construct an error message
-    exchange.set_origin( Reveal::Core::transport_exchange_c::ORIGIN_SERVER );
-    exchange.set_type( Reveal::Core::transport_exchange_c::TYPE_ERROR );
-    exchange.set_error( Reveal::Core::transport_exchange_c::ERROR_BAD_TRIAL_REQUEST );
-    exchange.set_authorization( auth );
-
-    //serialize the message for transmission
-    exchange.build( reply );
-
-    // broadcast the reply message back to the client
-    if( _connection.write( reply ) != Reveal::Core::connection_c::ERROR_NONE ) {
-      // TODO: trap and recover
-    }
-  }
-  return ERROR_NONE;  // temporary until any error enumeration is determined
-}
-*/
 //-----------------------------------------------------------------------------
 worker_c::error_e worker_c::service_trial_request( Reveal::Core::authorization_ptr auth, Reveal::Core::experiment_ptr experiment, double t, double epsilon ) {
-  //printf( "trial requested scenario_id[%s], trial_id[%u]\n", experiment->scenario_id.c_str(), trial_id );
 
   Reveal::Core::transport_exchange_c exchange;
   Reveal::Core::trial_ptr trial;
@@ -617,7 +560,6 @@ worker_c::error_e worker_c::service_solution_submission( Reveal::Core::authoriza
   // If the trial is the 'last' trial, run analytics.
 
   //TODO: FIX
-  //if( solution->trial_id == (unsigned)experiment->number_of_trials - 1 ) {
   //if( solution->t + experiment->time_step > experiment->end_time ) {
     printf( "Experiment {%s} has completed.  Starting analytics.\n", experiment->experiment_id.c_str() );
 

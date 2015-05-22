@@ -87,8 +87,8 @@ public:
 
   bool open( void );
   void close( void );
-  bool read( trial_ptr& trial, std::string scenario_id, unsigned index, xml_element_ptr top );
-  bool read( solution_ptr& solution, std::string scenario_id, unsigned index, xml_element_ptr top );
+  bool read( trial_ptr& trial, std::string scenario_id, xml_element_ptr top );
+  bool read( solution_ptr& solution, std::string scenario_id, xml_element_ptr top );
 
 private:
   bool buffer_line( void );

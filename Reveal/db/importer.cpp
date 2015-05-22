@@ -211,7 +211,7 @@ bool importer_c::read_trial_file_element( Reveal::Core::xml_element_ptr top, std
 
   // read in the trial data and insert it into the database
   unsigned i = 0;
-  while( reader.read( trial, scenario_id, i, top ) ) {
+  while( reader.read( trial, scenario_id, top ) ) {
     //trial->print();
 
 #ifdef LOCAL_DB
@@ -260,9 +260,9 @@ bool importer_c::read_solution_file_element( Reveal::Core::xml_element_ptr top, 
     return false;
   }
 
-  // read in the solution data and insert it into the database
   unsigned i = 0;
-  while( reader.read( solution, scenario_id, i, top ) ) {
+  // read in the solution data and insert it into the database
+  while( reader.read( solution, scenario_id, top ) ) {
     //solution->print();
 
 #ifdef LOCAL_DB

@@ -133,15 +133,6 @@ database_c::error_e database_c::query( Reveal::Core::experiment_ptr& experiment,
 }
 
 //-----------------------------------------------------------------------------
-database_c::error_e database_c::update_increment_trial_index( Reveal::Core::experiment_ptr experiment ) {
-
-  // TODO : error handling
-  Reveal::DB::Mongo::experiment_c::update_increment_trial_index( ptr(), experiment );
-
-  return ERROR_NONE;
-}
-
-//-----------------------------------------------------------------------------
 database_c::error_e database_c::query( Reveal::Core::digest_ptr& digest ) {
   // TODO : error handling
   Reveal::DB::Mongo::digest_c::fetch( digest, ptr() );
@@ -176,16 +167,6 @@ database_c::error_e database_c::insert( Reveal::Core::trial_ptr trial ) {
   return ERROR_NONE;
 }
 
-/*
-//-----------------------------------------------------------------------------
-database_c::error_e database_c::query( Reveal::Core::trial_ptr& trial, const std::string& scenario_id, unsigned trial_id ) {
-
-  // TODO : error handling
-  Reveal::DB::Mongo::trial_c::fetch( trial, ptr(), scenario_id, trial_id );
-
-  return ERROR_NONE;
-}
-*/
 //-----------------------------------------------------------------------------
 database_c::error_e database_c::query( Reveal::Core::trial_ptr& trial, const std::string& scenario_id, double t, double epsilon ) {
 

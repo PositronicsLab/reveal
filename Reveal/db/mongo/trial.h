@@ -33,10 +33,10 @@ public:
   /// @param db the reveal/mongo database to fetch the record from
   /// @param scenario_id the unique identifier of the scenario that owns the 
   ///        trial to search the table for
-  /// @param trial_id the index of the trial to fetch
+  /// @param t the time of the trial to fetch
+  /// @param epsilon the acceptable error to use in the time query
   /// @return true if the instance was populated OR false if fetch failed
   static bool fetch( Reveal::Core::trial_ptr& trial, database_ptr db, std::string scenario_id, double t, double epsilon );
-  //static bool fetch( Reveal::Core::trial_ptr& trial, database_ptr db, std::string scenario_id, unsigned trial_id );
 
   /// maps the bson object into a new instance of a trial
   /// @param trial instance created and populated on success

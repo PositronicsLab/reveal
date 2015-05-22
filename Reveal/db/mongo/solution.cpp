@@ -89,9 +89,7 @@ bool solution_c::map( Reveal::Core::solution_ptr& solution, mongo::BSONObj obj, 
   if( type == Reveal::Core::solution_c::CLIENT )
     solution->experiment_id = obj.getField( "experiment_id" ).String();
   solution->scenario_id = obj.getField( "scenario_id" ).String();
-//  solution->trial_id = obj.getField( "trial_id" ).Int();
   solution->t = obj.getField( "t" ).Double();
-//  solution->dt = obj.getField( "dt" ).Double();
   if( type == Reveal::Core::solution_c::CLIENT )
     solution->real_time = obj.getField( "real_time" ).Double();
 
@@ -106,9 +104,7 @@ bool solution_c::map( mongo::BSONObj& obj, Reveal::Core::solution_ptr solution )
   if( solution->type == Reveal::Core::solution_c::CLIENT )
     bob.append( "experiment_id", solution->experiment_id );
   bob.append( "scenario_id", solution->scenario_id );
-//  bob.append( "trial_id", solution->trial_id );
   bob.append( "t", solution->t );
-//  bob.append( "dt", solution->dt );
   if( solution->type == Reveal::Core::solution_c::CLIENT )
     bob.append( "real_time", solution->real_time );
 

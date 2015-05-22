@@ -51,17 +51,20 @@ bool experiment_c::fetch( Reveal::Core::experiment_ptr& experiment, Reveal::DB::
   return true;
 }
 
+/*
+// Note: this functionality was completely removed, but this code is left here
+// as an example incase there is a need to implement an update command later
 //-----------------------------------------------------------------------------
 bool experiment_c::update_increment_trial_index( database_ptr db, Reveal::Core::experiment_ptr experiment ) {
-/*
+
   mongo_ptr mongo = mongo_c::service( db );
   if( !mongo ) return false;
 
   mongo->update( "experiment", BSON( "experiment_id" << experiment->experiment_id ), BSON( "$inc" << BSON( "current_trial_index" << 1 ) ) );
-*/
+
   return true;
 }
-
+*/
 //-----------------------------------------------------------------------------
 bool experiment_c::map( Reveal::Core::experiment_ptr& experiment, mongo::BSONObj obj ) { 
   experiment = Reveal::Core::experiment_ptr( new Reveal::Core::experiment_c() );

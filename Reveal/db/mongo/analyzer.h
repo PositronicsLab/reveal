@@ -1,6 +1,8 @@
 #ifndef _REVEAL_DB_MONGO_ANALYZER_H_
 #define _REVEAL_DB_MONGO_ANALYZER_H_
 
+#include <vector>
+
 #include "Reveal/core/pointers.h"
 #include "Reveal/core/analyzer.h"
 #include "Reveal/db/mongo/mongo.h"
@@ -27,6 +29,12 @@ public:
   /// @param analyzer the instance to insert
   /// @return true if the record was inserted OR false if insertion failed
   static bool insert( database_ptr db, Reveal::Core::analyzer_ptr analyzer );
+
+  /// fetches the set of all analyzers from the database
+  /// @param analyzers the vector of analyzers populated with data on success
+  /// @param db the reveal/mongo database to fetch the record from
+  /// @return true if the instance was populated OR false if fetch failed
+  static bool fetch( std::vector<Reveal::Core::analyzer_ptr>& analyzers, database_ptr db );
 
   /// fetches an instance of the analyzer specified from the database
   /// @param analyzer instance populated with data on success

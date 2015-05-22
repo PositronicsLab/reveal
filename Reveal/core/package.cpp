@@ -190,6 +190,7 @@ void* package_c::cmake_worker( void* args ) {
     // change the working directory to the build path
     if( !change_working_dir( build_path ) ) {
       // TODO: error handling
+      printf( "FAILED TO CHANGE WORKING DIRECTORY\n" );
     }
 
     // build the cmake command line arguments array

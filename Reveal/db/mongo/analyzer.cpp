@@ -31,6 +31,34 @@ bool analyzer_c::insert( Reveal::DB::database_ptr db, Reveal::Core::analyzer_ptr
 }
 
 //-----------------------------------------------------------------------------
+bool analyzer_c::fetch( std::vector<Reveal::Core::analyzer_ptr>& analyzers, Reveal::DB::database_ptr db ) {
+
+  std::auto_ptr<mongo::DBClientCursor> cursor;
+
+  // get mongo service and verify
+  mongo_ptr mongo = mongo_c::service( db );
+  if( !mongo ) return false;
+
+  mongo->fetch( cursor, "analyzer", mongo::BSONObj( ) );
+  //mongo->fetch( cursor, "analyzer", QUERY( "scenario_id" << scenario_id ) );
+
+  if( !cursor->more() ) return false;
+
+  do {
+    Reveal::Core::analyzer_ptr analyzer;
+
+    // add error handling
+    mongo::BSONObj record = cursor->next();
+
+    map( analyzer, record );
+
+    analyzers.push_back( analyzer );
+  } while( cursor->more() );
+
+  return true;
+}
+
+//-----------------------------------------------------------------------------
 bool analyzer_c::fetch( Reveal::Core::analyzer_ptr& analyzer, Reveal::DB::database_ptr db, std::string scenario_id ) {
 
   std::auto_ptr<mongo::DBClientCursor> cursor;
@@ -56,7 +84,10 @@ bool analyzer_c::map( Reveal::Core::analyzer_ptr& analyzer, mongo::BSONObj obj )
   analyzer = Reveal::Core::analyzer_ptr( new Reveal::Core::analyzer_c() );
 
   analyzer->scenario_id = obj.getField( "scenario_id" ).String();
-  analyzer->filename = obj.getField( "filename" ).String();
+  analyzer->filename = obj.getField( "filename" ).String(); // !
+  analyzer->source_path = obj.getField( "source_path" ).String();
+  analyzer->build_path = obj.getField( "build_path" ).String();
+  analyzer->build_target = obj.getField( "build_target" ).String();
   analyzer->type = (Reveal::Core::analyzer_c::type_e) obj.getField( "type" ).Int();
 
   // TODO: map keys and labels
@@ -68,7 +99,10 @@ bool analyzer_c::map( Reveal::Core::analyzer_ptr& analyzer, mongo::BSONObj obj )
 bool analyzer_c::map( mongo::BSONObj& obj, Reveal::Core::analyzer_ptr analyzer ) {
   mongo::BSONObjBuilder bob;
   bob.append( "scenario_id", analyzer->scenario_id );
-  bob.append( "filename", analyzer->filename );
+  bob.append( "filename", analyzer->filename ); // !
+  bob.append( "source_path", analyzer->source_path );
+  bob.append( "build_path", analyzer->build_path );
+  bob.append( "build_target", analyzer->build_target );
   bob.append( "type", (int) analyzer->type );
 
   mongo::BSONArrayBuilder bab_keys, bab_labels;

@@ -35,7 +35,10 @@ public:
   virtual ~analyzer_c( void ) { }
 
   std::string            scenario_id;
-  std::string            filename;
+  std::string            filename;    // !
+  std::string            source_path;
+  std::string            build_path;
+  std::string            build_target;
   type_e 	         type;
 
   // ?

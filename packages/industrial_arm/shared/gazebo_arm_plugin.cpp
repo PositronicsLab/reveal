@@ -322,7 +322,10 @@ namespace gazebo
       analyzer = Reveal::Core::analyzer_ptr( new Reveal::Core::analyzer_c() );
    
       analyzer->scenario_id = scenario->id;
-      analyzer->filename = ANALYZER_PATH;
+      analyzer->filename = ANALYZER_PATH;  //!
+      analyzer->source_path = ANALYZER_SOURCE_PATH;
+      analyzer->build_path = ANALYZER_BUILD_PATH;
+      analyzer->build_target = ANALYZER_BUILD_TARGET;
       analyzer->type = Reveal::Core::analyzer_c::PLUGIN;
 
       analyzer->keys.push_back( "t" );

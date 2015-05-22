@@ -216,6 +216,15 @@ database_c::error_e database_c::insert( Reveal::Core::analyzer_ptr analyzer ) {
 }
 
 //-----------------------------------------------------------------------------
+database_c::error_e database_c::query( std::vector<Reveal::Core::analyzer_ptr>& analyzers ) {
+
+  // TODO : error handling
+  Reveal::DB::Mongo::analyzer_c::fetch( analyzers, ptr() );
+
+  return ERROR_NONE;
+}
+
+//-----------------------------------------------------------------------------
 database_c::error_e database_c::query( Reveal::Core::analyzer_ptr& analyzer, const std::string& scenario_id ) {
 
   // TODO : error handling

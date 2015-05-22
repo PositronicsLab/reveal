@@ -15,7 +15,16 @@ if( DATA_GENERATION )
   #server only
   ## Note: hackish. We can't necessarily guarantee where this will be based on
   #  relative path, but good enough for now.
-  add_definitions( -DANALYZER_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../server/build/libindustrial-arm-analyzer.so" )
+
+  set( ANALYZER_SOURCE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../server/" )
+  set( ANALYZER_BUILD_PATH "${ANALYZER_SOURCE_PATH}/build/" )
+  set( ANALYZER_BUILD_TARGET "libindustrial-arm-analyzer.so" )
+
+  add_definitions( -DANALYZER_SOURCE_PATH="${ANALYZER_SOURCE_PATH}" )
+  add_definitions( -DANALYZER_BUILD_PATH="${ANALYZER_BUILD_PATH}" )
+  add_definitions( -DANALYZER_BUILD_TARGET="${ANALYZER_BUILD_TARGET}" )
+
+  add_definitions( -DANALYZER_PATH="${CMAKE_CURRENT_SOURCE_DIR}/../server/build/libindustrial-arm-analyzer.so" )   #!
 endif( DATA_GENERATION )
 
 #------------------------------------------------------------------------------

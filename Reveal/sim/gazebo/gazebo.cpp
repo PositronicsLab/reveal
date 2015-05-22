@@ -187,15 +187,16 @@ bool gazebo_c::ui_select_tuning( void ) {
 //-----------------------------------------------------------------------------
 bool gazebo_c::build_package( std::string src_path, std::string build_path ) {
 
-  //_world_path = build_path + '/' + "reveal.world";
   _plugin_path = build_path;
   _model_path = build_path;
 
   const bool USE_SDF = true;
-  if( USE_SDF )
-    _model_path = build_path + "/sdf/models";
-  else
-    _model_path = build_path + "/urdf/models";
+  if( USE_SDF ) {
+    _model_path = combine_path( build_path, "sdf" );
+  } else {
+    _model_path = combine_path( build_path, "urdf" );
+  }
+  _model_path = combine_path( _model_path, "models" );
 
   // build package
   _package = Reveal::Core::package_ptr( new Reveal::Core::package_c( src_path, build_path ) );
@@ -216,7 +217,7 @@ bool gazebo_c::build_package( std::string src_path, std::string build_path ) {
       attribute = element->attribute( "file" );
       if( !attribute ) continue;  // malformed xml.  probably a bigger error
       // otherwise
-      _world_path = build_path + '/' + attribute->get_value();
+      _world_path = combine_path( build_path, attribute->get_value() );
     }
   }
 

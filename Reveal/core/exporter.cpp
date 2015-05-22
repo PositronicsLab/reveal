@@ -192,21 +192,25 @@ bool exporter_c::write_scenario_element( xml_element_ptr parent, scenario_ptr sc
   top->append( attribute );
 
   attribute = xml_attribute_ptr( new xml_attribute_c() );
-  attribute->set_name( "sample_rate" );
+  attribute->set_name( "package-id" );
+  attribute->set_value( scenario->package_id );
+  top->append( attribute );
+
+  attribute = xml_attribute_ptr( new xml_attribute_c() );
+  attribute->set_name( "sample-rate" );
   attribute->set_value( scenario->sample_rate );
   top->append( attribute );
-/*
+
   attribute = xml_attribute_ptr( new xml_attribute_c() );
-  attribute->set_name( "trials" );
-  attribute->set_value( scenario->trials );
+  attribute->set_name( "sample-start-time" );
+  attribute->set_value( scenario->sample_start_time );
   top->append( attribute );
-*/
-/*
+
   attribute = xml_attribute_ptr( new xml_attribute_c() );
-  attribute->set_name( "steps-per-trial" );
-  attribute->set_value( scenario->steps_per_trial );
+  attribute->set_name( "sample-end-time" );
+  attribute->set_value( scenario->sample_end_time );
   top->append( attribute );
-*/
+
   element = xml_element_ptr( new xml_element_c() );
   element->set_name( "Description" );
   element->set_value( scenario->description );
@@ -261,6 +265,21 @@ bool exporter_c::write_analyzer_element( xml_element_ptr parent, analyzer_ptr an
   attribute = xml_attribute_ptr( new xml_attribute_c() );
   attribute->set_name( "file" );
   attribute->set_value( analyzer->filename );
+  top->append( attribute );
+
+  attribute = xml_attribute_ptr( new xml_attribute_c() );
+  attribute->set_name( "source-path" );
+  attribute->set_value( analyzer->source_path );
+  top->append( attribute );
+
+  attribute = xml_attribute_ptr( new xml_attribute_c() );
+  attribute->set_name( "build-path" );
+  attribute->set_value( analyzer->build_path );
+  top->append( attribute );
+
+  attribute = xml_attribute_ptr( new xml_attribute_c() );
+  attribute->set_name( "build-target" );
+  attribute->set_value( analyzer->build_target );
   top->append( attribute );
 
   // iterate over any keys and write them as a new element
@@ -349,9 +368,6 @@ bool exporter_c::write_solution_file_element( xml_element_ptr parent, solution_p
   // add a time field element as a leaf of top
   add_field_element( top, "time", column );
 
-  // add a time-step field element as a leaf of top
-  add_field_element( top, "time-step", column );
-
   // iterate over the models and add each component
   for( unsigned i = 0; i < ex_solution->models.size(); i++ ) {
     model_ptr model = ex_solution->models[i];
@@ -408,9 +424,6 @@ bool exporter_c::write_trial_file_element( xml_element_ptr parent, trial_ptr ex_
 
   // add a time field element as a leaf of top
   add_field_element( top, "time", column );
-
-  // add a time-step field element as a leaf of top
-  add_field_element( top, "time-step", column );
 
   // iterate over the models and add each component
   for( unsigned i = 0; i < ex_trial->models.size(); i++ ) {

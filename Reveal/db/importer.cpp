@@ -76,12 +76,14 @@ bool importer_c::read_scenario_element( Reveal::Core::xml_element_ptr top, Revea
     attribute = top->attribute( i );
     if( attribute->get_name() == "id" ) {
       scenario->id = attribute->get_value();
-/*
-    } else if( attribute->get_name() == "trials" ) {
-      scenario->trials = (unsigned)atoi( attribute->get_value().c_str() );
-*/
+    } else if( attribute->get_name() == "package-id" ) {
+      scenario->package_id = attribute->get_value();
     } else if( attribute->get_name() == "sample-rate" ) {
       scenario->sample_rate = (double)atof( attribute->get_value().c_str() );
+    } else if( attribute->get_name() == "sample-start-time" ) {
+      scenario->sample_start_time = (unsigned)atof( attribute->get_value().c_str() );
+    } else if( attribute->get_name() == "sample-end-time" ) {
+      scenario->sample_end_time = (unsigned)atof( attribute->get_value().c_str() );
     }
   }
 
@@ -122,6 +124,12 @@ bool importer_c::read_analyzer_element( Reveal::Core::xml_element_ptr top, Revea
       analyzer->filename = attribute->get_value();
       // note that this is a path on the server and not necessarily on this 
       // system, so should not assume that can validate path here.
+    } else if( attribute->get_name() == "source-path" ) {
+      analyzer->source_path = attribute->get_value();
+    } else if( attribute->get_name() == "build-path" ) {
+      analyzer->build_path = attribute->get_value();
+    } else if( attribute->get_name() == "build-target" ) {
+      analyzer->build_target = attribute->get_value();
     }
   }
 

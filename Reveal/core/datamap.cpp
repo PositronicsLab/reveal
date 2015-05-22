@@ -488,22 +488,12 @@ bool datareader_c::read_field( component_ptr owner, xml_element_ptr top, std::st
     if( name == "time" ) {
       trial->t = _cells[column-1];
       return true;
-/*
-    } else if( name == "time-step" ) {
-      trial->dt = _cells[column-1];
-      return true;
-*/
     }
   } else if( owner->component_type() == component_c::SOLUTION ) {
     solution_ptr solution = boost::dynamic_pointer_cast<solution_c>( owner );
     if( name == "time" ) {
       solution->t = _cells[column-1];
       return true;
-/*
-    } else if( name == "time-step" ) {
-      solution->dt = _cells[column-1];
-      return true;
-*/
     } else if( name == "real-time" ) {
       solution->real_time = _cells[column-1];
       return true;

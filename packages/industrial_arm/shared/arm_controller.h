@@ -1,3 +1,7 @@
+/*------------------------------------------------------------------------------
+
+------------------------------------------------------------------------------*/
+
 #ifndef _REVEAL_PACKAGE_ARM_CONTROLLER_H_
 #define _REVEAL_PACKAGE_ARM_CONTROLLER_H_
 
@@ -12,6 +16,9 @@ static const double AMP = 0.5;
 static const double SMALL_AMP = AMP * 0.1;
 
 //-----------------------------------------------------------------------------
+/// returns the initial velocity of all of the arm joints
+/// @param qd the map returned containing the velocities mapped to the name of 
+///        the joint
 void get_initial_velocity( std::map<std::string,double>& qd ) {
   // Note: this is the same formulation for computing desired velocity used
   // in control function.
@@ -31,10 +38,16 @@ void get_initial_velocity( std::map<std::string,double>& qd ) {
   qd.insert(std::pair<std::string,double>("wrist_1_joint", wrist1_qd));
   qd.insert(std::pair<std::string,double>("wrist_2_joint", wrist2_qd));
   qd.insert(std::pair<std::string,double>("wrist_3_joint", wrist3_qd));
-
 }
 
 //-----------------------------------------------------------------------------
+/// the control function which returns the set of torques computed to move the 
+/// arm to the desired position with the desired velocity
+/// @param t the time at which to calculate the control
+/// @param pos the map of the joint positions mapped to the name of the joint
+/// @param vel the map of the joint velocities mapped to the name of the joint
+/// @param force the map returned containing the joint torques mapped to the 
+///        name of the joint
 void get_control( double t, std::map<std::string,double> pos, std::map<std::string,double> vel, std::map<std::string,double>& force ) {
   // map in the state
   double sh_pan_q = pos.find( "shoulder_pan_joint" )->second;

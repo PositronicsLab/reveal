@@ -1,3 +1,7 @@
+/*------------------------------------------------------------------------------
+
+------------------------------------------------------------------------------*/
+
 #include <gazebo/gazebo.hh>
 #include <gazebo/common/Plugin.hh>
 #include <gazebo/common/common.hh>
@@ -16,198 +20,176 @@
 #include <Reveal/sim/gazebo/helpers.h>
 
 //-----------------------------------------------------------------------------
-namespace gazebo
-{
-  class world_plugin_c : public WorldPlugin
-  {
-  private:
+namespace gazebo {
+//-----------------------------------------------------------------------------
 
-    event::ConnectionPtr _preupdateConnection;
-    event::ConnectionPtr _postupdateConnection;
+class world_plugin_c : public WorldPlugin {
+private:
+  /// gazebo callback connection allows Preupdate to be called before a step so
+  /// the simulation environment can be set up
+  event::ConnectionPtr     _preupdateConnection;
+  /// gazebo callback connection allows Postupdate to be called after a step so
+  /// the simulation results can be returned back to reveal
+  event::ConnectionPtr     _postupdateConnection;
 
-    physics::WorldPtr _world;
+  /// the gazebo world pointer allows the simulation to get and set world state
+  physics::WorldPtr        _world;
 
-    common::Time start_time, last_time;
-    common::Time sim_time;
+  /// the reveal authorization that contains authorization and session data
+  Reveal::Core::authorization_ptr   _auth;
+  /// the reveal scenario that defines the general parameters of the simulation
+  Reveal::Core::scenario_ptr        _scenario;
+  /// the reveal experiment that defines user specified parameters of the sim
+  Reveal::Core::experiment_ptr      _experiment;
+  /// the reveal trial that defines model state and control data to apply to sim
+  Reveal::Core::trial_ptr           _trial;
+  /// the reveal solution that defines the state of the simulation after a trial
+  Reveal::Core::solution_ptr        _solution;
 
-    Reveal::Core::authorization_ptr auth;
-    Reveal::Core::scenario_ptr scenario;
-    Reveal::Core::experiment_ptr experiment;
-    Reveal::Core::trial_ptr trial;
-    Reveal::Core::solution_ptr solution;
+  /// the interprocess communication pipe used to receive command and message
+  /// input from the reveal client and to send result message output to the 
+  /// reveal client
+  Reveal::Core::pipe_ptr            _revealpipe;
 
-  private:
-    Reveal::Core::pipe_ptr _revealpipe;
+  //---------------------------------------------------------------------------
+  /// Opens the interprocess communication pipe to the reveal client
+  /// @return true if the connection is opened OR false if a connection cannot 
+  ///         be made
+  bool connect( void ) {
+    std::cerr << "Connecting to server..." << std::endl;
 
-    //int steps_this_trial;
-
-    unsigned current_intermediate_trial;
-
-    //-------------------------------------------------------------------------
-//--- monitor
-    bool connect( void ) {
-      //TODO: correct constructor
-      printf( "Connecting to server...\n" );
-
-      // TODO: For now, these hardcoded values are okay, but most likely needs 
-      // to be configurable through defines in cmake
-      Reveal::Core::system_c system( Reveal::Core::system_c::CLIENT );
-      if( !system.open() ) return false;
-      unsigned port = system.monitor_port();
-      std::string host = "localhost";
-      _revealpipe = Reveal::Core::pipe_ptr( new Reveal::Core::pipe_c( host, port ) );
-      if( _revealpipe->open() != Reveal::Core::pipe_c::ERROR_NONE ) {
-        return false;
-      }
-
-      printf( "Connected\n" );
-      return true;
-    }
-//---
-
-  public:
-
-    //-------------------------------------------------------------------------
-    world_plugin_c( ) {
-
+    Reveal::Core::system_c system( Reveal::Core::system_c::CLIENT );
+    if( !system.open() ) return false;
+    unsigned port = system.monitor_port();
+    std::string host = "localhost";
+    _revealpipe = Reveal::Core::pipe_ptr( new Reveal::Core::pipe_c( host, port ) );
+    if( _revealpipe->open() != Reveal::Core::pipe_c::ERROR_NONE ) {
+      return false;
     }
 
-    //-------------------------------------------------------------------------
-    ~world_plugin_c( ) {
-      event::Events::DisconnectWorldUpdateBegin( _preupdateConnection );
-      event::Events::DisconnectWorldUpdateBegin( _postupdateConnection );
-      _revealpipe->close();
+    std::cerr << "Connected" << std::endl;
+    return true;
+  }
+
+public:
+  //---------------------------------------------------------------------------
+  /// Default constructor
+  world_plugin_c( ) {
+
+  }
+
+  //---------------------------------------------------------------------------
+  /// Destructor
+  ~world_plugin_c( ) {
+    // remove the gazebo callbacks
+    event::Events::DisconnectWorldUpdateBegin( _preupdateConnection );
+    event::Events::DisconnectWorldUpdateBegin( _postupdateConnection );
+
+    // close ipc
+    _revealpipe->close();
+  }
+
+protected:
+  //---------------------------------------------------------------------------
+  /// Initializes everything necessary to interconnect Gazebo and Reveal.  
+  /// Fulfills the gazebo WorldPlugin interface
+  /// @param world the gazebo world object
+  /// @param sdf the configuration data
+  void Load(physics::WorldPtr world, sdf::ElementPtr sdf) {
+    std::cerr << "Starting World Plugin" << std::endl;
+    std::cerr << "Connecting to Reveal Client..." << std::endl;
+
+    // connect to the reveal client
+    if( !connect() ) {
+      std::cerr << "Failed to connect to Reveal Client\nExiting\n" << std::endl;
+      exit( 1 );
+    }
+    std::cerr << "Connected to Reveal Client." << std::endl;
+
+    // read the experiment from the client connection
+    Reveal::Core::transport_exchange_c ex;
+    std::string msg;
+    // block waiting for a server msg
+    if( _revealpipe->read( msg ) != Reveal::Core::pipe_c::ERROR_NONE ) {
+      // TODO: error recovery
     }
 
-  protected:
+    Reveal::Core::transport_exchange_c::error_e ex_err;
+    ex_err = ex.parse_server_experiment( msg, _auth, _scenario, _experiment );
+    //TODO trap error
 
-    //-------------------------------------------------------------------------
-    void Load(physics::WorldPtr world, sdf::ElementPtr sdf) {
-      std::cerr << "Starting World Plugin" << std::endl;
-      std::cerr << "Connecting to Reveal Client..." << std::endl;
+    // establish the gazebo callbacks to manage this plugin's activation
+    _preupdateConnection = event::Events::ConnectWorldUpdateBegin(
+        boost::bind( &world_plugin_c::Preupdate, this ) );
+    _postupdateConnection = event::Events::ConnectWorldUpdateEnd(
+        boost::bind( &world_plugin_c::Postupdate, this ) );
 
-      if( !connect() ) {
-        std::cerr << "Failed to connect to Reveal Client\nExiting\n" << std::endl;
-        exit( 1 );
-      }
-      std::cerr << "Connected to Reveal Client." << std::endl;
+    // set up the world
+    _world = world;
+    Reveal::Sim::Gazebo::helpers_c::sim_time( 0.0, _world );
+    Reveal::Sim::Gazebo::helpers_c::reset( _world );
+  }
 
-//--- monitor
-      // read experiment
-      Reveal::Core::transport_exchange_c ex;
-      std::string msg;
-      // block waiting for a server msg
-      if( _revealpipe->read( msg ) != Reveal::Core::pipe_c::ERROR_NONE ) {
-        // TODO: error recovery
-      }
+  //---------------------------------------------------------------------------
+  /// Registered as the WorldUpdateBegin callback function.  Determines 
+  /// appropriate reaction to commands sent by the Reveal client including
+  /// setting the state of the simulator from trial data, continuing to step
+  /// through the current simulation state, or exiting the simulator
+  void Preupdate( ) {
 
-      Reveal::Core::transport_exchange_c::error_e ex_err;
-      ex_err = ex.parse_server_experiment( msg, auth, scenario, experiment );
-      //TODO trap error
+    Reveal::Core::transport_exchange_c ex;
+    Reveal::Core::transport_exchange_c::error_e ex_err;
+    std::string msg;
 
-//---
-      _preupdateConnection = event::Events::ConnectWorldUpdateBegin(
-          boost::bind( &world_plugin_c::Preupdate, this ) );
-      _postupdateConnection = event::Events::ConnectWorldUpdateEnd(
-          boost::bind( &world_plugin_c::Postupdate, this ) );
-
-      _world = world;
-      Reveal::Sim::Gazebo::helpers_c::sim_time( 0.0, _world );
-
-      // If validation added back in, do validation here
-
-      // reset the world before we begin
-      Reveal::Sim::Gazebo::helpers_c::reset( _world );
-
-      printf( "intermediate_trials_to_ignore: %u\n", experiment->intermediate_trials_to_ignore );
-
-      //steps_this_trial = 0;
-      current_intermediate_trial = 0;
+    // read the next command message from the reveal client
+    if( _revealpipe->read( msg ) != Reveal::Core::pipe_c::ERROR_NONE ) {
+      // TODO: error recovery
+    }
+    ex_err = ex.parse( msg );
+    if( ex_err != Reveal::Core::transport_exchange_c::ERROR_NONE ) {
+      //TODO: error handling
     }
 
-    //-------------------------------------------------------------------------
-    void Preupdate( ) {
-      //printf( "preupdate called\n" );
-
-      // if in the middle of evaluating a trial, get out
-      //if( steps_this_trial > 0 ) return;
-
-      // otherwise, read next trial state message from reveal client (blocking) 
-//--- monitor
-      Reveal::Core::transport_exchange_c ex;
-      Reveal::Core::transport_exchange_c::error_e ex_err;
-      std::string msg;
-
-      if( _revealpipe->read( msg ) != Reveal::Core::pipe_c::ERROR_NONE ) {
-        // TODO: error recovery
-      }
-      ex_err = ex.parse( msg );
-      if( ex_err != Reveal::Core::transport_exchange_c::ERROR_NONE ) {
-        //TODO: error handling
-      }
-      if( ex.get_type() == Reveal::Core::transport_exchange_c::TYPE_TRIAL ) {
-        //experiment = ex.get_experiment();
-        trial = ex.get_trial();
-//---
-        // set the simulation state from the trial
-          Reveal::Sim::Gazebo::helpers_c::write_trial( trial, experiment, _world );
-      } else if( ex.get_type() == Reveal::Core::transport_exchange_c::TYPE_STEP ) {
-        // do not set state and simply let the simulator continue
-      } else if( ex.get_type() == Reveal::Core::transport_exchange_c::TYPE_EXIT ) {
-        // instruct gazebo to exit
-        exit( 0 );
-      }
+    // apply the correct response to the command message
+    if( ex.get_type() == Reveal::Core::transport_exchange_c::TYPE_TRIAL ) {
+      // if the message contains trial data, write trial to the simulator
+      _trial = ex.get_trial();
+      Reveal::Sim::Gazebo::helpers_c::write_trial( _trial, _experiment, _world );
+    } else if( ex.get_type() == Reveal::Core::transport_exchange_c::TYPE_STEP ) {
+      // otherwise, if the reveal client sent a step command, let the sim run
+    } else if( ex.get_type() == Reveal::Core::transport_exchange_c::TYPE_EXIT ) {
+      // otherwise, if the reveal client sent an exit command, kill gazebo
+      exit( 0 );
     }
+  }
 
-    //-------------------------------------------------------------------------
-    void Postupdate( ) {
-      //printf( "postupdate called\n" );
+  //---------------------------------------------------------------------------
+  /// Registered as the WorldUpdateEnd callback function.  Publishes final state
+  /// to the Reveal client.
+  void Postupdate( ) {
+    Reveal::Core::transport_exchange_c ex;
+    Reveal::Core::transport_exchange_c::error_e ex_err;
+    std::string msg;
 
-      Reveal::Core::transport_exchange_c ex;
-      Reveal::Core::transport_exchange_c::error_e ex_err;
-      std::string msg;
+    // get the solution from the simulator
+    std::vector<std::string> model_list;
+    model_list.push_back( "ur10_schunk_arm" );
+    model_list.push_back( "block" );
+    _solution = Reveal::Sim::Gazebo::helpers_c::read_client_solution( _world, model_list, _trial->scenario_id );
 
-      // if reached the end of the set of steps in the trial
-      //if( steps_this_trial == experiment->steps_per_trial ) {
-
-        // get the solution from the simulator
-        double t = Reveal::Sim::Gazebo::helpers_c::sim_time( _world );
-        //solution = scenario->get_solution( Reveal::Core::solution_c::CLIENT, trial, t );
-
-        //solution = Reveal::Core::solution_ptr( new Reveal::Core::solution_c( Reveal::Core::solution_c::CLIENT ) );
-        //solution->scenario_id = trial->scenario_id;
-        //solution->t = t;
-
-        //_world->extract_solution( trial, solution );
-        std::vector<std::string> model_list;
-        model_list.push_back( "ur10_schunk_arm" );
-        model_list.push_back( "block" );
-
-        solution = Reveal::Sim::Gazebo::helpers_c::read_client_solution( _world, model_list, trial->scenario_id );
-
-//--- monitor
-        // and broadcast the solution to the reveal client.
-        ex_err = ex.build_client_solution( msg, auth, experiment, solution );
-        if( ex_err != Reveal::Core::transport_exchange_c::ERROR_NONE ) {
-          //TODO: error handling
-        }
-        if( _revealpipe->write( msg ) != Reveal::Core::pipe_c::ERROR_NONE ) {
-          //TODO: error handling
-        }
-//---
-/*
-        // otherwise, we need to reset the trial state, so reset the steps
-        steps_this_trial = 0;
-      } else {
-        // otherwise advance to the next step
-        steps_this_trial++;
-      }
-*/
+    // submit the solution to the reveal client.
+    ex_err = ex.build_client_solution( msg, _auth, _experiment, _solution );
+    if( ex_err != Reveal::Core::transport_exchange_c::ERROR_NONE ) {
+      //TODO: error handling
     }
-  };
+    if( _revealpipe->write( msg ) != Reveal::Core::pipe_c::ERROR_NONE ) {
+      //TODO: error handling
+    }
+  }
+};
 
-  GZ_REGISTER_WORLD_PLUGIN( world_plugin_c )
+GZ_REGISTER_WORLD_PLUGIN( world_plugin_c )
 
+//-----------------------------------------------------------------------------
 } // namespace gazebo
-
-
+//-----------------------------------------------------------------------------

@@ -225,11 +225,11 @@ double energy( Reveal::Core::link_ptr gripper, Reveal::Core::link_ptr target, Ra
 
   //std::cout << "c_v:" << c_v << std::endl;
   //std::cout << "rot:" << rot << std::endl;
-  std::cout << "c_v:" << c_v << std::endl;
-  std::cout << "v:" << v << std::endl;
-  std::cout << "v_norm:" << v.norm() << std::endl;
-  std::cout << "delta:" << delta << std::endl;
-  std::cout << "delta_norm:" << delta.norm() << std::endl;
+  //std::cout << "c_v:" << c_v << std::endl;
+  //std::cout << "v:" << v << std::endl;
+  //std::cout << "v_norm:" << v.norm() << std::endl;
+  //std::cout << "delta:" << delta << std::endl;
+  //std::cout << "delta_norm:" << delta.norm() << std::endl;
 
   //v[0] = 0; v[1] = 0; v[2] = 0;
   //delta[0] = 0; delta[1] = 0; delta[2] = 0;
@@ -339,6 +339,9 @@ error_e analyze( Reveal::Core::solution_set_ptr input, Reveal::Core::analysis_pt
     double dt = input->time_step;
     double real_time = solution->real_time;
 
+    //std::cout << "t:" << t << std::endl;
+    //std::cout << "dt:" << dt << std::endl;
+
     //std::vector<double> avgKEs;
 
     Reveal::Core::model_ptr arm = arm_model( solution );
@@ -354,6 +357,8 @@ error_e analyze( Reveal::Core::solution_set_ptr input, Reveal::Core::analysis_pt
     double KE_r = energy( finger_r, block, c_v_r, c_omega_r, m, I, dt );
 
     double avg_KE = (KE_l + KE_r) / 2.0;
+
+    //std::cout << "KE:" << avg_KE << std::endl;
 
     //printf( "t[%f], avgKE[%f], KE_l[%f], KE_r[%f]\n", t, avg_KE, KE_l, KE_r );
     std::vector<double> values;

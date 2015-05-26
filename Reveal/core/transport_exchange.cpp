@@ -795,6 +795,7 @@ transport_exchange_c::error_e transport_exchange_c::write_experiment( Reveal::Co
   msg_experiment->set_end_time( experiment->end_time );
   msg_experiment->set_time_step( experiment->time_step );
   msg_experiment->set_epsilon( experiment->epsilon );
+  msg_experiment->set_intermediate_trials( experiment->intermediate_trials_to_ignore );
 
   return ERROR_NONE;
 }
@@ -809,6 +810,7 @@ transport_exchange_c::error_e transport_exchange_c::read_experiment( Reveal::Cor
   _experiment->end_time = msg->experiment().end_time();
   _experiment->time_step = msg->experiment().time_step();
   _experiment->epsilon = msg->experiment().epsilon();
+  _experiment->intermediate_trials_to_ignore = msg->experiment().intermediate_trials();
 
   Reveal::Core::authorization_ptr auth = get_authorization();
   _experiment->session_id = auth->get_session();

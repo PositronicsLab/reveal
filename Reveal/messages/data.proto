@@ -52,6 +52,7 @@ message Experiment {
   optional double end_time = 4;
   optional double time_step = 5;
   optional double epsilon = 6;
+  optional uint32 intermediate_trials = 7;
 }
 
 // A single trial within a scenario

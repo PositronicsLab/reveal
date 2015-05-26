@@ -76,7 +76,7 @@ bool experiment_c::map( Reveal::Core::experiment_ptr& experiment, mongo::BSONObj
   experiment->end_time = obj.getField( "end_time" ).Double();
   experiment->time_step = obj.getField( "time_step" ).Double();
   experiment->epsilon = obj.getField( "epsilon" ).Double();
-//  experiment->current_trial_index = obj.getField( "current_trial_index" ).Int();
+  experiment->intermediate_trials_to_ignore = obj.getField( "intermediate_trials" ).Int();
 
   return true;
 }
@@ -92,8 +92,7 @@ bool experiment_c::map( mongo::BSONObj& obj, Reveal::Core::experiment_ptr experi
   bob.append( "end_time", experiment->end_time );
   bob.append( "time_step", experiment->time_step );
   bob.append( "epsilon", experiment->epsilon );
-
-//  bob.append( "current_trial_index", experiment->current_trial_index ); 
+  bob.append( "intermediate_trials", experiment->intermediate_trials_to_ignore ); 
 
   obj = bob.obj();
 

@@ -107,6 +107,7 @@ gazebo_c::dynamics_e gazebo_c::prompt_dynamics( void ) {
 bool gazebo_c::ui_select_configuration( Reveal::Core::scenario_ptr scenario, Reveal::Core::experiment_ptr experiment ) {
   _dynamics = prompt_dynamics();
   _desired_time_step = prompt_time_step( scenario, experiment );
+  prompt_trials_to_ignore( scenario, experiment );
 
   std::ostringstream ss;
   ss << _desired_time_step;
@@ -115,10 +116,35 @@ bool gazebo_c::ui_select_configuration( Reveal::Core::scenario_ptr scenario, Rev
   //printf( "Using a time-step of %f\n.", _desired_time_step );
   printf( "Using a time-step of %s\n.", ss.str().c_str() );
 
+  /*
+    trials will be received and solutions will be submitted at every xth simulation step.
+    How many trials should the simulator ignore before resetting state?
+  */
+
   return true; 
 }
 
 //-----------------------------------------------------------------------------
+// TODO: This should be handled in sim or client class
+void gazebo_c::prompt_trials_to_ignore( Reveal::Core::scenario_ptr scenario, Reveal::Core::experiment_ptr experiment ) {
+
+  //std::stringstream info;
+  //info << ""
+  
+  unsigned choice = Reveal::Core::console_c::prompt_unsigned( "How many trials should be ignored before resetting simulator to trial state", true );
+  
+/*
+  std::stringstream msg;
+  msg << "The simulator will receive trials and solutions "
+  if( scenario->sample_rate > experment->time_step ) {
+    
+  }
+*/
+
+  experiment->intermediate_trials_to_ignore = choice;
+}
+//-----------------------------------------------------------------------------
+// TODO: This should be handled in sim or client class
 double gazebo_c::prompt_time_step( Reveal::Core::scenario_ptr scenario, Reveal::Core::experiment_ptr experiment ) {
 
   bool valid = false;
@@ -387,9 +413,8 @@ bool gazebo_c::execute( Reveal::Core::authorization_ptr auth, Reveal::Core::scen
     double sample_rate = scenario->sample_rate;
     double time_step = experiment->time_step;
     double EPSILON = experiment->epsilon;
-    double trial_start_time = experiment->start_time;
-    double trial_end_time;
-    double trial_duration;
+    double trial_start_time, trial_end_time, trial_duration;
+    unsigned current_intermediate_trial;
 
     scenario->print();
 
@@ -398,17 +423,31 @@ bool gazebo_c::execute( Reveal::Core::authorization_ptr auth, Reveal::Core::scen
     else
       trial_duration = time_step;
 
-    trial_end_time = trial_start_time + trial_duration;
-
-    bool get_trial, terminate = false;
+    bool get_next_trial, forward_trial, initial_trial = true, terminate = false;
 
     printf( "Starting Experiment\n" );
     while( true ) {
-      get_trial = false;
+      get_next_trial = false;
+      forward_trial = false;
 
-      if( solution ) {
-        double delta = fabs( trial_end_time - solution->t  );
-        printf( "delta[%1.24f], eps[%1.24f]\n", delta, EPSILON );
+      if( initial_trial ) {
+        // first pass so request initial trial
+        trial_start_time = experiment->start_time;
+        trial_end_time = trial_start_time + trial_duration;
+
+        trial = Reveal::Core::trial_ptr( new Reveal::Core::trial_c() );
+        trial->scenario_id = scenario->id;
+        trial->t = trial_start_time;
+
+        get_next_trial = true;
+        current_intermediate_trial = 0;
+      } else {
+        // a solution now exists (it did not on the first pass)
+        assert( solution );
+        //double delta = fabs( trial_end_time - solution->t  );
+        //printf( "delta(next_trial)[%1.24f], eps[%1.24f]\n", delta, EPSILON );
+
+        // if the solution time approximates the end of the trial time
         if( fabs(trial_end_time - solution->t ) <= EPSILON ) {
           // recompute trial times
           trial_start_time = solution->t;
@@ -418,117 +457,131 @@ bool gazebo_c::execute( Reveal::Core::authorization_ptr auth, Reveal::Core::scen
           trial->scenario_id = scenario->id;
           trial->t = trial_start_time;
 
-          get_trial = true;
+          get_next_trial = true;
         }
-      } else if( !trial ) {
-        // first pass so request initial trial
-        trial = Reveal::Core::trial_ptr( new Reveal::Core::trial_c() );
-        trial->scenario_id = scenario->id;
-        trial->t = trial_start_time;
-
-        get_trial = true;
       }
 
-      // client is block waiting for either a trial or a step command
-      if( get_trial ) {
+      // The trial data needs to be refreshed by querying the server
+      if( get_next_trial ) {
         // if it another trial is due, send it
         //trial->print();
 
-        bool result = _request_trial( auth, experiment, trial );
-        if( !result ) {
-          // TODO: error handling
-          Reveal::Core::console_c::printline( "request_trial failed" );
+        if( !_request_trial( auth, experiment, trial ) ) {
+          //Reveal::Core::console_c::printline( "request_trial failed" );
+          // if no trial can be fetched from the server, then the simulator
+          // must be terminated
           terminate = true;
         }
 
         //trial->print();
+      }
 
-        if( !terminate ) {
-          printf( "(client) forwarding trial\n" );
-
-          // write trial to gzipc
-          exchg.build_server_trial( msg, auth, experiment, trial );
-
-          //printf( "writing experiment to gazebo\n" );
-          //printf( "experiment->number_of_trials: %d\n", experiment->number_of_trials );
-          if( _ipc->write( msg ) != Reveal::Core::pipe_c::ERROR_NONE ) {
-            // TODO: trap and recover
-          }
-        } else {
+      // process the command to send to the simulator
+      {
+        // if the terminate flag was set, then send the command
+        if( terminate ) {
           printf( "(client) issuing terminate command\n" );
           exchg.build_server_command_exit( msg, auth );
-
           if( _ipc->write( msg ) != Reveal::Core::pipe_c::ERROR_NONE ) {
             // TODO: trap and recover
           }  
-        }
-      } else {
-        // otherwise send a step command
+        } else {
 
-        printf( "(client) issuing step command\n" );
-
-        exchg.build_server_command_step( msg, auth );
-
-        if( _ipc->write( msg ) != Reveal::Core::pipe_c::ERROR_NONE ) {
-          // TODO: trap and recover
-        }
-      }
-
-      // TODO : encapsulate in ipc
-      zmq_pollitem_t channels[1];
-      channels[0].socket = _ipc->socket();
-      channels[0].fd = 0;
-      channels[0].events = ZMQ_POLLIN;
-      channels[0].revents = 0;
-      int rc = zmq_poll( channels, 1, -1);
-      if( rc == -1 ) {
-        if( errno == ETERM ) {
-          // At least one member of channels refers to a socket whose context
-          // was terminated
-          printf( "ERROR: ETERM a socket was terminated\n" );
-        } else if( errno == EFAULT ) {
-          // The provided channels was NULL
-          printf( "ERROR: EFAULT a provided channel was NULL\n" );
-        } else if( errno == EINTR ) {
-          if( gz_exited ) {
-            printf( "Detected Gazebo Exit\n" );
-            break;
+          // client is block waiting for either a trial or a step command
+          if( initial_trial ) {
+            forward_trial = true;
+            current_intermediate_trial = 0;
+          } else if( get_next_trial && current_intermediate_trial++ > experiment->intermediate_trials_to_ignore ) {
+            forward_trial = true;
+            current_intermediate_trial = 0;
           }
-          // else
-          printf( "ERROR: EINTR signal interrupted polling\n" );
-        }
-      }
 
-      if( channels[0].revents & ZMQ_POLLIN ) {
-        // read solution from message
-        if( _ipc->read( msg ) != Reveal::Core::pipe_c::ERROR_NONE ) {
-          // TODO: trap and recover
-        }
+          if( forward_trial ) {
+            printf( "(client) forwarding trial\n" );
 
-        // get the solution
-        exchg.parse_client_solution( msg, auth, experiment, solution );
+            // write trial to gzipc
+            exchg.build_server_trial( msg, auth, experiment, trial );
 
-        // publish to revealserver if the end of trial is reached
-        //if( solution && solution->t == trial_end_time ) {
-        if( solution ) {
-          printf( "(client) received solution\n" );
-          if( fabs(trial_end_time - solution->t ) <= EPSILON ) {
-            printf( "(client) fowarding solution\n" );
+            if( _ipc->write( msg ) != Reveal::Core::pipe_c::ERROR_NONE ) {
+              // TODO: trap and recover
+            }
+          } else {
+            // otherwise send a step command
 
-            //solution->print();
+            printf( "(client) issuing step command\n" );
 
-            // submit the solution to the server
-            bool result = _submit_solution( auth, experiment, solution );
-            if( !result ) {
-              // TODO: error handling
-              Reveal::Core::console_c::printline( "submit_solution failed" );
+            exchg.build_server_command_step( msg, auth );
+
+            if( _ipc->write( msg ) != Reveal::Core::pipe_c::ERROR_NONE ) {
+              // TODO: trap and recover
             }
           }
-        } else {
-          // the solution is effectively ignored until the simulator has reached
-          // the desired trial_end_time
         }
-      }
+      }  // end process command block
+
+      // switch to block waiting and process the response from the simulator
+      // when it reactivates the client
+      {
+        // TODO : encapsulate in ipc
+        zmq_pollitem_t channels[1];
+        channels[0].socket = _ipc->socket();
+        channels[0].fd = 0;
+        channels[0].events = ZMQ_POLLIN;
+        channels[0].revents = 0;
+        int rc = zmq_poll( channels, 1, -1);
+        if( rc == -1 ) {
+          if( errno == ETERM ) {
+            // At least one member of channels refers to a socket whose context
+            // was terminated
+            printf( "ERROR: ETERM a socket was terminated\n" );
+          } else if( errno == EFAULT ) {
+            // The provided channels was NULL
+            printf( "ERROR: EFAULT a provided channel was NULL\n" );
+          } else if( errno == EINTR ) {
+            if( gz_exited ) {
+              printf( "Detected Gazebo Exit\n" );
+              break;
+            }
+            // else
+            printf( "ERROR: EINTR signal interrupted polling\n" );
+          }
+        }
+
+        if( channels[0].revents & ZMQ_POLLIN ) {
+          // read solution from message
+          if( _ipc->read( msg ) != Reveal::Core::pipe_c::ERROR_NONE ) {
+            // TODO: trap and recover
+          }
+
+          // get the solution
+          exchg.parse_client_solution( msg, auth, experiment, solution );
+
+          // publish to revealserver if the end of trial is reached
+          //if( solution && solution->t == trial_end_time ) {
+          if( solution ) {
+            printf( "(client) received solution\n" );
+            //double delta = fabs( trial_end_time - solution->t  );
+            //printf( "trial_end_time[%1.24f], solution->t[%1.24f], delta(solution)[%1.24f], eps[%1.24f]\n", trial_end_time, solution->t, delta, EPSILON );
+            if( fabs(trial_end_time - solution->t ) <= EPSILON ) {
+              printf( "(client) fowarding solution\n" );
+
+              //solution->print();
+
+              // submit the solution to the server
+              bool result = _submit_solution( auth, experiment, solution );
+              if( !result ) {
+                // TODO: error handling
+                Reveal::Core::console_c::printline( "submit_solution failed" );
+              }
+            }
+/*
+          } else {
+            // the solution is effectively ignored until the simulator has reached
+            // the desired trial_end_time
+*/
+          }
+        }
+      }  // end process response block
 
       // Theoretically branch will not be entered; however, detecting EINTR is 
       // not fully reliable and this branch is here to ensure exit if the zmq
@@ -537,6 +590,8 @@ bool gazebo_c::execute( Reveal::Core::authorization_ptr auth, Reveal::Core::scen
         printf( "Detected Gazebo Exit\n" );
         break;
       }
+
+      if( initial_trial ) initial_trial = false;
     }
 
     printf( "Experiment Complete\n" );

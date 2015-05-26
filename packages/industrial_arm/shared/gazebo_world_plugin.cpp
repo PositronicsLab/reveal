@@ -39,7 +39,9 @@ namespace gazebo
   private:
     Reveal::Core::pipe_ptr _revealpipe;
 
-    int steps_this_trial;
+    //int steps_this_trial;
+
+    unsigned current_intermediate_trial;
 
     //-------------------------------------------------------------------------
 //--- monitor
@@ -117,7 +119,10 @@ namespace gazebo
       // reset the world before we begin
       Reveal::Sim::Gazebo::helpers_c::reset( _world );
 
-      steps_this_trial = 0;
+      printf( "intermediate_trials_to_ignore: %u\n", experiment->intermediate_trials_to_ignore );
+
+      //steps_this_trial = 0;
+      current_intermediate_trial = 0;
     }
 
     //-------------------------------------------------------------------------
@@ -145,7 +150,7 @@ namespace gazebo
         trial = ex.get_trial();
 //---
         // set the simulation state from the trial
-        Reveal::Sim::Gazebo::helpers_c::write_trial( trial, experiment, _world );
+          Reveal::Sim::Gazebo::helpers_c::write_trial( trial, experiment, _world );
       } else if( ex.get_type() == Reveal::Core::transport_exchange_c::TYPE_STEP ) {
         // do not set state and simply let the simulator continue
       } else if( ex.get_type() == Reveal::Core::transport_exchange_c::TYPE_EXIT ) {

@@ -51,10 +51,7 @@ public:
   double            end_time;
   double            time_step;
   double            epsilon;
-  //int               number_of_trials;
-  //int               steps_per_trial;
-//  std::vector<int>  trial_prescription;
-//  int               current_trial_index;
+  unsigned          intermediate_trials_to_ignore;
   
   //                creation_timestamp;
 /*

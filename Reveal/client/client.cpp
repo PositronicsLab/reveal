@@ -6,6 +6,8 @@
 #include <assert.h>
 #include <iostream>
 #include <sstream>
+#include <limits>
+#include <math.h>
 
 #include "Reveal/core/console.h"
 #include "Reveal/core/error.h"
@@ -487,6 +489,72 @@ bool client_c::submit_solution( Reveal::Core::authorization_ptr& auth, Reveal::C
 }
 
 //-----------------------------------------------------------------------------
+// TODO: This should be handled in sim or client class
+void client_c::prompt_trials_to_ignore( Reveal::Core::scenario_ptr scenario, Reveal::Core::experiment_ptr experiment ) {
+
+  //std::stringstream info;
+  //info << ""
+  
+  unsigned choice = Reveal::Core::console_c::prompt_unsigned( "How many trials should be ignored before resetting simulator to trial state", true );
+
+  experiment->intermediate_trials_to_ignore = choice;
+}
+//-----------------------------------------------------------------------------
+void client_c::prompt_time_step( Reveal::Core::scenario_ptr scenario, Reveal::Core::experiment_ptr experiment ) {
+  bool valid = false;
+  double candidate_time_step;
+  double x;
+  std::stringstream ratemsg;
+  ratemsg << "The sample rate is " << scenario->sample_rate;
+
+  //double EPSILON = std::numeric_limits<double>::epsilon();
+  //double EPSILON = 1e-8;
+  //double EPSILON = std::numeric_limits<float>::epsilon();
+ 
+  double epsilon;
+
+  do {
+    Reveal::Core::console_c::printline( ratemsg );
+    //candidate_time_step = (double)Reveal::Core::console_c::prompt_float( "What time-step would you like the experiment to use", false );
+    candidate_time_step = (double)Reveal::Core::console_c::prompt_double( "What time-step would you like the experiment to use", epsilon, false );
+
+    if( candidate_time_step == 0.0 ) {
+      Reveal::Core::console_c::printline( "INVALID: The time-step cannot be zero!" );
+      continue;
+    }
+
+    if( scenario->sample_rate > candidate_time_step ) {
+      //x = scenario->sample_rate / candidate_time_step;
+      x = scenario->sample_rate;
+
+      do {
+        x -= candidate_time_step;
+      } while( x > epsilon );
+    } else if( candidate_time_step > scenario->sample_rate ) {
+      //x = candidate_time_step / scenario->sample_rate;
+      x = candidate_time_step;
+
+      do {
+        x -= scenario->sample_rate;
+      } while( x > epsilon );
+    } else {
+      x = 0.0;
+    }
+    //double m = floor(x);
+    //printf( "sample_rate[%1.24f], time_step[%1.24f], x[%1.24f], EPSILON[%1.24f]\n", scenario->sample_rate, candidate_time_step, x, epsilon );
+    if( fabs(x) <= epsilon ) {
+      valid = true;
+    } else {
+      Reveal::Core::console_c::printline( "INVALID: The time-step must be a factor of the sample rate!" );
+      continue;
+    }
+  } while( !valid );
+
+  experiment->time_step = candidate_time_step;
+  experiment->epsilon = epsilon;
+}
+
+//-----------------------------------------------------------------------------
 bool client_c::execute( void ) {
 
   // Initialization
@@ -593,6 +661,13 @@ bool client_c::execute( void ) {
       // TODO: error handling.
       // if false, no choice but to bomb with unrecognized/unrecoverable
     }
+
+    prompt_time_step( scenario, experiment );
+    prompt_trials_to_ignore( scenario, experiment );
+
+    std::stringstream ss;
+    ss << "The experiment is configured to use a time step of " << experiment->time_step << " seconds and will ignore the next " << experiment->intermediate_trials_to_ignore << " trials after being reset by new trial state.";
+    Reveal::Core::console_c::printline( ss );
 
     // user selects any package specific parameters
     if( !simulator->ui_select_tuning() ) {

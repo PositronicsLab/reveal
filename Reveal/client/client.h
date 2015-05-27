@@ -84,6 +84,9 @@ public:
   Reveal::Core::connection_c _connection;
 
 private:
+  void prompt_time_step( Reveal::Core::scenario_ptr scenario, Reveal::Core::experiment_ptr experiment );
+  void prompt_trials_to_ignore( Reveal::Core::scenario_ptr scenario, Reveal::Core::experiment_ptr experiment );
+
   error_e request_reply( const std::string& request, std::string& reply );
 };
 

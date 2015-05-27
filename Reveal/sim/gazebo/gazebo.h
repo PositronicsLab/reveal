@@ -61,8 +61,6 @@ public:
   virtual ~gazebo_c( void );
 
 private:
-  double prompt_time_step( Reveal::Core::scenario_ptr scenario, Reveal::Core::experiment_ptr experiment );
-  void prompt_trials_to_ignore( Reveal::Core::scenario_ptr scenario, Reveal::Core::experiment_ptr experiment );
   dynamics_e prompt_dynamics( void );
   std::vector< std::string > environment_keys( void );
 

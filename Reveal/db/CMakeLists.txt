@@ -50,7 +50,7 @@ set( REVEAL_DB_SOURCES
 )
 
 #------------------------------------------------------
-# build the library
+# build the database library
 add_library( reveal_db SHARED ${REVEAL_DB_HEADERS} ${REVEAL_DB_SOURCES} )
 add_dependencies( reveal_db reveal_core )
 
@@ -61,11 +61,30 @@ target_link_libraries( reveal_db
 )
 
 #------------------------------------------------------
-# install
+# build the configuration tool
+#add_executable( reveal_configure_db ${CMAKE_CURRENT_SOURCE_DIR}/mongo/configure_db.cpp ${REVEAL_DB_HEADERS} ${REVEAL_DB_SOURCES} )
+add_executable( reveal_configure_db ${CMAKE_CURRENT_SOURCE_DIR}/mongo/configure_db.cpp )
+add_dependencies( reveal_db reveal_core )
+
+target_link_libraries( reveal_configure_db 
+  ${MongoDB_LIBRARIES}
+  reveal_core
+  reveal_db
+)
+
+#------------------------------------------------------
+# install the database library
 set_target_properties( reveal_db PROPERTIES SOVERSION ${REVEAL_MAJOR_VERSION} VERSION ${REVEAL_VERSION_FULL} )
 install( TARGETS reveal_db DESTINATION ${LIB_INSTALL_DIR} COMPONENT shlib )
 install( FILES ${REVEAL_DB_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/db COMPONENT headers )
 
+#------------------------------------------------------
+# install the configuration tool
+set_target_properties( reveal_configure_db PROPERTIES VERSION ${REVEAL_VERSION_FULL} )
+install( TARGETS reveal_configure_db DESTINATION ${BIN_INSTALL_DIR} )
+
+#------------------------------------------------------
+# build tests
 if( BUILD_TESTS )
   add_subdirectory( test )
 endif()

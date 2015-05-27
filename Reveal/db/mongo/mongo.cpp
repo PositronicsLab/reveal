@@ -125,6 +125,13 @@ bool mongo_c::create_index( const std::string table, mongo::BSONObj keys, bool u
 }
 
 //-----------------------------------------------------------------------------
+bool mongo_c::drop_database( void ) {
+  if( !_open ) return false;
+
+  return _connection.dropDatabase( _dbname );
+}
+
+//-----------------------------------------------------------------------------
 } // namespace Mongo
 //-----------------------------------------------------------------------------
 } // namespace DB

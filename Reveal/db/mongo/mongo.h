@@ -68,6 +68,8 @@ public:
 
   bool create_index( std::string table, mongo::BSONObj keys, bool unique = false );
 
+  bool drop_database( void );
+
 private:
   /// indicates whether the database connection is currently open
   bool                         _open;

@@ -1,4 +1,4 @@
-#include "Reveal/server/client_worker.h"
+#include "Reveal/server/worker.h"
 
 #include <stdio.h>
 #include <assert.h>

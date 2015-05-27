@@ -19,13 +19,13 @@ link_directories(
 set( REVEAL_SERVER_HEADERS 
   identity.h
   server.h
-  client_worker.h
+  worker.h
 )
 
 # source files
 set( REVEAL_SERVER_SOURCES 
   server.cpp
-  client_worker.cpp
+  worker.cpp
 )
 
 #------------------------------------------------------
@@ -47,7 +47,7 @@ target_link_libraries( reveal_server
 #------------------------------------------------------
 set_target_properties( reveal_server PROPERTIES VERSION ${REVEAL_VERSION_FULL} )
 install( TARGETS reveal_server DESTINATION ${BIN_INSTALL_DIR} )
-install( FILES ${REVEAL_CLIENT_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/server COMPONENT headers )
+install( FILES ${REVEAL_SERVER_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/server COMPONENT headers )
 
 
 # build the tests

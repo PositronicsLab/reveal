@@ -15,7 +15,7 @@ uses the server interface to handle client and database interactions
 #include <pthread.h>
 
 #include "Reveal/core/connection.h"
-#include "Reveal/server/client_worker.h"
+#include "Reveal/server/worker.h"
 
 //-----------------------------------------------------------------------------
 

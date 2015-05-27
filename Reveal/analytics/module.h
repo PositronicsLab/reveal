@@ -26,7 +26,17 @@ namespace Analytics {
 class module_c : public boost::enable_shared_from_this<module_c>  {
 public:
 
+  /// loads a analytics module
+  /// @param file the path to the module to load
+  /// @return on success returns ERROR_NONE otherwise returns an enumerated
+  ///         value that gives some information on the error 
   virtual Reveal::Analytics::error_e load( std::string file ) = 0;
+
+  /// executes the exposed analytics function for a loaded module
+  /// @param in the solution set submitted for analysis
+  /// @param out the result of the module's analytics computation
+  /// @return on success returns ERROR_NONE otherwise returns an enumerated
+  ///         value that gives some information on the error 
   virtual Reveal::Analytics::error_e analyze( Reveal::Core::solution_set_ptr in, Reveal::Core::analysis_ptr& out ) = 0;
 };
 

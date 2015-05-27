@@ -16,15 +16,12 @@ types.h defines various types necessary for interfacing with analytics
 #include "Reveal/core/analysis.h"
 
 //-----------------------------------------------------------------------------
-
 namespace Reveal {
-
 //-----------------------------------------------------------------------------
-
 namespace Analytics {
-
 //-----------------------------------------------------------------------------
 
+/// enumerated error codes used in analytics interfaces
 enum error_e {
   ERROR_NONE,
   ERROR_UNSPECIFIED, 
@@ -35,14 +32,8 @@ enum error_e {
 
 //-----------------------------------------------------------------------------
 
-enum status_e {
-  STATUS_IDLE,
-  STATUS_BUSY,
-  STATUS_ERROR
-};
-
-//-----------------------------------------------------------------------------
-
+/// defines the analyzer function signiture as a function pointer 
+/// matches the definition in module.h
 typedef error_e (*analyzer_f)( Reveal::Core::solution_set_ptr input, Reveal::Core::analysis_ptr& output );
 
 //-----------------------------------------------------------------------------
@@ -51,13 +42,9 @@ class worker_c;
 typedef boost::shared_ptr< Reveal::Analytics::worker_c > worker_ptr;
 
 //-----------------------------------------------------------------------------
-
 } // namespace Analytics
-
 //-----------------------------------------------------------------------------
-
 } // namespace Reveal
-
 //-----------------------------------------------------------------------------
 
 #endif // _REVEAL_ANALYTICS_TYPES_H_

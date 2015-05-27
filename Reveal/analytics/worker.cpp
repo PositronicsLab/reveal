@@ -66,7 +66,7 @@ bool worker_c::execute( boost::shared_ptr<Reveal::DB::database_c> db, const std:
     Reveal::Core::solution_set_ptr solution_set;
     Reveal::Core::analysis_ptr analysis;
 
-    db_error = db->query( solution_set, experiment->experiment_id, trial_time, solution_time, EPSILON );
+    db_error = db->fetch( solution_set, experiment->experiment_id, trial_time, solution_time, EPSILON );
 
     if( !solution_set ) 
       printf( "failed to select requested solution_set from db\n" );
@@ -95,7 +95,7 @@ bool worker_c::execute( boost::shared_ptr<Reveal::DB::database_c> db, const std:
     Reveal::Core::solution_set_ptr solution_set;
     Reveal::Core::analysis_ptr analysis;
 
-    db_error = db->query( solution_set, experiment->experiment_id, i );
+    db_error = db->fetch( solution_set, experiment->experiment_id, i );
 
     if( !solution_set ) 
       printf( "failed to select requested solution_set from db\n" );
@@ -154,7 +154,7 @@ bool worker_c::execute( boost::shared_ptr<Reveal::DB::database_c> db, const std:
     Reveal::Core::solution_set_ptr solution_set;
     Reveal::Core::analysis_ptr analysis;
 
-    db_error = db->query( solution_set, experiment->experiment_id, t, EPSILON );
+    db_error = db->fetch( solution_set, experiment->experiment_id, t, EPSILON );
 
     if( !solution_set ) 
       printf( "failed to select requested solution_set from db\n" );
@@ -180,7 +180,7 @@ bool worker_c::execute( boost::shared_ptr<Reveal::DB::database_c> db, const std:
     Reveal::Core::solution_set_ptr solution_set;
     Reveal::Core::analysis_ptr analysis;
 
-    db_error = db->query( solution_set, experiment->experiment_id, i );
+    db_error = db->fetch( solution_set, experiment->experiment_id, i );
 
     if( !solution_set ) 
       printf( "failed to select requested solution_set from db\n" );
@@ -230,7 +230,7 @@ bool worker_c::batch_execute( boost::shared_ptr<Reveal::DB::database_c> db, cons
 
   // build a solution set for the entire experiment
   //printf( "fetching solution_set\n" );
-  db_error = db->query( solution_set, experiment->experiment_id );
+  db_error = db->fetch( solution_set, experiment->experiment_id );
   if( db_error != Reveal::DB::database_c::ERROR_NONE )
     printf( "db_error[%d] fetching solution_set\n", db_error );
 
@@ -293,22 +293,22 @@ bool worker_c::fetch( Reveal::Core::scenario_ptr& scenario, Reveal::Core::experi
 
   Reveal::DB::database_c::error_e error;
 
-  error = db->query( experiment, experiment_id );
+  error = db->fetch( experiment, experiment_id );
   if( error != Reveal::DB::database_c::ERROR_NONE ) 
     printf( "db error[%d] fetching experiment\n", error );
   if( !experiment ) return false;
 
-  error = db->query( scenario, experiment->scenario_id );
+  error = db->fetch( scenario, experiment->scenario_id );
   if( error != Reveal::DB::database_c::ERROR_NONE )
     printf( "db error[%d] fetching scenario\n", error );
   if( !scenario ) return false;
 
-  error = db->query( initial_trial, experiment->scenario_id, experiment->start_time, experiment->epsilon );
+  error = db->fetch( initial_trial, experiment->scenario_id, experiment->start_time, experiment->epsilon );
   if( error != Reveal::DB::database_c::ERROR_NONE ) 
     printf( "db error[%d] fetching initial trial\n", error );
   if( !initial_trial ) return false;
 
-  error = db->query( analyzer, experiment->scenario_id );
+  error = db->fetch( analyzer, experiment->scenario_id );
   if( error != Reveal::DB::database_c::ERROR_NONE )
     printf( "db error[%d] fetching analyzer\n", error );
   if( !analyzer ) return false;

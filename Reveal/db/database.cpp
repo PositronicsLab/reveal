@@ -88,7 +88,7 @@ database_c::error_e database_c::insert( Reveal::Core::user_ptr user ) {
 }
 
 //-----------------------------------------------------------------------------
-database_c::error_e database_c::query( Reveal::Core::user_ptr& user, const std::string& user_id ) {
+database_c::error_e database_c::fetch( Reveal::Core::user_ptr& user, const std::string& user_id ) {
 
   // TODO : error handling
   Reveal::DB::Mongo::user_c::fetch( user, ptr(), user_id );
@@ -106,7 +106,7 @@ database_c::error_e database_c::insert( Reveal::Core::session_ptr session ) {
 }
 
 //-----------------------------------------------------------------------------
-database_c::error_e database_c::query( Reveal::Core::session_ptr& session, std::string session_id ) {
+database_c::error_e database_c::fetch( Reveal::Core::session_ptr& session, std::string session_id ) {
 
   // TODO : error handling
   Reveal::DB::Mongo::session_c::fetch( session, ptr(), session_id );
@@ -124,7 +124,7 @@ database_c::error_e database_c::insert( Reveal::Core::experiment_ptr experiment 
 }
 
 //-----------------------------------------------------------------------------
-database_c::error_e database_c::query( Reveal::Core::experiment_ptr& experiment, std::string experiment_id ) {
+database_c::error_e database_c::fetch( Reveal::Core::experiment_ptr& experiment, std::string experiment_id ) {
 
   // TODO : error handling
   Reveal::DB::Mongo::experiment_c::fetch( experiment, ptr(), experiment_id );
@@ -133,7 +133,7 @@ database_c::error_e database_c::query( Reveal::Core::experiment_ptr& experiment,
 }
 
 //-----------------------------------------------------------------------------
-database_c::error_e database_c::query( Reveal::Core::digest_ptr& digest ) {
+database_c::error_e database_c::fetch( Reveal::Core::digest_ptr& digest ) {
   // TODO : error handling
   Reveal::DB::Mongo::digest_c::fetch( digest, ptr() );
 
@@ -150,7 +150,7 @@ database_c::error_e database_c::insert( Reveal::Core::scenario_ptr scenario ) {
 }
 
 //-----------------------------------------------------------------------------
-database_c::error_e database_c::query( Reveal::Core::scenario_ptr& scenario, const std::string& scenario_id ) {
+database_c::error_e database_c::fetch( Reveal::Core::scenario_ptr& scenario, const std::string& scenario_id ) {
 
   // TODO : error handling
   Reveal::DB::Mongo::scenario_c::fetch( scenario, ptr(), scenario_id );
@@ -168,7 +168,7 @@ database_c::error_e database_c::insert( Reveal::Core::trial_ptr trial ) {
 }
 
 //-----------------------------------------------------------------------------
-database_c::error_e database_c::query( Reveal::Core::trial_ptr& trial, const std::string& scenario_id, double t, double epsilon ) {
+database_c::error_e database_c::fetch( Reveal::Core::trial_ptr& trial, const std::string& scenario_id, double t, double epsilon ) {
 
 //  printf( "t: %f\n", t );
 
@@ -189,7 +189,7 @@ database_c::error_e database_c::insert( Reveal::Core::solution_ptr solution ) {
 }
 
 //-----------------------------------------------------------------------------
-database_c::error_e database_c::query( Reveal::Core::solution_ptr& solution, Reveal::Core::solution_c::type_e type, const std::string& scenario_id, double t, double epsilon ) {
+database_c::error_e database_c::fetch( Reveal::Core::solution_ptr& solution, Reveal::Core::solution_c::type_e type, const std::string& scenario_id, double t, double epsilon ) {
 
   // TODO : error handling
   Reveal::DB::Mongo::solution_c::fetch( solution, ptr(), type, scenario_id, t, epsilon );
@@ -198,7 +198,7 @@ database_c::error_e database_c::query( Reveal::Core::solution_ptr& solution, Rev
 }
 
 //-----------------------------------------------------------------------------
-database_c::error_e database_c::query( Reveal::Core::solution_ptr& solution, const std::string& experiment_id, const std::string& scenario_id, double t, double epsilon ) {
+database_c::error_e database_c::fetch( Reveal::Core::solution_ptr& solution, const std::string& experiment_id, const std::string& scenario_id, double t, double epsilon ) {
 
   // TODO : error handling
   Reveal::DB::Mongo::solution_c::fetch( solution, ptr(), experiment_id, scenario_id, t, epsilon );
@@ -216,7 +216,7 @@ database_c::error_e database_c::insert( Reveal::Core::analyzer_ptr analyzer ) {
 }
 
 //-----------------------------------------------------------------------------
-database_c::error_e database_c::query( std::vector<Reveal::Core::analyzer_ptr>& analyzers ) {
+database_c::error_e database_c::fetch( std::vector<Reveal::Core::analyzer_ptr>& analyzers ) {
 
   // TODO : error handling
   Reveal::DB::Mongo::analyzer_c::fetch( analyzers, ptr() );
@@ -225,7 +225,7 @@ database_c::error_e database_c::query( std::vector<Reveal::Core::analyzer_ptr>& 
 }
 
 //-----------------------------------------------------------------------------
-database_c::error_e database_c::query( Reveal::Core::analyzer_ptr& analyzer, const std::string& scenario_id ) {
+database_c::error_e database_c::fetch( Reveal::Core::analyzer_ptr& analyzer, const std::string& scenario_id ) {
 
   // TODO : error handling
   Reveal::DB::Mongo::analyzer_c::fetch( analyzer, ptr(), scenario_id );
@@ -243,7 +243,7 @@ database_c::error_e database_c::insert( Reveal::Core::analysis_ptr analysis ) {
 }
 
 //-----------------------------------------------------------------------------
-database_c::error_e database_c::query( Reveal::Core::solution_set_ptr& solution_set, const std::string& experiment_id ) {
+database_c::error_e database_c::fetch( Reveal::Core::solution_set_ptr& solution_set, const std::string& experiment_id ) {
 
   // TODO : error handling
   Reveal::DB::Mongo::solution_set_c::fetch( solution_set, ptr(), experiment_id );
@@ -252,7 +252,7 @@ database_c::error_e database_c::query( Reveal::Core::solution_set_ptr& solution_
 }
 
 //-----------------------------------------------------------------------------
-database_c::error_e database_c::query( Reveal::Core::solution_set_ptr& solution_set, const std::string& experiment_id, double t, double epsilon ) {
+database_c::error_e database_c::fetch( Reveal::Core::solution_set_ptr& solution_set, const std::string& experiment_id, double t, double epsilon ) {
 
   // TODO : error handling
   Reveal::DB::Mongo::solution_set_c::fetch( solution_set, ptr(), experiment_id, t, epsilon );
@@ -261,7 +261,7 @@ database_c::error_e database_c::query( Reveal::Core::solution_set_ptr& solution_
 }
 
 //-----------------------------------------------------------------------------
-database_c::error_e database_c::query( Reveal::Core::solution_set_ptr& solution_set, const std::string& experiment_id, double trial_time, double solution_time, double epsilon ) {
+database_c::error_e database_c::fetch( Reveal::Core::solution_set_ptr& solution_set, const std::string& experiment_id, double trial_time, double solution_time, double epsilon ) {
 
   // TODO : error handling
   Reveal::DB::Mongo::solution_set_c::fetch( solution_set, ptr(), experiment_id, trial_time, solution_time, epsilon );

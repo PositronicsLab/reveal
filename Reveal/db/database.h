@@ -54,32 +54,32 @@ public:
 
 public:
   error_e insert( Reveal::Core::user_ptr user );
-  error_e query( Reveal::Core::user_ptr& user, const std::string& user_id );
+  error_e fetch( Reveal::Core::user_ptr& user, const std::string& user_id );
 
   error_e insert( Reveal::Core::session_ptr session );
-  error_e query( Reveal::Core::session_ptr& session, std::string session_id );
+  error_e fetch( Reveal::Core::session_ptr& session, std::string session_id );
 
-  error_e query( Reveal::Core::digest_ptr& digest );
+  error_e fetch( Reveal::Core::digest_ptr& digest );
 
   error_e insert( Reveal::Core::experiment_ptr experiment );
-  error_e query( Reveal::Core::experiment_ptr& experiment, std::string experiment_id );
+  error_e fetch( Reveal::Core::experiment_ptr& experiment, std::string experiment_id );
 
   error_e insert( Reveal::Core::scenario_ptr scenario );
-  error_e query( Reveal::Core::scenario_ptr& scenario, const std::string& scenario_id );
+  error_e fetch( Reveal::Core::scenario_ptr& scenario, const std::string& scenario_id );
 
   error_e insert( Reveal::Core::trial_ptr trial );
-  error_e query( Reveal::Core::trial_ptr& trial, const std::string& scenario_id, double t, double epsilon );
+  error_e fetch( Reveal::Core::trial_ptr& trial, const std::string& scenario_id, double t, double epsilon );
 
   error_e insert( Reveal::Core::solution_ptr solution );
-  error_e query( Reveal::Core::solution_ptr& solution, const std::string& experiment_id, const std::string& scenario_id, double t, double epsilon );
-  error_e query( Reveal::Core::solution_ptr& solution, Reveal::Core::solution_c::type_e type, const std::string& scenario_id, double t, double epsilon );
+  error_e fetch( Reveal::Core::solution_ptr& solution, const std::string& experiment_id, const std::string& scenario_id, double t, double epsilon );
+  error_e fetch( Reveal::Core::solution_ptr& solution, Reveal::Core::solution_c::type_e type, const std::string& scenario_id, double t, double epsilon );
 
   error_e insert( Reveal::Core::analyzer_ptr analyzer );
-  error_e query( std::vector<Reveal::Core::analyzer_ptr>& analyzers );
-  error_e query( Reveal::Core::analyzer_ptr& analyzer, const std::string& scenario_id );
-  error_e query( Reveal::Core::solution_set_ptr& solution_set, const std::string& experiment_id );
-  error_e query( Reveal::Core::solution_set_ptr& solution_set, const std::string& experiment_id, double t, double epsilon );
-  error_e query( Reveal::Core::solution_set_ptr& solution_set, const std::string& experiment_id, double trial_time, double solution_time, double epsilon );
+  error_e fetch( std::vector<Reveal::Core::analyzer_ptr>& analyzers );
+  error_e fetch( Reveal::Core::analyzer_ptr& analyzer, const std::string& scenario_id );
+  error_e fetch( Reveal::Core::solution_set_ptr& solution_set, const std::string& experiment_id );
+  error_e fetch( Reveal::Core::solution_set_ptr& solution_set, const std::string& experiment_id, double t, double epsilon );
+  error_e fetch( Reveal::Core::solution_set_ptr& solution_set, const std::string& experiment_id, double trial_time, double solution_time, double epsilon );
   error_e insert( Reveal::Core::analysis_ptr analysis );
 };
 

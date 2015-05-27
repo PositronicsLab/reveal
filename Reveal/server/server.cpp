@@ -61,7 +61,7 @@ bool server_c::init( void ) {
  
   // fetch the list of analyzer plugins
   std::vector<Reveal::Core::analyzer_ptr> analyzers;
-  db->query( analyzers );
+  db->fetch( analyzers );
  
   // compile all analyzer plugins
   for( unsigned i = 0; i < analyzers.size(); i++ ) {

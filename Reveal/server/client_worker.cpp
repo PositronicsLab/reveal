@@ -156,7 +156,7 @@ bool worker_c::is_user_valid( Reveal::Core::authorization_ptr auth, Reveal::Core
   Reveal::DB::database_c::error_e db_error;
 
   // query the database for user data
-  db_error = _db->query( user, auth->get_user() );
+  db_error = _db->fetch( user, auth->get_user() );
 
   // Superficial validation: if the user exists in the DB, it is valid
   if( db_error == Reveal::DB::database_c::ERROR_NONE )
@@ -174,7 +174,7 @@ bool worker_c::is_session_valid( Reveal::Core::authorization_ptr auth, Reveal::C
   Reveal::DB::database_c::error_e db_error;
 
   // query the database for user data
-  db_error = _db->query( session, auth->get_session() );
+  db_error = _db->fetch( session, auth->get_session() );
 
   // Superficial validation: if the session exists in the DB, it is valid
   if( db_error == Reveal::DB::database_c::ERROR_NONE )
@@ -194,7 +194,7 @@ bool worker_c::is_experiment_valid( Reveal::Core::authorization_ptr auth, Reveal
 //  Reveal::DB::database_c::error_e db_error;
 
 //  // query the database for user data
-//  db_error = _db->query( experiment_record, auth->get_session(), experiment_request->experiment_id, experiment_request->scenario_id );
+//  db_error = _db->fetch( experiment_record, auth->get_session(), experiment_request->experiment_id, experiment_request->scenario_id );
 
 //  // Superficial validation: if the session exists in the DB, it is valid
 //  if( db_error == Reveal::DB::database_c::ERROR_NONE )
@@ -395,7 +395,7 @@ worker_c::error_e worker_c::service_digest_request( Reveal::Core::authorization_
   std::string reply;
 
   // query the database for digest data
-  Reveal::DB::database_c::error_e db_error = _db->query( digest );
+  Reveal::DB::database_c::error_e db_error = _db->fetch( digest );
 
   if( db_error == Reveal::DB::database_c::ERROR_NONE ) {
     // the query was successful
@@ -435,7 +435,7 @@ worker_c::error_e worker_c::service_experiment_request( Reveal::Core::authorizat
   Reveal::Core::scenario_ptr scenario;
   std::string reply;
 
-  Reveal::DB::database_c::error_e db_error = _db->query( scenario, scenario_id );
+  Reveal::DB::database_c::error_e db_error = _db->fetch( scenario, scenario_id );
   if( db_error != Reveal::DB::database_c::ERROR_NONE ) {
     // the query was unsuccessful
     return ERROR_QUERY;
@@ -475,7 +475,7 @@ worker_c::error_e worker_c::service_trial_request( Reveal::Core::authorization_p
   std::string reply;
 
   // query the database for trial data
-  Reveal::DB::database_c::error_e db_error = _db->query( trial, experiment->scenario_id, t, epsilon );
+  Reveal::DB::database_c::error_e db_error = _db->fetch( trial, experiment->scenario_id, t, epsilon );
   // TODO: Validation
 
   if( db_error == Reveal::DB::database_c::ERROR_NONE ) {

@@ -17,7 +17,6 @@ link_directories(
 #------------------------------------------------------
 # header files
 set( REVEAL_SERVER_HEADERS 
-  identity.h
   server.h
   worker.h
 )

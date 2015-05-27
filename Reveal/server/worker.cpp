@@ -5,7 +5,8 @@
 #include <iostream>
 #include <sstream>
 
-#include "Reveal/server/identity.h"
+//#include "Reveal/server/identity.h"
+#include "Reveal/core/system.h"
 #include "Reveal/core/authorization.h"
 #include "Reveal/core/user.h"
 #include "Reveal/core/session.h"
@@ -208,7 +209,7 @@ bool worker_c::create_session( Reveal::Core::authorization_ptr auth, Reveal::Cor
   Reveal::DB::database_c::error_e db_error;
 
   session = Reveal::Core::session_ptr( new Reveal::Core::session_c() );
-  session->session_id = Reveal::Server::generate_uuid();
+  session->session_id = generate_uuid();
 
   Reveal::Core::authorization_c::type_e type = auth->get_type();
   if( type == Reveal::Core::authorization_c::TYPE_IDENTIFIED ) {
@@ -231,7 +232,7 @@ bool worker_c::create_experiment( Reveal::Core::authorization_ptr auth, Reveal::
   Reveal::DB::database_c::error_e db_error;
 
   //experiment = Reveal::Core::experiment_ptr( new Reveal::Core::experiment_c() );
-  experiment->experiment_id = Reveal::Server::generate_uuid();
+  experiment->experiment_id = generate_uuid();
   experiment->session_id = auth->get_session();
   //TODO: validate that experiment values within bounds of scenario
 

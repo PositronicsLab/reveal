@@ -18,13 +18,11 @@ set( REVEAL_ANALYTICS_HEADERS
   module.h
   plugin.h
   worker.h
-#  pool.h
 )
 
 # source files
 set( REVEAL_ANALYTICS_SOURCES 
   worker.cpp
-#  pool.cpp
 )
 
 #------------------------------------------------------

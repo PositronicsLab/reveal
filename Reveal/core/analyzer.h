@@ -26,24 +26,25 @@ typedef boost::shared_ptr<Reveal::Core::analyzer_c> analyzer_ptr;
 
 class analyzer_c {
 public:
+  /// The possible types of analyzers
   enum type_e {
-    PLUGIN,
-    SCRIPT
+    PLUGIN,         
+    SCRIPT           
   };
 
+  /// Default constructor
   analyzer_c( void ) { }
+  /// Destructor
   virtual ~analyzer_c( void ) { }
 
-  std::string            scenario_id;
-  std::string            filename;    // !
-  std::string            source_path;
-  std::string            build_path;
-  std::string            build_target;
-  type_e 	         type;
+  std::string            scenario_id;    //< unique scenario identifier
+  std::string            source_path;    //< the path to the analyzers source
+  std::string            build_path;     //< the path to the analyzers build dir
+  std::string            build_target;   //< the build target name for a plugin
+  type_e 	         type;           //< the type of analyzer
 
-  // ?
-  std::vector<std::string>  keys;
-  std::vector<std::string>  labels; 
+  std::vector<std::string>  keys;   //< the set of keys used for database search
+  std::vector<std::string>  labels; //< the labels to use when displaying keys
 };
 
 //-----------------------------------------------------------------------------

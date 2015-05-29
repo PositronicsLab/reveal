@@ -4,6 +4,7 @@
 
 #include "Reveal/analytics/plugin.h"
 #include "Reveal/analytics/script.h"
+#include "Reveal/core/system.h"
 #include "Reveal/core/experiment.h"
 
 #include "Reveal/core/pointers.h"
@@ -257,8 +258,11 @@ bool worker_c::load( boost::shared_ptr<Reveal::Analytics::module_c>& module, Rev
     return false;
   }
 
-  // get the filename of the module and load it
-  error = module->load( analyzer->filename );
+  // compose the filename of the module
+  std::string path = combine_path( analyzer->build_path, analyzer->build_target );
+
+  // load the module
+  error = module->load( path );
   if( error != Reveal::Analytics::ERROR_NONE ) {
     printf( "failed to load requested analyzer\n" );
     return false;

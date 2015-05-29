@@ -120,10 +120,6 @@ bool importer_c::read_analyzer_element( Reveal::Core::xml_element_ptr top, Revea
       } else if( value == "script" ) {
         analyzer->type = Reveal::Core::analyzer_c::SCRIPT;
       }
-    } else if( attribute->get_name() == "file" ) {
-      analyzer->filename = attribute->get_value();
-      // note that this is a path on the server and not necessarily on this 
-      // system, so should not assume that can validate path here.
     } else if( attribute->get_name() == "source-path" ) {
       analyzer->source_path = attribute->get_value();
     } else if( attribute->get_name() == "build-path" ) {

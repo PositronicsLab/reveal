@@ -84,7 +84,6 @@ bool analyzer_c::map( Reveal::Core::analyzer_ptr& analyzer, mongo::BSONObj obj )
   analyzer = Reveal::Core::analyzer_ptr( new Reveal::Core::analyzer_c() );
 
   analyzer->scenario_id = obj.getField( "scenario_id" ).String();
-  analyzer->filename = obj.getField( "filename" ).String(); // !
   analyzer->source_path = obj.getField( "source_path" ).String();
   analyzer->build_path = obj.getField( "build_path" ).String();
   analyzer->build_target = obj.getField( "build_target" ).String();
@@ -99,7 +98,6 @@ bool analyzer_c::map( Reveal::Core::analyzer_ptr& analyzer, mongo::BSONObj obj )
 bool analyzer_c::map( mongo::BSONObj& obj, Reveal::Core::analyzer_ptr analyzer ) {
   mongo::BSONObjBuilder bob;
   bob.append( "scenario_id", analyzer->scenario_id );
-  bob.append( "filename", analyzer->filename ); // !
   bob.append( "source_path", analyzer->source_path );
   bob.append( "build_path", analyzer->build_path );
   bob.append( "build_target", analyzer->build_target );

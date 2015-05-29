@@ -261,12 +261,6 @@ bool exporter_c::write_analyzer_element( xml_element_ptr parent, analyzer_ptr an
     attribute->set_value( "script" );
   top->append( attribute );
 
-  // specify the anaylzer file path
-  attribute = xml_attribute_ptr( new xml_attribute_c() );
-  attribute->set_name( "file" );
-  attribute->set_value( analyzer->filename );
-  top->append( attribute );
-
   attribute = xml_attribute_ptr( new xml_attribute_c() );
   attribute->set_name( "source-path" );
   attribute->set_value( analyzer->source_path );

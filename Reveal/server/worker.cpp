@@ -5,7 +5,6 @@
 #include <iostream>
 #include <sstream>
 
-//#include "Reveal/server/identity.h"
 #include "Reveal/core/system.h"
 #include "Reveal/core/authorization.h"
 #include "Reveal/core/user.h"
@@ -236,11 +235,6 @@ bool worker_c::create_experiment( Reveal::Core::authorization_ptr auth, Reveal::
   experiment->session_id = auth->get_session();
   //TODO: validate that experiment values within bounds of scenario
 
-  //experiment->scenario_id = scenario->id;
-  //experiment->start_time = scenario->sample_start_time;
-  //experiment->end_time = scenario->sample_end_time;
-  //experiment->current_trial_index = 0;
-
   db_error = _db->insert( experiment );
   if( db_error == Reveal::DB::database_c::ERROR_NONE )
     return true;
@@ -324,12 +318,8 @@ worker_c::error_e worker_c::send_invalid_handshake_response( Reveal::Core::autho
 //-----------------------------------------------------------------------------
 worker_c::error_e worker_c::service_handshake_request( Reveal::Core::authorization_ptr auth ) { 
 
-  //Reveal::Core::transport_exchange_c exchange;
-  //std::string reply;
   Reveal::Core::session_ptr session;
-//  Reveal::DB::database_c::error_e db_error;
   Reveal::Core::user_ptr user;
- // Reveal::Core::authorization_ptr auth_reply;
 
   Reveal::Core::authorization_c::type_e type = auth->get_type();
   if( type == Reveal::Core::authorization_c::TYPE_IDENTIFIED ) {
@@ -429,8 +419,8 @@ worker_c::error_e worker_c::service_digest_request( Reveal::Core::authorization_
 
 //-----------------------------------------------------------------------------
 worker_c::error_e worker_c::service_experiment_request( Reveal::Core::authorization_ptr auth, std::string scenario_id, Reveal::Core::experiment_ptr experiment ) {
-  printf( "experiment requested\n" );
-  printf( "eps[%1.32f]\n", experiment->epsilon );
+  //printf( "experiment requested\n" );
+  //printf( "eps[%1.32f]\n", experiment->epsilon );
 
   Reveal::Core::transport_exchange_c exchange;
   Reveal::Core::scenario_ptr scenario;
@@ -446,7 +436,7 @@ worker_c::error_e worker_c::service_experiment_request( Reveal::Core::authorizat
     return ERROR_CREATE;
   }
 
-  printf( "created experiment[%s], session[%s], scenario[%s]\n", experiment->experiment_id.c_str(), experiment->session_id.c_str(), experiment->scenario_id.c_str() ); 
+  //printf( "created experiment[%s], session[%s], scenario[%s]\n", experiment->experiment_id.c_str(), experiment->session_id.c_str(), experiment->scenario_id.c_str() ); 
 
   // construct the experiment message
   exchange.set_origin( Reveal::Core::transport_exchange_c::ORIGIN_SERVER );
@@ -560,22 +550,17 @@ worker_c::error_e worker_c::service_solution_submission( Reveal::Core::authoriza
   // for an initial development, this is the best approach
   // If the trial is the 'last' trial, run analytics.
 
-  //TODO: FIX
-  //if( solution->t + experiment->time_step > experiment->end_time ) {
-    printf( "Experiment {%s} has completed.  Starting analytics.\n", experiment->experiment_id.c_str() );
+  printf( "Experiment {%s} has completed.  Starting analytics.\n", experiment->experiment_id.c_str() );
 
-    // need a temporary (for this mode only) contructor for passing database and
-    // the scenario data in
-    Reveal::Analytics::worker_c analytics_worker;
+  // need a temporary (for this mode only) contructor for passing database and
+  // the scenario data in
+  Reveal::Analytics::worker_c analytics_worker;
 
-    if( !analytics_worker.execute( _db, experiment->experiment_id, solution->t ) ) {
-    //if( !analytics_worker.execute( _db, experiment->experiment_id ) ) {
-    //if( !analytics_worker.batch_execute( _db, experiment->experiment_id ) ) {
-      printf( "Analytics failed to complete on Experiment {%s}\n", experiment->experiment_id.c_str() );
-    } else {
-      printf( "Completed Analytics on Experiment {%s}\n", experiment->experiment_id.c_str() );
-    }
-  //}
+  if( !analytics_worker.execute( _db, experiment->experiment_id, solution->t ) ) {
+    printf( "Analytics failed to complete on Experiment {%s}\n", experiment->experiment_id.c_str() );
+  } else {
+    printf( "Completed Analytics on Experiment {%s}\n", experiment->experiment_id.c_str() );
+  }
 
   return ERROR_NONE;
 }

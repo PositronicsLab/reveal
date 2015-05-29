@@ -15,27 +15,20 @@
 #include "Reveal/db/database.h"
 
 //-----------------------------------------------------------------------------
-
 namespace Reveal {
-
 //-----------------------------------------------------------------------------
-
 namespace Server {
-
 //-----------------------------------------------------------------------------
-/// Default Constructor
 server_c::server_c( void ) {
 
 }
 
 //-----------------------------------------------------------------------------
-/// Destructor
 server_c::~server_c( void ) {
 
 }
 
 //-----------------------------------------------------------------------------
-/// Initialization
 bool server_c::init( void ) {
   // open the system
   Reveal::Core::system_c system( Reveal::Core::system_c::SERVER );
@@ -123,6 +116,7 @@ bool server_c::init( void ) {
     return false; 
   }
 
+  // spawn worker threads and set them to work
   void* context = _clientconnection.context();
   for( unsigned i = 0; i < MAX_CLIENT_WORKERS; i++ ) {
     pthread_t workerthread;
@@ -136,7 +130,6 @@ bool server_c::init( void ) {
 }
 
 //-----------------------------------------------------------------------------
-/// Main Loop
 void server_c::run( void ) {
   _clientconnection.route( _workerconnection );
 }
@@ -161,12 +154,9 @@ void* server_c::worker_thread( void* context ) {
   worker->terminate();
   return NULL;
 }
-//-----------------------------------------------------------------------------
 
+//-----------------------------------------------------------------------------
 } // namespace Server
-
 //-----------------------------------------------------------------------------
-
 } // namespace Reveal
-
 //-----------------------------------------------------------------------------

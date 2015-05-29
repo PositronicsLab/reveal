@@ -35,13 +35,11 @@ namespace Reveal {
 //-----------------------------------------------------------------------------
 namespace Client {
 //-----------------------------------------------------------------------------
-/// Default Constructor
 client_c::client_c( void ) {
 
 }
 
 //-----------------------------------------------------------------------------
-/// Destructor
 client_c::~client_c( void ) {
 
 }
@@ -52,7 +50,6 @@ Reveal::Client::client_ptr client_c::ptr( void ) {
 }
 
 //-----------------------------------------------------------------------------
-/// Initialization
 bool client_c::init( void ) {
   _system = boost::shared_ptr<Reveal::Core::system_c>( new Reveal::Core::system_c( Reveal::Core::system_c::CLIENT ) );
 
@@ -68,7 +65,6 @@ bool client_c::init( void ) {
 }
 
 //-----------------------------------------------------------------------------
-/// Clean up
 void client_c::terminate( void ) {
   // prune and remove temporary working directory
   remove_directory( _working_directory );
@@ -83,7 +79,6 @@ void client_c::terminate( void ) {
 }
 
 //-----------------------------------------------------------------------------
-/// Connect to the transport layer as a client
 bool client_c::connect( void ) {
   printf( "Connecting to server...\n" );
 
@@ -243,12 +238,16 @@ client_c::error_e client_c::request_digest( Reveal::Core::authorization_ptr& aut
 
 //-----------------------------------------------------------------------------
 unsigned client_c::ui_select_scenario( Reveal::Core::digest_ptr digest ) {
+  std::string menu_title = "-- Scenario Menu --";
+  std::string menu_prompt = "Select a scenario";
 
+  // build a menu list based on the set of scenarios in the digest
   std::vector< std::string > scenario_list;
   for( unsigned i = 0; i < digest->scenarios(); i++ ) 
     scenario_list.push_back( digest->get_scenario( i )->description );
 
-  return Reveal::Core::console_c::menu( "--Scenario Menu--", "Select a scenario", scenario_list );
+  // pass selection on to the console and return the menu item selected
+  return Reveal::Core::console_c::menu( menu_title, menu_prompt, scenario_list );
 }
 
 //-----------------------------------------------------------------------------
@@ -286,6 +285,7 @@ client_c::error_e client_c::request_experiment( Reveal::Core::authorization_ptr&
     return ERROR_EXCHANGE_PARSE;
   }
 
+  // check for an error in the reply
   Reveal::Core::transport_exchange_c::error_e transport_error = server_exchange.get_error();
   if( transport_error != Reveal::Core::transport_exchange_c::ERROR_NONE ) {
     // The server sent a general error.  Suggest retrying the request.
@@ -298,59 +298,9 @@ client_c::error_e client_c::request_experiment( Reveal::Core::authorization_ptr&
  
   return ERROR_NONE;
 }
-/*
+
 //-----------------------------------------------------------------------------
-client_c::error_e client_c::request_scenario( Reveal::Core::scenario_ptr& scenario ) {
-  std::string request;
-  std::string reply;
-
-  Reveal::Core::transport_exchange_c client_exchange;
-  Reveal::Core::transport_exchange_c server_exchange;
-  Reveal::Core::transport_exchange_c::error_e exchg_err;
-
-  // create a scenario request 
-  client_exchange.set_origin( Reveal::Core::transport_exchange_c::ORIGIN_CLIENT );
-  client_exchange.set_type( Reveal::Core::transport_exchange_c::TYPE_SCENARIO );
-  client_exchange.set_error( Reveal::Core::transport_exchange_c::ERROR_NONE );
-  client_exchange.set_scenario( scenario );
-
-  // build the request message
-  exchg_err = client_exchange.build( request );
-  if( exchg_err != Reveal::Core::transport_exchange_c::ERROR_NONE ) {
-    return ERROR_EXCHANGE_BUILD;
-  }
-
-  // send the request message and wait for reply message
-  client_c::error_e com_err = request_reply( request, reply );
-  if( com_err != ERROR_NONE ) return com_err;
-
-  // parse the reply message
-  exchg_err = server_exchange.parse( reply );
-  if( exchg_err != Reveal::Core::transport_exchange_c::ERROR_NONE ) {
-    return ERROR_EXCHANGE_PARSE;
-  }
-
-  Reveal::Core::transport_exchange_c::error_e transport_error = server_exchange.get_error();
-  if( transport_error != Reveal::Core::transport_exchange_c::ERROR_NONE ) {
-    if( transport_error == Reveal::Core::transport_exchange_c::ERROR_BAD_SCENARIO_REQUEST ) {
-      // The server could not service the scenario request due to bad data in 
-      // the request packet
-      return ERROR_INVALID_SCENARIO_REQUEST;
-    } else {
-      // The server sent a general error.  Suggest retrying the request.
-      return ERROR_EXCHANGE_RESPONSE;
-    }
-    // TODO : extend validation and error handling for any new cases that emerge
-  }
-
-  // extract the scenario
-  scenario = server_exchange.get_scenario();
-  assert( scenario );
-
-  return ERROR_NONE;
-}
-*/
-//-----------------------------------------------------------------------------
+// TODO: convert to enumerated return value
 bool client_c::request_trial( Reveal::Core::authorization_ptr& auth, Reveal::Core::experiment_ptr experiment, Reveal::Core::trial_ptr& trial ) {
   std::string request;
   std::string reply;
@@ -358,9 +308,6 @@ bool client_c::request_trial( Reveal::Core::authorization_ptr& auth, Reveal::Cor
   Reveal::Core::transport_exchange_c client_exchange;
   Reveal::Core::transport_exchange_c server_exchange;
   Reveal::Core::transport_exchange_c::error_e exchg_err;
-
-  //client_exchange.open();
-  //server_exchange.open();
 
   // create a trial request
   client_exchange.set_origin( Reveal::Core::transport_exchange_c::ORIGIN_CLIENT );
@@ -378,8 +325,6 @@ bool client_c::request_trial( Reveal::Core::authorization_ptr& auth, Reveal::Cor
     return false;
   }
 
-  //Reveal::Core::console_c::printline( request );
-
   // send the request message and wait for reply message
   client_c::error_e com_err = request_reply( request, reply );
   if( com_err != ERROR_NONE ) {
@@ -396,6 +341,7 @@ bool client_c::request_trial( Reveal::Core::authorization_ptr& auth, Reveal::Cor
     return false;
   }
 
+  // check for an error in the reply 
   Reveal::Core::transport_exchange_c::error_e transport_error = server_exchange.get_error();
   if( transport_error != Reveal::Core::transport_exchange_c::ERROR_NONE ) {
     if( transport_error == Reveal::Core::transport_exchange_c::ERROR_BAD_SCENARIO_REQUEST ) {
@@ -421,15 +367,12 @@ bool client_c::request_trial( Reveal::Core::authorization_ptr& auth, Reveal::Cor
   trial = server_exchange.get_trial();
   assert( trial );
 
-  //trial->print();
-
-  //Reveal::Core::console_c::printline( "completed request_trial" );
-
   //return ERROR_NONE;
   return true;
 }
 
 //-----------------------------------------------------------------------------
+// TODO: convert to enumerated return value
 bool client_c::submit_solution( Reveal::Core::authorization_ptr& auth, Reveal::Core::experiment_ptr experiment, Reveal::Core::solution_ptr& solution ) {
   std::string request;
   std::string reply;
@@ -468,6 +411,7 @@ bool client_c::submit_solution( Reveal::Core::authorization_ptr& auth, Reveal::C
 
   //if( server_exchange.get_type() != Reveal::Core::transport_exchange_c::TYPE_SOLUTION ) {
 
+  // check for an error in the reply 
   Reveal::Core::transport_exchange_c::error_e transport_error = server_exchange.get_error();
   if( transport_error != Reveal::Core::transport_exchange_c::ERROR_NONE ) {
     if( transport_error == Reveal::Core::transport_exchange_c::ERROR_BAD_SOLUTION_SUBMISSION ) {
@@ -489,13 +433,10 @@ bool client_c::submit_solution( Reveal::Core::authorization_ptr& auth, Reveal::C
 }
 
 //-----------------------------------------------------------------------------
-// TODO: This should be handled in sim or client class
 void client_c::prompt_trials_to_ignore( Reveal::Core::scenario_ptr scenario, Reveal::Core::experiment_ptr experiment ) {
+  std::string prompt = "How many trials should be ignored before resetting simulator to trial state";
 
-  //std::stringstream info;
-  //info << ""
-  
-  unsigned choice = Reveal::Core::console_c::prompt_unsigned( "How many trials should be ignored before resetting simulator to trial state", true );
+  unsigned choice = Reveal::Core::console_c::prompt_unsigned( prompt, true );
 
   experiment->intermediate_trials_to_ignore = choice;
 }
@@ -506,17 +447,13 @@ void client_c::prompt_time_step( Reveal::Core::scenario_ptr scenario, Reveal::Co
   double x;
   std::stringstream ratemsg;
   ratemsg << "The sample rate is " << scenario->sample_rate;
-
-  //double EPSILON = std::numeric_limits<double>::epsilon();
-  //double EPSILON = 1e-8;
-  //double EPSILON = std::numeric_limits<float>::epsilon();
- 
   double epsilon;
+
+  std::string prompt = "What time-step would you like the experiment to use";
 
   do {
     Reveal::Core::console_c::printline( ratemsg );
-    //candidate_time_step = (double)Reveal::Core::console_c::prompt_float( "What time-step would you like the experiment to use", false );
-    candidate_time_step = (double)Reveal::Core::console_c::prompt_double( "What time-step would you like the experiment to use", epsilon, false );
+    candidate_time_step = (double)Reveal::Core::console_c::prompt_double( prompt, epsilon, false );
 
     if( candidate_time_step == 0.0 ) {
       Reveal::Core::console_c::printline( "INVALID: The time-step cannot be zero!" );
@@ -569,17 +506,17 @@ bool client_c::execute( void ) {
 //  simulator_c::request_trial_f rtf = boost::bind(&client_c::request_trial, this, _1, _2, _3);
 //  simulator_c::submit_solution_f ssf = boost::bind(&client_c::submit_solution, this, _1, _2, _3);
   // create the simulator (using the bound functions and comm layer context)
-//  simulator = boost::dynamic_pointer_cast<Reveal::Core::simulator_c>( Reveal::Sim::gazebo_ptr( new Reveal::Sim::gazebo_c( rtf, ssf, _connection.context() ) ) );
+//  _simulator = boost::dynamic_pointer_cast<Reveal::Core::simulator_c>( Reveal::Sim::gazebo_ptr( new Reveal::Sim::gazebo_c( rtf, ssf, _connection.context() ) ) );
 
   // - Approach 2 -  This approach is universal for all sims
   // create the simulator
-  simulator = boost::dynamic_pointer_cast<Reveal::Core::simulator_c>( Reveal::Sim::gazebo_ptr( new Reveal::Sim::gazebo_c() ) );
+  _simulator = boost::dynamic_pointer_cast<Reveal::Core::simulator_c>( Reveal::Sim::gazebo_ptr( new Reveal::Sim::gazebo_c() ) );
   // bind the client request_trial function to the simulator for callback
-  simulator->set_request_trial( boost::bind(&client_c::request_trial, this, _1, _2, _3) );
+  _simulator->set_request_trial( boost::bind(&client_c::request_trial, this, _1, _2, _3) );
   // bind the client submit_solution function to the simulator for callback
-  simulator->set_submit_solution( boost::bind(&client_c::submit_solution, this, _1, _2, _3) );
+  _simulator->set_submit_solution( boost::bind(&client_c::submit_solution, this, _1, _2, _3) );
   // set the simulator ipc context so that it is in the same comm layer
-  simulator->set_ipc_context( _connection.context() );
+  _simulator->set_ipc_context( _connection.context() );
 
   // Salutations
   printf( "Welcome to Reveal\n" );
@@ -657,7 +594,7 @@ bool client_c::execute( void ) {
     experiment = Reveal::Core::experiment_ptr( new Reveal::Core::experiment_c( scenario ) );
 
     // user selects any engine specific parameters
-    if( !simulator->ui_select_configuration( scenario, experiment ) ) {
+    if( !_simulator->ui_select_configuration( scenario, experiment ) ) {
       // TODO: error handling.
       // if false, no choice but to bomb with unrecognized/unrecoverable
     }
@@ -670,7 +607,7 @@ bool client_c::execute( void ) {
     Reveal::Core::console_c::printline( ss );
 
     // user selects any package specific parameters
-    if( !simulator->ui_select_tuning() ) {
+    if( !_simulator->ui_select_tuning() ) {
       // TODO: error handling.
       // if false, no choice but to bomb with unrecognized/unrecoverable
     }
@@ -737,13 +674,13 @@ bool client_c::execute( void ) {
     }
 
     // build the package in the temporary path
-    if( !simulator->build_package( pkg_source_path, pkg_build_path ) ) {
+    if( !_simulator->build_package( pkg_source_path, pkg_build_path ) ) {
       printf( "Exiting\n" );
       exit( 1 );
     }
 
     // execute the simulator using the build products in the temporary path
-    bool result = simulator->execute( _auth, scenario, experiment );
+    bool result = _simulator->execute( _auth, scenario, experiment );
     if( !result ) {
       // TODO: determine how to recover
     }

@@ -28,8 +28,7 @@ Defines a signal handler used by the package_c class to detect exit condition wh
 */
 class child_exit_handler_c : public sighandler_c {
 protected:
-  /// Flag indicating whether the signalhandler has been called.
-  static bool _quit;
+  static bool _quit; //> indicates whether the signal handler has been called.
 
 public:
   /// Default constructor
@@ -39,6 +38,7 @@ public:
   ~child_exit_handler_c( void );
 
   /// The signal handler callback function
+  /// @param signum the system signal sent when the handler is called
   static void handler( int signum );
 
   /// Gets the value of the quit flag
@@ -85,10 +85,8 @@ public:
   bool make( std::vector<std::string> build_products );
 
 protected:
-  /// The path to the package's source directory
-  std::string _source_path;
-  /// The path to the package's build directory
-  std::string _build_path;
+  std::string _source_path;  //> The path to the package's source directory
+  std::string _build_path;   //> The path to the package's build directory
 
   /// The CMake worker thread function
   /// @param args args[0]=<source_path> and args[1]=<build_path>

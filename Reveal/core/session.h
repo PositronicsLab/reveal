@@ -17,30 +17,30 @@ in exchanges with the server
 #include <string>
 
 //-----------------------------------------------------------------------------
-
 namespace Reveal {
-
 //-----------------------------------------------------------------------------
-
 namespace Core {
-
 //-----------------------------------------------------------------------------
 
 class session_c {
 public:
 
+  /// The possible session types
   enum type_e {
-    ANONYMOUS = 0,
-    IDENTIFIED
+    ANONYMOUS = 0,        //< an anonymous session
+    IDENTIFIED            //< a session associated to a registered user
   };
 
+  /// Default constructor
   session_c( void ) { }
+  /// Destructor
   virtual ~session_c( void ) { }
 
-  type_e                 user_type;
-  std::string            user_id;
-  std::string            session_id;
+  type_e                 user_type; //< the type of this session
+  std::string            user_id;   //< the unique user id assigned this session
+  std::string            session_id;//< the unique session id
 
+  /// Prints the session's instance data to the console
   void print( void ) {
     printf( "session[%s]", session_id.c_str() );
     if( user_type == ANONYMOUS ) {
@@ -52,13 +52,9 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-
 } // namespace Core
-
 //-----------------------------------------------------------------------------
-
 } // namespace Reveal
-
 //-----------------------------------------------------------------------------
 
 #endif // _REVEAL_CORE_SESSION_H_

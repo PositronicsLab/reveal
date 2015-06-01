@@ -367,7 +367,7 @@ public:
     Reveal::Core::analyzer_ptr analyzer( new Reveal::Core::analyzer_c() );
  
     analyzer->scenario_id = scenario->id;
-    analyzer->filename = ANALYZER_PATH;  //!
+    //analyzer->filename = ANALYZER_PATH;  //!
     analyzer->source_path = ANALYZER_SOURCE_PATH;
     analyzer->build_path = ANALYZER_BUILD_PATH;
     analyzer->build_target = ANALYZER_BUILD_TARGET;

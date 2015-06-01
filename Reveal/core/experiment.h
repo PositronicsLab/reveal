@@ -24,7 +24,7 @@ namespace Core {
 
 class experiment_c {
 public:
-
+  /// The enumerated errors produced by experiment operations
   enum error_e {
     ERROR_NONE = 0,
     ERROR_INVALID_EXPERIMENT,
@@ -33,40 +33,29 @@ public:
     ERROR_INVALID_TRIAL
   };
 
+  /// Default constructor
   experiment_c( void ) {}
+  /// Parameterized constructor
+  /// @param scenario the scenario to model this experiment on
   experiment_c( Reveal::Core::scenario_ptr scenario ) {
     scenario_id = scenario->id;
     start_time = scenario->sample_start_time;
     end_time = scenario->sample_end_time;
     time_step = scenario->sample_rate;
   }
+  /// Destructor 
   virtual ~experiment_c( void ) {}
 
-  error_e _error;
-
-  std::string       experiment_id;
-  std::string       session_id;
-  std::string       scenario_id;
-  double            start_time;
-  double            end_time;
-  double            time_step;
-  double            epsilon;
-  unsigned          intermediate_trials_to_ignore;
+  std::string       experiment_id;  //< the unique experiment identifier 
+  std::string       session_id;     //< the unique session identifier
+  std::string       scenario_id;    //< the unique scenario identifier
+  double            start_time;     //< the start time of the experiment
+  double            end_time;       //< the end time of the experiment
+  double            time_step;      //< the time step used by the experiment 
+  double            epsilon;        //< the error allowed in time queries
+  unsigned          intermediate_trials_to_ignore; //< the number of trials that will be ignored before resetting state to trial data
   
-  //                creation_timestamp;
-/*
-  //------
-  time_c submission_date;
-  unsigned number_of_trials;
-  unsigned steps_per_trial;
-  unsigned current_trial_index;
-  unsigned start_trial;
-  unsigned end_trial;
-  double sim_start_time;
-  double sim_end_time;
-  double time_step;
-  //------
-*/
+  /// Prints the experiment data to the console
   void print( void ) const {
     printf( "experiment_id[%s]", experiment_id.c_str() );
     printf( ", session_id[%s]", session_id.c_str() );

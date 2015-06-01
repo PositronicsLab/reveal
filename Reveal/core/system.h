@@ -85,18 +85,39 @@ bool remove_directory( std::string path );
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
+/// Allocates and builds a parameter array compatible for use as args passed to 
+/// a main function
+/// @param params the set of strings to copy into the parameter array
+/// @return the allocated parameter array
 // TODO: move to a class to have destructor for correct cleanup.
 char* const* param_array( std::vector< std::string > params );
+
 //-----------------------------------------------------------------------------
+/// Queries the system for the current environment variables
+/// @return the set of environment variables returned by the system
 std::vector< std::string > system_environment_vars( void );
 
 //-----------------------------------------------------------------------------
+/// Changes the process's current working directory to the specified path
+/// @param path the path to set as the working directory
+/// @return true if the working directory was changed OR false if the operation 
+///         failed for any reason
+/// Note: Currently POSIX only
 bool change_working_dir( std::string path );
 
 //-----------------------------------------------------------------------------
+/// Split's a uri into constituent elements
+/// @param uri the uri to split
+/// @param protocol returned protocol on a successful split
+/// @param host returned host on a successful split
+/// @param port return port on a successful split
+/// @return true if the uri was successfully split OR false if the operation 
+///         failed for any reason
 bool split_uri( std::string uri, std::string& protocol, std::string& host, unsigned& port );
 
 //-----------------------------------------------------------------------------
+/// Generates a unique identifier
+/// @return the returned unique identifier
 std::string generate_uuid( void );
 
 //-----------------------------------------------------------------------------
@@ -107,7 +128,9 @@ namespace Core {
 
 class sighandler_c {
 public:
+  /// Interface to install a signal handler
   virtual void install( void ) = 0; 
+  /// Interface to uninstall a signal handler
   virtual void uninstall( void ) = 0;
 };
 //-----------------------------------------------------------------------------
@@ -117,44 +140,77 @@ public:
 
 class system_c {
 public:
+  /// The enumerated set of Reveal components that require system knowledge
   enum side_e {
-    CLIENT,
-    SERVER,
-    DATABASE
+    CLIENT,    //< indicates client only side
+    SERVER,    //< indicates at least server side
+    DATABASE   //< indicates database component side
   };
 
+  /// Parameterized constructor must be notified of what role this system has
+  /// @param side the reveal component requesting system information
   system_c( side_e side );
+
+  /// Destructor
   virtual ~system_c( void );
 
+  /// Opens the system
+  /// @return true if the system is successfully opened OR false if the 
+  ///         operation fails for any reason
   bool open( void );
+
+  /// Closes the system
   void close( void );
 
+  /// Gets the server's uri from the system environment.  Typically a client 
+  /// side request
+  /// @return the server's uri
   std::string server_uri( void );
+
+  /// Gets the database's uri from the system environment.  Typically a server
+  /// side request
+  /// @return the database's uri
   std::string database_uri( void );
+
+  /// Gets the package installation path from the system environment
+  /// @return the the package installation path
   std::string package_path( void );
+
+  /// Gets the monitor port used to support monitoring of a simulator by the 
+  /// client.  Typically a client side request
+  /// @return the monitor port
   unsigned monitor_port( void );
 
+  /// Gets the server host name or IP from the system environment.  Typically a
+  /// server side request
+  /// @return the host name of the server
   std::string server_host( void );
+
+  /// Gets the server port number from the system environment.  Typically a 
+  /// server side request
+  /// @return the server port number  
   unsigned server_port( void );
+
+  /// Gets the database host name or IP.  Typically a server side request
+  /// @return the database host name or IP
   std::string database_host( void );
+
+  /// Gets the database port number.  Typically a server side request
+  /// @return the database port number
   unsigned database_port( void );
 
+  /// Gets the database name.  Typically a server side request
+  /// @return the name of the database
   std::string database_name( void );
 
 private:
-private:
-  /// The path to the working directory.  Root of all local data.
-  std::string _working_path;
-
-  std::string _server_uri;
-  std::string _database_uri;
-  std::string _package_path;
-
-  std::string _dbname;
-
-  unsigned _monitor_port;
-
-  side_e _side;
+  std::string _working_path; //< Path to the working directory
+  std::string _server_uri;   //< Server host uri
+  std::string _database_uri; //< Database host uri
+  std::string _package_path; //< Path to the local packages
+  std::string _dbname;       //< Name of the database
+  unsigned _monitor_port;    //< Monitor port used in ipc between client and sim
+  side_e _side;              //< The service the system is supporting
 };
 
 //-----------------------------------------------------------------------------

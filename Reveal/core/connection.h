@@ -15,13 +15,9 @@ The transport behavior adheres to the request-reply message paradigm.
 #include <string>
 
 //-----------------------------------------------------------------------------
-
 namespace Reveal {
-
 //-----------------------------------------------------------------------------
-
 namespace Core {
-
 //-----------------------------------------------------------------------------
 
 /// The size of the send buffer.  Messages are sent in chunks.
@@ -35,25 +31,25 @@ class connection_c {
 public:
   enum role_e {
     UNDEFINED = 0,
-    ROUTER,       ///< External server binding, accepts client connections.
-    DEALER,       ///< Internal server binding, ipc routing server-worker.
-    WORKER,       ///< Internal server connection, ipc routing endpoint, worker.
-    CLIENT        ///< Client connection, makes connections to servers.
-//    IPC_SERVER,   ///< Internal ipc connection server endpoint
-//    IPC_CLIENT    ///< Internal ipc connection client endpoint
+    ROUTER,       //< External server binding, accepts client connections.
+    DEALER,       //< Internal server binding, ipc routing server-worker.
+    WORKER,       //< Internal server connection, ipc routing endpoint, worker.
+    CLIENT        //< Client connection, makes connections to servers.
+//    IPC_SERVER,   //< Internal ipc connection server endpoint
+//    IPC_CLIENT    //< Internal ipc connection client endpoint
   };
 
   enum error_e {
-    ERROR_NONE = 0,
-    ERROR_CONTEXT,
-    ERROR_SOCKET,
-    ERROR_LIMIT,
-    ERROR_ADDRESS,
-    ERROR_EMPTY,
-    ERROR_MODE,
-    ERROR_STATE,
-    ERROR_OPTION,
-    ERROR_INTERRUPT
+    ERROR_NONE = 0,   //< connection operation successful
+    ERROR_CONTEXT,    //< the connection context was invalid
+    ERROR_SOCKET,     //< the connection socket had an error
+    ERROR_LIMIT,      //< the connection buffer overflowed its limit
+    ERROR_ADDRESS,    //< the connection address was invalid
+    ERROR_EMPTY,      //< the packet is empty
+    ERROR_MODE,       //< the mode is invalid
+    ERROR_STATE,      //< the socket state is invalid
+    ERROR_OPTION,     //< a socket option is invalid
+    ERROR_INTERRUPT   //< the communication was interrupted
   };
 
   /// Default constructor.
@@ -147,13 +143,9 @@ private:
 };
 
 //-----------------------------------------------------------------------------
-
 }  // namespace Core
-
 //-----------------------------------------------------------------------------
-
 }  // namespace Reveal
-
 //-----------------------------------------------------------------------------
 
 #endif // _REVEAL_CORE_CONNECTION_H_

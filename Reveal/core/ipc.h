@@ -17,13 +17,9 @@ write non-blocking paradigm.
 #include <boost/shared_ptr.hpp>
 
 //-----------------------------------------------------------------------------
-
 namespace Reveal {
-
 //-----------------------------------------------------------------------------
-
 namespace Core {
-
 //-----------------------------------------------------------------------------
 
 /// The size of the send buffer.  Messages are sent in chunks.
@@ -40,28 +36,46 @@ typedef boost::shared_ptr<pipe_c> pipe_ptr;
 
 class pipe_c {
 public:
-
+  /// The enumerated set of error codes that pipe operation may return
   enum error_e {
-    ERROR_NONE = 0,
-    ERROR_CONTEXT,
-    ERROR_SOCKET,
-    ERROR_LIMIT,
-    ERROR_ADDRESS,
-    ERROR_EMPTY,
-    ERROR_MODE,
-    ERROR_STATE,
-    ERROR_OPTION,
-    ERROR_INTERRUPT
+    ERROR_NONE = 0,     //< indicates an operation was successful
+    ERROR_CONTEXT,      //< indicates that the context was invalid
+    ERROR_SOCKET,       //< indicates that the socket was inaccessible
+    ERROR_LIMIT,        //< indicates that a limit was exceeded
+    ERROR_ADDRESS,      //< indicates that the socket address was invalid
+    ERROR_EMPTY,        //< indicates that a message was empty
+    ERROR_MODE,         //< indicates that a mode was invalid
+    ERROR_STATE,        //< indicates that a state was invalid
+    ERROR_OPTION,       //< indicates that an option was invalid
+    ERROR_INTERRUPT     //< indicates that communication was interrupted
   };
 
-  /// Default constructor.
+  /// Default constructor for listener pipes
+  /// @param port the port to listen on
+  /// @param context the communication layer context.  All contexts within a
+  ///        process are shared.  A NULL context instructs the pipe to create
+  ///        this shared context
   pipe_c( const unsigned& port, void* context = NULL );
 
+  /// Parameterized constructor for sender pipes
+  /// @param host the host to connect to
+  /// @param port the host port to connect to
+  /// @param context the communication layer context.  All contexts within a
+  ///        process are shared.  A NULL context instructs the pipe to create
+  ///        this shared context
   pipe_c( const std::string& host, const unsigned& port, void* context = NULL );
 
+  /// Parameterized constructor for internal system pipes
+  /// @param id the name of the internal channel to communicate on
+  /// @param bind true if this process or thread is to create the channel, 
+  ///        server side responsibility, or false if the channel is created by
+  ///        another process, client side expectation
+  /// @param context the communication layer context.  All contexts within a
+  ///        process are shared.  A NULL context instructs the pipe to create
+  ///        this shared context
   pipe_c( const std::string& id, bool bind = false, void* context = NULL );
 
-  /// Default destructor.
+  /// Destructor
   virtual ~pipe_c( void );
 
   /// Opens the pipe.
@@ -86,34 +100,27 @@ public:
   /// enumerated error.
   error_e write( const std::string& msg );
 
-  /// The 0MQ context
+  /// The pipe's communication context
+  /// @return a communication context
   void* context( void );
 
-  /// The 0MQ socket
+  /// The pipe's socket
+  /// @return the pipe's socket
   void* socket( void );
 
 private:
 
-  bool _binder;
-  bool _created_context;
-  bool _interthread; 
+  bool _binder;          //< indicates this process bound the socket
+  bool _created_context; //< indicates this process created the context
+  bool _interthread;     //< indicates the pipe is only between system resources
 
-  /// Any host the pipe is connected to.
-  std::string _host;
+  std::string _host;  //< the name or IP of the host this pipe connects to
+  std::string _id;    //< the identifier assigned to the socket
+  unsigned _port;     //< the port number of the external socket
+  bool _open;         //< whether or not this connection is currently open
 
-  /// The identifier assigned to the socket
-  std::string _id;
-
-  /// Any external connection port.
-  unsigned _port;
-
-  /// Whether or not this connection is currently open.
-  bool _open;
-
-  /// The 0MQ context.
-  void* _context;
-  /// The 0MQ socket.
-  void* _socket;
+  void* _context;     //< the pipe's communication context
+  void* _socket;      //< the pipe's socket
 
   /// Generates a connection string based on role.
   /// @return the connection string generated.
@@ -121,13 +128,9 @@ private:
 };
 
 //-----------------------------------------------------------------------------
-
 }  // namespace Core
-
 //-----------------------------------------------------------------------------
-
 }  // namespace Reveal
-
 //-----------------------------------------------------------------------------
 
 #endif // _REVEAL_CORE_IPC_H_

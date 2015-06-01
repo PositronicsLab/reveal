@@ -28,13 +28,16 @@ namespace Core {
 
 class trial_c : public component_c {
 public:
+  /// Default constructor
   trial_c( void ) {}
+  /// Destructor
   virtual ~trial_c( void ) {}
 
-  std::string scenario_id;
-  double t;
-  std::vector<model_ptr> models;
+  std::string scenario_id;        //< the scenario that owns this trial data
+  double t;                       //< the time of this trial data
+  std::vector<model_ptr> models;  //< the set of model data for this trial
 
+  /// Prints the instance data to the console
   void print( void ) {
     printf( "scenario_id[%s]", scenario_id.c_str() );
     printf( ", t[%f]", t );
@@ -47,6 +50,8 @@ public:
     printf( " }\n" );
   }
 
+  /// Gets the component type.  Fulfills the component_c interface
+  /// @return the component type
   virtual component_c::type_e component_type( void ) { return component_c::TRIAL; }
 };
 

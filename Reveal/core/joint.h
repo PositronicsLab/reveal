@@ -23,12 +23,15 @@ namespace Core {
 
 class joint_c : public component_c {
 public:
-  std::string id;
-  control_c control;
+  std::string id;          //< the unique joint identifier
+  control_c control;       //< the control applied to the joint
 
+  /// Default constructor
   joint_c( void ) {}
+  /// Destructor
   virtual ~joint_c( void ) {}
 
+  /// Prints the instance data to the console
   void print( void ) {
     printf( "joint[%s]", id.c_str() );
     printf( ", control{" );
@@ -36,6 +39,8 @@ public:
     printf( "}" );
   }
 
+  /// Gets the component type.  Fulfills the component_c interface
+  /// @return the component type
   virtual component_c::type_e component_type( void ) { return component_c::JOINT; }
 };
 

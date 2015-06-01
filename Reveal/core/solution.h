@@ -26,26 +26,33 @@ namespace Core {
 
 class solution_c : public component_c {
 public:
+  /// The enumerated set of valid solution types
   enum type_e {
-    MODEL,
-    CLIENT
+    MODEL,        //< identifies the solution as model data
+    CLIENT        //< identifies the solution as a client generated solution
   };  
 
+  /// Parameterized constructor
+  /// @param type the type of this solution
   solution_c( type_e type ) { this->type = type; }
+  /// Destructor
   virtual ~solution_c( void ) {}
 
-  std::string experiment_id;
-  std::string scenario_id;
-  double t;
-  double real_time;
+  std::string experiment_id;     //< the solution's unique experiment identifier
+  std::string scenario_id;       //< the solution's unique scenario identifier 
+  double t;                      //< the virtual time of this solution
+  double real_time;              //< the real time of this solution
 
-  std::vector<model_ptr> models;
-  type_e type;
+  std::vector<model_ptr> models; //< the set of models in this solution
+  type_e type;                   //< the type of this solution
 
+  /// Appends a model to this solution
+  /// @param model the model to append to this solution
   void insert( model_ptr model ) {  
     models.push_back( model );
   }
 
+  /// Prints the instance data to the console
   void print( void ) {
     printf( "scenario_id[%s]", scenario_id.c_str() );
     printf( ", t[%f]", t );
@@ -58,6 +65,8 @@ public:
     printf( " }\n" );
   }
 
+  /// Gets the component type.  Fulfills the component_c interface
+  /// @return the component type
   virtual component_c::type_e component_type( void ) { return component_c::SOLUTION; }
 };
 

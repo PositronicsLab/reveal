@@ -24,29 +24,35 @@ namespace Core {
 class solution_set_c {
 public:
 
-  double time_step;
-  double epsilon;
+  double time_step;            //< the time step this solution set uses
+  double epsilon;              //< the error allowed in time comparison
 
+  /// Default constructor
   solution_set_c( void ) {}
+  /// Destructor
   virtual ~solution_set_c( void ) {}
 
 
-  //Reveal::Core::scenario_ptr 	            scenario;  // scenario data
-  Reveal::Core::experiment_ptr              experiment;// identifiers
+  Reveal::Core::experiment_ptr experiment; //< associated experiment
+  Reveal::Core::trial_ptr initial_trial;   //< initial trial data
+  std::vector<Reveal::Core::trial_ptr>    trials;   //< current trial data
+  std::vector<Reveal::Core::solution_ptr> solutions;//< current solution data
+  std::vector<Reveal::Core::solution_ptr> models;   //< current model solutions
 
-  Reveal::Core::trial_ptr                   initial_trial;
-  std::vector< Reveal::Core::trial_ptr >    trials;    // set of trials
-  std::vector< Reveal::Core::solution_ptr > solutions; // set of solutions
-  std::vector< Reveal::Core::solution_ptr > models;    // set of model solutions
-
+  /// Appends a trial into this instance's trial data
+  /// @param trial the trial data to append
   void add_trial( Reveal::Core::trial_ptr trial ) {
     trials.push_back( trial );
   }
   
+  /// Appends a solution into this instance's solution data
+  /// @param solution the solution data to append
   void add_solution( Reveal::Core::solution_ptr solution ) {
     solutions.push_back( solution );
   }
   
+  /// Appends a model solution into this instance's model solution data
+  /// @param model the model solution data to append
   void add_model( Reveal::Core::solution_ptr model ) {
     models.push_back( model );
   }

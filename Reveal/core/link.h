@@ -23,12 +23,15 @@ namespace Core {
 
 class link_c : public component_c {
 public:
-  std::string id;
-  state_c state;
+  std::string id;         //< the unique link identifier
+  state_c state;          //< the link state
 
+  /// Default constructor
   link_c( void ) {}
+  /// Destructor
   virtual ~link_c( void ) {}
 
+  /// Prints the instance data to the console
   void print( void ) {
     printf( "link[%s]", id.c_str() );
     printf( ", state{" );
@@ -36,6 +39,8 @@ public:
     printf( "}" );
   }
 
+  /// Gets the component type.  Fulfills the component_c interface
+  /// @return the component type
   virtual component_c::type_e component_type( void ) { return component_c::LINK; }
 
 };

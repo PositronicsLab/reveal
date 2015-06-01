@@ -28,18 +28,21 @@ namespace Core {
 
 class scenario_c {
 public:
+  /// Default constructor
   scenario_c( void ) {}
+  /// Destructor
   virtual ~scenario_c( void ) {}
 
-  std::string id;
-  std::string package_id;
-  std::string description;
-  std::vector<std::string> uris;
+  std::string id;                //< the unique scenario identifier
+  std::string package_id;        //< the package identifier of this scenario
+  std::string description;       //< the description of this scenario
+  std::vector<std::string> uris; //< the set of resources used by the scenario
 
-  double sample_rate;
-  double sample_start_time;
-  double sample_end_time;
+  double sample_rate;            //< the sampling rate of the trial data
+  double sample_start_time;      //< the start time of the samples in trial data
+  double sample_end_time;        //< the end time of the samples in trial data
 
+  /// Prints the instance data to the console
   void print( void ) const {
     printf( "id[%s]", id.c_str() );
     printf( ", sample_rate[%f]", sample_rate );

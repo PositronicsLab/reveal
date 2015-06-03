@@ -388,7 +388,7 @@ bool gazebo_c::execute( Reveal::Core::authorization_ptr auth, Reveal::Core::scen
       {
         // if the terminate flag was set, then send the command
         if( terminate ) {
-          printf( "(client) issuing terminate command\n" );
+          //printf( "(client) issuing terminate command\n" );
           exchg.build_server_command_exit( msg, auth );
           if( _ipc->write( msg ) != Reveal::Core::pipe_c::ERROR_NONE ) {
             // TODO: trap and recover
@@ -405,7 +405,7 @@ bool gazebo_c::execute( Reveal::Core::authorization_ptr auth, Reveal::Core::scen
           }
 
           if( forward_trial ) {
-            printf( "(client) forwarding trial\n" );
+            //printf( "(client) forwarding trial\n" );
 
             // write trial to gzipc
             exchg.build_server_trial( msg, auth, experiment, trial );
@@ -416,7 +416,7 @@ bool gazebo_c::execute( Reveal::Core::authorization_ptr auth, Reveal::Core::scen
           } else {
             // otherwise send a step command
 
-            printf( "(client) issuing step command\n" );
+            //printf( "(client) issuing step command\n" );
 
             exchg.build_server_command_step( msg, auth );
 
@@ -467,11 +467,11 @@ bool gazebo_c::execute( Reveal::Core::authorization_ptr auth, Reveal::Core::scen
           // publish to revealserver if the end of trial is reached
           //if( solution && solution->t == trial_end_time ) {
           if( solution ) {
-            printf( "(client) received solution\n" );
+            //printf( "(client) received solution\n" );
             //double delta = fabs( trial_end_time - solution->t  );
             //printf( "trial_end_time[%1.24f], solution->t[%1.24f], delta(solution)[%1.24f], eps[%1.24f]\n", trial_end_time, solution->t, delta, EPSILON );
             if( fabs(trial_end_time - solution->t ) <= EPSILON ) {
-              printf( "(client) fowarding solution\n" );
+              //printf( "(client) fowarding solution\n" );
 
               //solution->print();
 

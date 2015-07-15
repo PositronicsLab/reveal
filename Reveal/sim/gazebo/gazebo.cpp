@@ -15,6 +15,9 @@
 #include <math.h>
 
 //-----------------------------------------------------------------------------
+#define GZENVAR_PLUGIN_PATH "GAZEBO_PLUGIN_PATH"
+#define GZENVAR_MODEL_PATH "GAZEBO_MODEL_PATH"
+//-----------------------------------------------------------------------------
 namespace Reveal {
 //-----------------------------------------------------------------------------
 namespace Sim {
@@ -74,8 +77,8 @@ std::vector< std::string > gazebo_c::environment_keys( void ) {
   enkeys.push_back( "GAZEBO_MASTER_URI" );
   enkeys.push_back( "GAZEBO_MODEL_DATABASE_URI" );
   enkeys.push_back( "GAZEBO_RESOURCE_PATH" );
-  enkeys.push_back( "GAZEBO_PLUGIN_PATH" );
-  enkeys.push_back( "GAZEBO_MODEL_PATH" );
+  enkeys.push_back( GZENVAR_PLUGIN_PATH );
+  enkeys.push_back( GZENVAR_MODEL_PATH );
   return enkeys;
 }
 
@@ -254,13 +257,17 @@ bool gazebo_c::execute( Reveal::Core::authorization_ptr auth, Reveal::Core::scen
 
     // build the enviroment variables array
     std::vector<std::string> env_strings = system_environment_vars();
-    // overrides
+    bool found_plugin_path = false, found_model_path = false;
+
+    // search the environment variable array for gazebo environment variables
+    // and override them if they exist
     for( std::vector<std::string>::iterator it = env_strings.begin(); it != env_strings.end(); it++ ) {
       std::string search_val;
       std::size_t found;
-      search_val = "GAZEBO_PLUGIN_PATH";
+      search_val = GZENVAR_PLUGIN_PATH;
       found = it->find( search_val );
       if( found != std::string::npos ) { 
+        // append the package path to the existing environment path
         //if( found == 0 ) {
           //printf( "l_substr: %s\n", it->substr(0,search_val.size()).c_str() );
           //printf( "r_substr: %s\n", it->substr(search_val.size()+1).c_str() );
@@ -273,8 +280,9 @@ bool gazebo_c::execute( Reveal::Core::authorization_ptr auth, Reveal::Core::scen
           ss << r;
           *it = ss.str();
         //}
+        found_plugin_path = true;
       }
-      search_val = "GAZEBO_MODEL_PATH";
+      search_val = GZENVAR_MODEL_PATH;
       found = it->find( search_val );
       if( found != std::string::npos ) { 
         //if( found == 0 ) {
@@ -287,7 +295,21 @@ bool gazebo_c::execute( Reveal::Core::authorization_ptr auth, Reveal::Core::scen
           ss << r;
           *it = ss.str();
         //}
+        found_model_path = true;
       }
+    }
+    // if the gazebo environment variables do not exist then create them
+    if( !found_plugin_path ) {
+      // plugin path envar does not exist, so create it
+      std::stringstream ss;
+      ss << GZENVAR_PLUGIN_PATH << "=" << _plugin_path;
+      env_strings.push_back( ss.str() );
+    }
+    if( !found_model_path ) {
+      // model path envar does not exist, so create it
+      std::stringstream ss;
+      ss << GZENVAR_MODEL_PATH << "=" << _model_path;
+      env_strings.push_back( ss.str() );
     }
 
     //Reveal::Core::console_c::print( env_strings );

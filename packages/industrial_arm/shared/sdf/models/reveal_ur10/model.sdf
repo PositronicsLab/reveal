@@ -18,7 +18,7 @@
         <pose>0 0 0 0 0 0</pose>
         <geometry>
           <mesh>
-            <uri>model://ur_description/meshes/ur10/collision/Base.dae</uri>
+            <uri>model://reveal_ur_description/meshes/ur10/collision/Base.dae</uri>
           </mesh>
         </geometry>
       </collision>
@@ -26,7 +26,7 @@
         <pose>0 0 0 0 0 0</pose>
         <geometry>
           <mesh>
-            <uri>model://ur_description/meshes/ur10/visual/Base.dae</uri>
+            <uri>model://reveal_ur_description/meshes/ur10/visual/Base.dae</uri>
           </mesh>
         </geometry>
       </visual>
@@ -49,7 +49,7 @@
         <pose>0 0 0 0 0 0</pose>
         <geometry>
           <mesh>
-            <uri>model://ur_description/meshes/ur10/collision/Shoulder.dae</uri>
+            <uri>model://reveal_ur_description/meshes/ur10/collision/Shoulder.dae</uri>
           </mesh>
         </geometry>
       </collision>
@@ -57,7 +57,7 @@
         <pose>0 0 0 0 0 0</pose>
         <geometry>
           <mesh>
-            <uri>model://ur_description/meshes/ur10/visual/Shoulder.dae</uri>
+            <uri>model://reveal_ur_description/meshes/ur10/visual/Shoulder.dae</uri>
           </mesh>
         </geometry>
       </visual>
@@ -94,7 +94,7 @@
         <pose>0 0 0 0 0 0</pose>
         <geometry>
           <mesh>
-            <uri>model://ur_description/meshes/ur10/collision/UpperArm.dae</uri>
+            <uri>model://reveal_ur_description/meshes/ur10/collision/UpperArm.dae</uri>
           </mesh>
         </geometry>
       </collision>
@@ -102,7 +102,7 @@
         <pose>0 0 0 0 0 0</pose>
         <geometry>
           <mesh>
-            <uri>model://ur_description/meshes/ur10/visual/UpperArm.dae</uri>
+            <uri>model://reveal_ur_description/meshes/ur10/visual/UpperArm.dae</uri>
           </mesh>
         </geometry>
       </visual>
@@ -139,7 +139,7 @@
         <pose>0 0 0 0 0 0</pose>
         <geometry>
           <mesh>
-            <uri>model://ur_description/meshes/ur10/collision/Forearm.dae</uri>
+            <uri>model://reveal_ur_description/meshes/ur10/collision/Forearm.dae</uri>
           </mesh>
         </geometry>
       </collision>
@@ -147,7 +147,7 @@
         <pose>0 0 0 0 0 0</pose>
         <geometry>
           <mesh>
-            <uri>model://ur_description/meshes/ur10/visual/Forearm.dae</uri>
+            <uri>model://reveal_ur_description/meshes/ur10/visual/Forearm.dae</uri>
           </mesh>
         </geometry>
       </visual>
@@ -184,7 +184,7 @@
         <pose>0 0 0 0 0 0</pose>
         <geometry>
           <mesh>
-            <uri>model://ur_description/meshes/ur10/collision/Wrist1.dae</uri>
+            <uri>model://reveal_ur_description/meshes/ur10/collision/Wrist1.dae</uri>
           </mesh>
         </geometry>
       </collision>
@@ -192,7 +192,7 @@
         <pose>0 0 0 0 0 0</pose>
         <geometry>
           <mesh>
-            <uri>model://ur_description/meshes/ur10/visual/Wrist1.dae</uri>
+            <uri>model://reveal_ur_description/meshes/ur10/visual/Wrist1.dae</uri>
           </mesh>
         </geometry>
       </visual>
@@ -229,7 +229,7 @@
         <pose>0 0 0 0 0 0</pose>
         <geometry>
           <mesh>
-            <uri>model://ur_description/meshes/ur10/collision/Wrist2.dae</uri>
+            <uri>model://reveal_ur_description/meshes/ur10/collision/Wrist2.dae</uri>
           </mesh>
         </geometry>
       </collision>
@@ -237,7 +237,7 @@
         <pose>0 0 0 0 0 0</pose>
         <geometry>
           <mesh>
-            <uri>model://ur_description/meshes/ur10/visual/Wrist2.dae</uri>
+            <uri>model://reveal_ur_description/meshes/ur10/visual/Wrist2.dae</uri>
           </mesh>
         </geometry>
       </visual>
@@ -274,7 +274,7 @@
         <pose>0 0 0 0 0 0</pose>
         <geometry>
           <mesh>
-            <uri>model://ur_description/meshes/ur10/collision/Wrist3.dae</uri>
+            <uri>model://reveal_ur_description/meshes/ur10/collision/Wrist3.dae</uri>
           </mesh>
         </geometry>
       </collision>
@@ -282,7 +282,7 @@
         <pose>0 0 0 0 0 0</pose>
         <geometry>
           <mesh>
-            <uri>model://ur_description/meshes/ur10/visual/Wrist3.dae</uri>
+            <uri>model://reveal_ur_description/meshes/ur10/visual/Wrist3.dae</uri>
           </mesh>
         </geometry>
       </visual>

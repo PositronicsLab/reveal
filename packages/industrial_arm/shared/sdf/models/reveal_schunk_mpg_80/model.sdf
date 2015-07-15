@@ -19,7 +19,7 @@
         <pose>0 0 0 0 0 0</pose>
         <geometry>
           <mesh>
-            <uri>model://schunk_description/meshes/mpg_80/visual/SCHUNK_MPG-80_BASE.dae</uri>
+            <uri>model://reveal_schunk_description/meshes/mpg_80/visual/SCHUNK_MPG-80_BASE.dae</uri>
           </mesh>
         </geometry>
       </visual>
@@ -66,7 +66,7 @@
         <pose>0 0 0 0 0 0</pose>
         <geometry>
           <mesh>
-            <uri>model://schunk_description/meshes/mpg_80/visual/SCHUNK_MPG-80_LEFT_FINGER.dae</uri>
+            <uri>model://reveal_schunk_description/meshes/mpg_80/visual/SCHUNK_MPG-80_LEFT_FINGER.dae</uri>
           </mesh>
         </geometry>
       </visual>
@@ -132,7 +132,7 @@
         <pose>0 0 0 0 0 0</pose>
         <geometry>
           <mesh>
-            <uri>model://schunk_description/meshes/mpg_80/visual/SCHUNK_MPG-80_RIGHT_FINGER.dae</uri>
+            <uri>model://reveal_schunk_description/meshes/mpg_80/visual/SCHUNK_MPG-80_RIGHT_FINGER.dae</uri>
           </mesh>
         </geometry>
       </visual>

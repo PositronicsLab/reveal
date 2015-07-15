@@ -56,16 +56,16 @@
       <uri>model://sun</uri>
     </include>
     <include>
-      <uri>model://backdrop</uri>
+      <uri>model://reveal_backdrop</uri>
       <pose>0 0 -100 0 0 0</pose>
     </include>
     <include>
-      <uri>model://ur10-schunk-arm</uri>
+      <uri>model://reveal_ur10-schunk-arm</uri>
       <pose>0 0 1.0 0 0 0</pose>
       <plugin name='arm_controller' filename='libgz-arm-plugin.so'/>
     </include>
     <include>
-      <uri>model://block</uri>
+      <uri>model://reveal_block</uri>
       <pose>1.1843 0.342 1.0116 0 0 0</pose>  
     </include>
     <gui>

@@ -2,13 +2,12 @@
 <sdf version='1.5'>
   <model name='ur10_schunk_arm'>
     <include>
-      <uri>model://ur10</uri>
+      <uri>model://reveal_ur10</uri>
     </include>
     <include>
-      <uri>model://schunk_mpg_80</uri>
+      <uri>model://reveal_schunk_mpg_80</uri>
       <pose>1.1843 0.256 0.0116 0 0 0</pose>
     </include>
-
     <joint name='fixed_world_joint' type='revolute'>
       <child>ur10::base_link</child> 
       <parent>world</parent>

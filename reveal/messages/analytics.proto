@@ -1,0 +1,62 @@
+// Network protocol message for Reveal Analytics
+
+import "auth.proto";
+import "data.proto";
+
+package Reveal.Messages.Analytics;
+
+message Message {
+
+  enum Origin {
+    ADMIN = 0;
+    WORKER = 1;
+  }
+
+  enum Type {
+    UNDEFINED = 0;   // necessary?
+    ERROR = 1;
+    HANDSHAKE = 2;
+    REQUEST = 3;
+    RESPONSE = 4;
+    COMMAND = 5;
+  }
+
+  enum Request {
+    REQUEST_JOB = 0;
+    REQUEST_RECEIPT = 1;
+  }
+
+  enum Response {
+    RESPONSE_JOB_ISSUED = 0;
+    RESPONSE_JOB_DENIED = 1;
+    RESPONSE_RECEIPT_AUTHORIZED = 2;
+    RESPONSE_RECEIPT_REJECTED = 3;
+  }
+
+  enum Command {
+    COMMAND_EXIT = 0;
+  }
+
+  enum Error {
+    ERROR_NONE = 0;
+    ERROR_GENERAL = 1;
+    ERROR_AUTHORIZATION = 2;
+    ERROR_BAD_RESPONSE = 3;
+  }
+
+  message Header {
+    required Origin origin = 1;
+    required Type type = 2;
+    required Reveal.Messages.Net.Authorization authorization = 3;
+    optional Error error = 4;
+    optional Request request = 5;
+    optional Response response = 6;
+    optional Command command = 7;
+    optional uint32 blocks = 8;
+  }
+
+  required Header header = 1;
+  optional Reveal.Messages.Data.SolutionSet solution_set = 2;
+  optional Reveal.Messages.Data.Analysis analysis = 3;
+  optional Reveal.Messages.Data.Analyzer analyzer = 4;
+}

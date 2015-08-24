@@ -1,0 +1,51 @@
+//TCP/IP Network protocol messages for Reveal
+
+import "auth.proto";
+import "data.proto";
+
+package Reveal.Messages.Samples;
+
+message Message {
+
+  enum Type {
+    UNDEFINED = 0;   // necessary?
+    ERROR = 1;
+    HANDSHAKE = 2;
+    DIGEST = 3;
+    EXPERIMENT = 4;
+    TRIAL = 5;
+    SOLUTION = 6;
+    STEP = 7;
+    EXIT = 8;
+  }
+
+  enum Error {
+    ERROR_NONE = 0;
+    ERROR_GENERAL = 1;
+    ERROR_AUTHORIZATION = 2;
+    ERROR_BAD_RESPONSE = 3;
+    ERROR_BAD_SCENARIO = 4;
+    ERROR_BAD_TRIAL = 5;
+  }
+
+  enum Origin {
+    SERVER = 0;
+    CLIENT = 1;
+  }
+
+  message Header {
+    required Origin origin = 1;
+    required Type type = 2;
+    required Reveal.Messages.Net.Authorization authorization = 3;
+    optional Error error = 4;
+  }
+
+  required Header header = 1;
+  optional Reveal.Messages.Data.Digest digest = 2;
+  optional Reveal.Messages.Data.Experiment experiment = 3;
+  optional Reveal.Messages.Data.Scenario scenario = 4; 
+  optional Reveal.Messages.Data.Trial trial = 5;
+  optional Reveal.Messages.Data.Solution solution = 6;
+
+}
+

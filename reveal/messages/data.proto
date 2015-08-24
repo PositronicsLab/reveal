@@ -1,0 +1,100 @@
+package Reveal.Messages.Data;
+
+// The state of the system
+// Note: may need additional configurations or subdivisions to map properly
+message State {
+  repeated double q = 1;
+  repeated double dq = 2;
+}
+
+// A control to be applied
+// Note: may need additional configurations or subdivisions to map properly
+message Control {
+  repeated double u = 1;
+}
+
+message Link {
+  optional string id = 1;
+  optional State state = 2;
+}
+
+message Joint {
+  optional string id = 1;
+  optional Control control = 2;
+}
+
+message Model {
+  optional string id = 1;
+  repeated Link link = 2;
+  repeated Joint joint = 3;
+}
+
+// A given scenario to evaluate
+message Scenario {
+  required string id = 1;
+  required string package_id = 2;
+  optional string description = 3 [default = ""];
+  optional double sample_rate = 4;
+  optional double sample_start_time = 5;
+  optional double sample_end_time = 6;
+  repeated string uri = 7;
+}
+
+// The set of all scenarios.
+message Digest {
+  repeated Scenario scenario = 1;
+}
+
+message Experiment {
+  optional string experiment_id = 1;
+  optional string scenario_id = 2;
+  optional double start_time = 3;
+  optional double end_time = 4;
+  optional double time_step = 5;
+  optional double epsilon = 6;
+  optional uint32 intermediate_trials = 7;
+}
+
+// A single trial within a scenario
+message Trial {
+  required string scenario_id = 1;
+  optional double t = 2;
+  repeated Model model = 3;
+}
+
+// A single solution for a given trial within a scenario
+message Solution {
+  required string scenario_id = 1;
+  optional double t = 2;
+  optional double real_time = 3;
+  repeated Model model = 4;
+}
+
+// An analyzer definition
+message Analyzer {
+  required string scenario_id = 1;
+  required string analyzer_id = 2;
+  enum Type {
+    PLUGIN = 0;
+    SCRIPT = 1;
+  }
+  optional Type type = 3;
+  repeated string keys = 4;
+  repeated string labels = 5;
+}
+
+message SolutionSet {
+  required Experiment experiment = 1;
+  required Trial initial_trial = 2;
+  required uint32 batch_size = 3;
+  repeated Trial trials = 4;
+  repeated Solution solutions = 5;
+  repeated Solution models = 6;
+}
+
+message Analysis {
+  required Experiment experiment = 1;
+  required uint32 rows = 2;
+  repeated string keys = 3;
+  repeated double values = 5;
+}

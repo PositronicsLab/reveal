@@ -58,11 +58,16 @@ int main( int argc, char* argv[] ) {
 
   client = Reveal::Samples::client_ptr( new Reveal::Samples::client_c( uri ) );
 
-  bool result;
-  result = client->startup();
-  if( !result ) exit( 1 );
-  result = client->execute( );
-  if( !result ) exit( 2 );
+  if( !client->startup() ) {
+    client->shutdown();
+    exit( 1 );
+  }
+
+  if( !client->execute() ) {
+    client->shutdown(); 
+    exit( 2 );
+  }
+
   client->shutdown();
 
   return 0;

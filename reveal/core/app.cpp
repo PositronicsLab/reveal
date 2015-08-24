@@ -115,12 +115,12 @@ std::string app_c::boilerplate_preamble( void ) {
 
 //-----------------------------------------------------------------------------
 std::string app_c::boilerplate_overview( void ) {
-  return "API NOTE:This text should be implemented!";
+  return "API NOTE:The text 'overview' should be implemented!";
 }
 
 //-----------------------------------------------------------------------------
 std::string app_c::boilerplate_warnings( void ) {
-  return "API NOTE:This text should be implemented!";
+  return "API NOTE:The text 'warnings' should be implemented!";
 }
 
 //-----------------------------------------------------------------------------

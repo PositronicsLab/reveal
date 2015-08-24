@@ -647,12 +647,14 @@ bool exchange_c::map_server_message( Reveal::Messages::Samples::Message* msg ) {
     Reveal::Messages::Samples::Message::Error msg_error = msg->header().error();
     if( msg_error == Reveal::Messages::Samples::Message::ERROR_BAD_SCENARIO ) {
       _error = ERROR_BAD_SCENARIO_REQUEST;
+      //printf( "exchange: ERROR_BAD_SCENARIO_REQUEST\n" );
     } else if( msg_error == Reveal::Messages::Samples::Message::ERROR_BAD_TRIAL ) {
       _error = ERROR_BAD_TRIAL_REQUEST;
+      //printf( "exchange: ERROR_BAD_TRIAL_REQUEST\n" );
     } else {
       // TODO:
+      printf( "exchange: ERROR_UNKNOWN\n" );
     }
-    printf( "detected error\n" );
 
   } else if( _type == TYPE_DIGEST ) {
 

@@ -69,7 +69,7 @@ install( FILES ${HDRS} DESTINATION ${INCLUDE_INSTALL_DIR}/${COMPONENT_DIR} COMPO
 #------------------------------------------------------
 
 #if( ${INSTALL_ANALYTICS_SERVER} )
-#  add_subdirectory( services )
+#  add_subdirectory( service )
 #endif( ${INSTALL_ANALYTICS_SERVER} )
 
 #if( ${INSTALL_ANALYTICS_CLIENT} )

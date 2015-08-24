@@ -39,7 +39,7 @@ namespace Reveal {
 namespace Samples {
 //-----------------------------------------------------------------------------
 client_c::client_c( std::string uri ) : app_c( "reveal_samples", "Reveal Samples Client", uri ) {
-
+  _working_directory = "";
 }
 
 //-----------------------------------------------------------------------------
@@ -286,7 +286,6 @@ bool client_c::submit_solution( Reveal::Core::authorization_ptr& auth, Reveal::C
 
   Reveal::Samples::exchange_c client_exchange;
   Reveal::Samples::exchange_c server_exchange;
-  Reveal::Samples::exchange_c::error_e exchg_err;
 
   // create a solution 'request'
   client_exchange.set_origin( Reveal::Samples::exchange_c::ORIGIN_CLIENT );
@@ -329,6 +328,9 @@ bool client_c::submit_solution( Reveal::Core::authorization_ptr& auth, Reveal::C
 
 //-----------------------------------------------------------------------------
 void client_c::prompt_trials_to_ignore( Reveal::Core::scenario_ptr scenario, Reveal::Core::experiment_ptr experiment ) {
+  assert( scenario );         // Mostly to suppress build warning
+  assert( experiment );       // Mostly to suppress build warning
+
   std::string prompt = "How many trials should be ignored before resetting simulator to trial state";
 
   unsigned choice = Reveal::Core::console_c::prompt_unsigned( prompt, true );
@@ -414,7 +416,7 @@ void client_c::prompt_simulator( void ) {
   _interface = adapter.interfaces[choice];
 
   if( !adapter.compile_interface( _interface ) ) {
-    printf( "failed to compile plugin\n" );
+    printf( "ERROR: failed to compile plugin\n" );
     // there needs to be a differentiation between success and failure
     return;
   }
@@ -427,12 +429,12 @@ void client_c::prompt_simulator( void ) {
   _simulator = Reveal::Core::simulator_ptr( new Reveal::Core::simulator_c() );
 
   if( driver_path == "" ) {
-    printf( "driver_path not set: %s\n", driver_path.c_str() );
+    printf( "ERROR: driver_path not set: %s\n", driver_path.c_str() );
     // something went wrong but undetected in compilation
     return;
   }
   if( !_simulator->load( driver_path ) ) {
-    printf( "failed to load simulator driver: %s\n", driver_path.c_str() );
+    printf( "ERROR: failed to load simulator driver: %s\n", driver_path.c_str() );
     // again, failure condition
     return;
   }
@@ -486,20 +488,9 @@ bool client_c::execute( void ) {
   // Salutations
   printf( "Welcome to Reveal\n" );
 
-  // Connect to Server
-  printf( "Connecting to Reveal Server\n" );
-
-  if( !connect() ) {
-    printf( "ERROR: Unable to reach Reveal Server.\nExiting.\n" );
-    shutdown();
-    return false;
-  }
-
-  printf("Connected to Reveal Server\n");
-
+  // prompt user to login
   if( !login() ) { 
     printf( "Failed to login.\nExiting.\n" );
-    shutdown();
     return false;
   }
 
@@ -512,16 +503,14 @@ bool client_c::execute( void ) {
 
   // if the package cannot be located, bomb out
   if( !path_exists( pkg_root_image_path ) ) {
-    std::cerr << "ERROR(client.cpp): Unable to locate the package path." << std::endl;
-    shutdown();
+    std::cerr << "ERROR: Unable to locate the package path." << std::endl;
     return false;
   }
 
   // if the temporary directory does not exist (should have been created in 
   // init), bomb out
   if( !path_exists( pkg_root_tmp_path ) ) {
-    std::cerr << "ERROR(client.cpp): The temporary working directory was not available." << std::endl;
-    shutdown();
+    std::cerr << "ERROR: The temporary working directory was not available." << std::endl;
     return false;
   }
 
@@ -535,8 +524,8 @@ bool client_c::execute( void ) {
     Reveal::Core::scenario_ptr scenario;
     Reveal::Core::experiment_ptr experiment;
 
+    // prompt the user to select among available simulators
     prompt_simulator();
-
 
     printf( "Fetching Scenario Digest\n" );
 
@@ -545,8 +534,7 @@ bool client_c::execute( void ) {
     error = request_digest( _auth, digest );
     if( error != ERROR_NONE ) {
       printf( "ERROR: client failed to receive digest\n" );
-      // TODO: error handling
-      // TODO: convert error reporting over to Core::error_c
+      return false;
     }
 
     // user selects a scenario from the digest
@@ -555,7 +543,7 @@ bool client_c::execute( void ) {
     // fetch scenario
     scenario = digest->get_scenario( scenario_choice );
     // --
-    scenario->print();
+    //scenario->print();
     // --
 
     // create an experiment
@@ -565,6 +553,8 @@ bool client_c::execute( void ) {
     if( !_simulator->ui_select_configuration( scenario, experiment ) ) {
       // TODO: error handling.
       // if false, no choice but to bomb with unrecognized/unrecoverable
+      printf( "ERROR: The configuration was invalid\n" );
+      return false;
     }
 
     prompt_time_step( scenario, experiment );
@@ -574,10 +564,12 @@ bool client_c::execute( void ) {
     ss << "The experiment is configured to use a time step of " << experiment->time_step << " seconds and will ignore the next " << experiment->intermediate_trials_to_ignore << " trials after being reset by new trial state.";
     Reveal::Core::console_c::printline( ss );
 
-    // user selects any package specific parameters
+    // user sel//ects any package specific parameters
     if( !_simulator->ui_select_tuning() ) {
       // TODO: error handling.
       // if false, no choice but to bomb with unrecognized/unrecoverable
+      printf( "ERROR: The was an problem encountered while tuning\n" );
+      return false;
     }
 
     // request experiment
@@ -586,10 +578,12 @@ bool client_c::execute( void ) {
       printf( "ERROR: client failed to receive experiment\n" );
       // TODO: error handling
       // TODO: convert error reporting over to Core::error_c
+      return false;
     }
 
-    experiment->print();
-    printf( "eps[%1.24f]\n", experiment->epsilon );
+    //--
+    //experiment->print();
+    //--
 
     std::string pkg_image_path, pkg_tmp_path;
     std::string pkg_source_path, pkg_build_path;
@@ -600,43 +594,44 @@ bool client_c::execute( void ) {
     pkg_tmp_path = combine_path( pkg_root_tmp_path, scenario->package_id );
     // get the package temporary directory
     if( !get_directory( pkg_tmp_path ) ) {
-      shutdown();
+      printf( "ERROR: client failed to get the package temporary directory\n" );
       return false;
     }
+ 
     // extend those paths to find the shared package component
     pkg_image_path = combine_path( pkg_image_path, "shared" );
     pkg_tmp_path = combine_path( pkg_tmp_path, "shared" );
     // get the temporary shared package component
     if( !get_directory( pkg_tmp_path ) ) {
-      shutdown();
+      printf( "ERROR: client failed to get the controller temporary directory\n" );
       return false;
     }
 
     // clean the temporary package path to remove any artifacts
     if( !clean_directory( pkg_tmp_path ) ) {
-      shutdown();
+      printf( "ERROR: client failed to clean the controller temporary directory\n" );
       return false;
     }
 
     // copy the package image to the temporary path
     if( !copy_directory( pkg_image_path, pkg_tmp_path ) ) {
-      shutdown();
+      printf( "ERROR: client failed to copy the package image\n" );
       return false;
     }
     // set the source and build paths to the temporary path
     pkg_source_path = pkg_tmp_path;
     pkg_build_path = combine_path( pkg_source_path, "build" );
-   
+  
     if( path_exists( pkg_build_path ) ) {
       // if there are build artifacts (copied from the image) clean them
       if( !clean_directory( pkg_build_path ) ) {
-        shutdown();
+        printf( "ERROR: client failed to clean previous build artifacts\n" );
         return false;
       } 
     } else {
       // if the build path did not exist, then create it
       if( !get_directory( pkg_build_path ) ) {
-        shutdown();
+        printf( "ERROR: client failed to create a package build directory\n" );
         return false;
       }
     }
@@ -647,6 +642,7 @@ bool client_c::execute( void ) {
 
     // build the package in the temporary path
     if( !_simulator->build_package( pkg_source_path, pkg_build_path, _interface.source_path, _interface.library_path, _interface.library_name ) ) {
+      printf( "ERROR: client failed to build package\n" );
       printf( "Exiting\n" );
       exit( 1 );
     }
@@ -655,23 +651,24 @@ bool client_c::execute( void ) {
     bool result = _simulator->execute( _auth, scenario, experiment );
     if( !result ) {
       // TODO: determine how to recover
+      printf( "ERROR: client detected an error in executing the simulator\n" );
+      return false;
     }
 
     // prompt the user as to whether or not to rerun reveal
     recycle = Reveal::Core::console_c::prompt_yes_no( "Would you like to run another experiment (Y/N)?" );
   } while( recycle );
 
-  shutdown();
-
   return true;
 }
 
 //-----------------------------------------------------------------------------
 void client_c::shutdown( void ) {
-
   // TODO: Custom implementations here  
   // prune and remove temporary working directory
-  remove_directory( _working_directory );
+
+  if( _working_directory != "" )
+    remove_directory( _working_directory );
 
   Reveal::Samples::exchange_c exchange;
   exchange.close();

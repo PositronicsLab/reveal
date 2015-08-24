@@ -53,7 +53,7 @@ install( FILES ${HDRS} DESTINATION ${INCLUDE_INSTALL_DIR}/${COMPONENT_DIR} COMPO
 
 #------------------------------------------------------
 if( ${INSTALL_SAMPLES_SERVER} )
-add_subdirectory( services )
+add_subdirectory( service )
 endif()
 
 if( ${INSTALL_SAMPLES_CLIENT} )

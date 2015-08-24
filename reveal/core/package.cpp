@@ -148,9 +148,11 @@ void* package_c::make_worker( void* args ) {
     // impossible outcome
   }
 */
+/*
   Reveal::Core::console_c::printline( working_path );
   Reveal::Core::console_c::printline( build_path );
   Reveal::Core::console_c::printline( subpackage );
+*/
 
   if( pid == 0 ) {
     // CHILD PROCESS
@@ -188,8 +190,7 @@ void* package_c::make_worker( void* args ) {
       std::string file_name = working_path + '/' + std::string( *((char* const*)args + parameter_count + i) );
       build_products.push_back( file_name );
     }
-    Reveal::Core::console_c::print(build_products);
-
+    //Reveal::Core::console_c::print(build_products);
  
     // wait for signal the child has terminated
     while( !exithandler.quit() ) sleep(1);
@@ -242,11 +243,11 @@ void* package_c::cmake_worker( void* args ) {
 //    optional_args = *((char* const*)args+3);
 
   working_path = build_path;
-
+/*
   Reveal::Core::console_c::printline( working_path );
   Reveal::Core::console_c::printline( build_path );
   Reveal::Core::console_c::printline( source_path );
-
+*/
   if( pid == 0 ) {
     // CHILD PROCESS
     pid = getpid();
@@ -254,7 +255,7 @@ void* package_c::cmake_worker( void* args ) {
     // change the working directory to the build path
     if( !change_working_dir( working_path ) ) {
       // TODO: error handling
-      printf( "FAILED TO CHANGE WORKING DIRECTORY\n" );
+      printf( "ERROR: Failed to change working directory\n" );
     }
 
     // build the cmake command line arguments array

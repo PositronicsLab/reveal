@@ -7,6 +7,15 @@
 #include <limits>
 #include <cmath>
 
+#define TEXT_COLOR_RED_BRIGHT     "\033[1;31m"
+#define TEXT_COLOR_RED            "\033[31m"
+#define TEXT_COLOR_GREEN_BRIGHT   "\033[1;32m"
+#define TEXT_COLOR_GREEN          "\033[32m"
+#define TEXT_COLOR_BLUE_BRIGHT    "\033[1;34m"
+#define TEXT_COLOR_BLUE           "\033[34m"
+#define TEXT_COLOR_DEFAULT        "\033[0m"
+
+
 //-----------------------------------------------------------------------------
 namespace Reveal {
 //-----------------------------------------------------------------------------
@@ -15,22 +24,26 @@ namespace Core {
 
 //-----------------------------------------------------------------------------
 void console_c::print( std::string msg ) {
-  printf( "%s", msg.c_str() );
+  //std::cout << TEXT_COLOR_BLUE_BRIGHT << msg << TEXT_COLOR_DEFAULT;
+  std::cout << msg;
 }
 
 //-----------------------------------------------------------------------------
 void console_c::print( const std::stringstream& msg ) {
-  printf( "%s", msg.str().c_str() );
+  //std::cout << TEXT_COLOR_BLUE_BRIGHT << msg.str() << TEXT_COLOR_DEFAULT;
+  std::cout << msg.str();
 }
 
 //-----------------------------------------------------------------------------
 void console_c::printline( std::string msg ) {
-  printf( "%s\n", msg.c_str() );
+  //std::cout << TEXT_COLOR_BLUE_BRIGHT << msg << TEXT_COLOR_DEFAULT << std::endl;
+  std::cout << msg << std::endl;
 }
 
 //-----------------------------------------------------------------------------
 void console_c::printline( const std::stringstream& msg ) {
-  printf( "%s\n", msg.str().c_str() );
+  //std::cout << TEXT_COLOR_BLUE_BRIGHT << msg.str() << TEXT_COLOR_DEFAULT << std::endl;
+  std::cout << msg.str() << std::endl;
 }
 
 //-----------------------------------------------------------------------------
@@ -46,21 +59,23 @@ void console_c::error( const std::stringstream& err ) {
 //-----------------------------------------------------------------------------
 void console_c::print( std::vector<std::string> data ) {
   for( std::vector<std::string>::iterator it = data.begin(); it != data.end(); it++ )
-    printf( "%s\n", it->c_str() );
+    std::cout << *it << std::endl;
+    //printf( "%s\n", it->c_str() );
 }
 
 //-----------------------------------------------------------------------------
 void console_c::print_param_array( char* const* array ) {
   for( char* const* ptr = (char* const*)array; *ptr != NULL; ptr++ )
-    printf( "%s\n", *ptr );
+    std::cout << *ptr << std::endl;
+    //printf( "%s\n", *ptr );
 }
 
 //-----------------------------------------------------------------------------
 bool console_c::prompt_yes_no( std::string prompt ) {
-  std::string input;
+  std::string input, err;
   
   do {
-    printf( "%s ", prompt.c_str() );
+    std::cout << prompt << " ";
     std::cin.clear();
     std::getline( std::cin, input );
 
@@ -69,7 +84,9 @@ bool console_c::prompt_yes_no( std::string prompt ) {
     } else if( input == "n" || input == "N" ) {
       return false;
     }
-    printf( "ERROR: Invalid Input. Enter y or n\n" );
+
+    err = "ERROR: Invalid Input. Enter y or n";
+    std::cerr << err << std::endl;
 
   } while( true );
 
@@ -78,13 +95,13 @@ bool console_c::prompt_yes_no( std::string prompt ) {
 
 //-----------------------------------------------------------------------------
 unsigned console_c::prompt_unsigned( std::string prompt, bool allow_zero ) {
-  std::string input;
+  std::string input, err;
   
   // infinite validation loop.  only way out is for the user to enter a valid
   // unsigned value
   do {
     // print the prompt to the console
-    printf( "%s: ", prompt.c_str() );
+    std::cout << prompt << ": ";
     // clear the input stream
     std::cin.clear();
     // get input from standard in
@@ -114,7 +131,8 @@ unsigned console_c::prompt_unsigned( std::string prompt, bool allow_zero ) {
     if( valid ) return (unsigned)atoi( input.c_str() );
     
     // if not valid, report and recycle
-    printf( "ERROR: Invalid Input. Enter an unsigned integer\n" );
+    err = "ERROR: Invalid Input. Enter an unsigned integer";
+    std::cerr << err << std::endl;
 
   } while( true );
 
@@ -123,7 +141,7 @@ unsigned console_c::prompt_unsigned( std::string prompt, bool allow_zero ) {
 
 //-----------------------------------------------------------------------------
 float console_c::prompt_float( std::string prompt, float& epsilon, bool allow_negative ) {
-  std::string input;
+  std::string input, err;
   float value;
   float machine_epsilon = std::numeric_limits<float>::epsilon();
   
@@ -131,7 +149,7 @@ float console_c::prompt_float( std::string prompt, float& epsilon, bool allow_ne
   // float value
   do {
     // print the prompt to the console
-    printf( "%s: ", prompt.c_str() );
+    std::cout << prompt << ": ";
     // clear the input stream
     std::cin.clear();
     // get input from standard in
@@ -144,7 +162,8 @@ float console_c::prompt_float( std::string prompt, float& epsilon, bool allow_ne
       // if valid conversion of input to value
       if( !allow_negative && value < 0.0 ) {
         // if negatives are invalid and input was negative, error and recycle
-        printf( "ERROR: Invalid Input. Enter a floating point number\n" );
+        err = "ERROR: Invalid Input. Enter a floating point number";
+        std::cerr << err << std::endl;
       } else {
         // if otherwise valid, compute epsilon and return value
         if( value > 10.0)
@@ -155,7 +174,8 @@ float console_c::prompt_float( std::string prompt, float& epsilon, bool allow_ne
       }
     } else {
       // the user entered invalid input
-      printf( "ERROR: Invalid Input. Enter an unsigned floating point number\n" );
+      err = "ERROR: Invalid Input. Enter an unsigned floating point number";
+      std::cerr << err << std::endl;
     }
   } while( true );
 
@@ -164,7 +184,7 @@ float console_c::prompt_float( std::string prompt, float& epsilon, bool allow_ne
 
 //-----------------------------------------------------------------------------
 double console_c::prompt_double( std::string prompt, double& epsilon, bool allow_negative ) {
-  std::string input;
+  std::string input, err;
   double value;
   double machine_epsilon = std::numeric_limits<double>::epsilon();
   
@@ -172,7 +192,8 @@ double console_c::prompt_double( std::string prompt, double& epsilon, bool allow
   // double value
   do {
     // print the prompt to the console
-    printf( "%s: ", prompt.c_str() );
+    std::cout << prompt << ": ";
+    //printf( "%s: ", prompt.c_str() );
     // clear the input stream
     std::cin.clear();
     // get input from standard in
@@ -185,7 +206,8 @@ double console_c::prompt_double( std::string prompt, double& epsilon, bool allow
       // if valid conversion of input to value
       if( !allow_negative && value < 0.0 ) {
         // if negatives are invalid and input was negative, error and recycle
-        printf( "ERROR: Invalid Input. Enter a floating point number\n" );
+        err = "ERROR: Invalid Input. Enter a floating point number";
+        std::cerr << err << std::endl;
       } else {
         // if otherwise valid, compute epsilon and return value
         if( value > 10.0)
@@ -196,7 +218,8 @@ double console_c::prompt_double( std::string prompt, double& epsilon, bool allow
       }
     } else {
       // the user entered invalid input
-      printf( "ERROR: Invalid Input. Enter an unsigned floating point number\n" );
+      err = "ERROR: Invalid Input. Enter an unsigned floating point number";
+      std::cerr << err << std::endl;
     }
   } while( true );
 
@@ -208,7 +231,7 @@ std::string console_c::prompt( std::string prompt ) {
   std::string input;
 
   // print the prompt to the console
-  printf( "%s ", prompt.c_str() );
+  std::cout << prompt << " ";
   // clear the input stream
   std::cin.clear();
   // get input from standard in
@@ -225,21 +248,24 @@ unsigned console_c::menu( std::string title, std::string prompt, std::vector< st
   unsigned choice;
   unsigned range = list.size();
   std::string input;
-  
-  printf( "%s\n", title.c_str() );
+  std::stringstream err;  
+
+  std::cout << title << std::endl;
 
   for( unsigned i = 0; i < list.size(); i++ )
-    printf( "%d: %s\n", i+1, list[i].c_str() );
+    std::cout << i+1 << ": " << list[i] << std::endl;
 
   do {
-    printf( "%s: ", prompt.c_str() );
+    std::cout << prompt << ": ";
     std::cin.clear();
     std::getline( std::cin, input );
 
     std::stringstream( input ) >> choice;
 
-    if( choice == 0 || choice > range )
-      printf( "ERROR: Invalid Input. Enter a value in the range [1,%u]\n", range );
+    if( choice == 0 || choice > range ) {
+      err << "ERROR: Invalid Input. Enter a value in the range [1," << range << "]";
+      std::cerr << err.str() << std::endl;
+    }
 
   } while( choice == 0 || choice > range );
 

@@ -1,9 +1,0 @@
-cmake_minimum_required(VERSION 2.8.7)
-
-set( COMPONENT_NAME "services" )
-set( COMPONENT_DIR "samples/${COMPONENT_NAME}")
-project( "reveal_samples_${COMPONENT_NAME}" )
-
-add_subdirectory( root )
-#add_subdirectory( node )
-

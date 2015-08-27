@@ -599,9 +599,9 @@ bool client_c::execute( void ) {
     }
  
     // extend those paths to find the shared package component
-    pkg_image_path = combine_path( pkg_image_path, "shared" );
-    pkg_tmp_path = combine_path( pkg_tmp_path, "shared" );
-    // get the temporary shared package component
+    pkg_image_path = combine_path( pkg_image_path, "scenario" );
+    pkg_tmp_path = combine_path( pkg_tmp_path, "scenario" );
+    // get the temporary scenario package component
     if( !get_directory( pkg_tmp_path ) ) {
       printf( "ERROR: client failed to get the controller temporary directory\n" );
       return false;

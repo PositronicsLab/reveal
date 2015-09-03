@@ -29,8 +29,9 @@ bool model_c::insert( mongo::BSONArrayBuilder& bson_array, Reveal::Core::model_p
 
   link_c::insert( bob, model->links );
 
-  if( insert_controls ) 
-    joint_c::insert( bob, model->joints );
+  //if( insert_controls ) 
+  //  joint_c::insert( bob, model->joints );
+  joint_c::insert( bob, model->joints );
   
   bson_array.append( bob.obj() );
 
@@ -89,8 +90,9 @@ bool model_c::fetch( Reveal::Core::model_ptr model, mongo::BSONObj bson_model, b
   
   link_c::fetch( model, bson_model );
 
-  if( fetch_controls )
-    joint_c::fetch( model, bson_model );
+  //if( fetch_controls )
+  //  joint_c::fetch( model, bson_model );
+  joint_c::fetch( model, bson_model );
   
   return true;
 }

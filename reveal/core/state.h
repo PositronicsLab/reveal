@@ -2,7 +2,11 @@
 author: James R Taylor (jrt@gwu.edu)
 
 state.h defines the state_c data-structure that contains the variable lenght 
-state component 0f a scenario  
+state component 0f a scenario 
+
+TODO: the link_state and joint_state classes can be better abstracted into a 
+single data structure.  Two separate classes were created due to time constraint
+ and to support both maximal and minimal state representations.
 ------------------------------------------------------------------------------*/
 
 #ifndef _REVEAL_CORE_STATE_H_
@@ -21,15 +25,15 @@ namespace Reveal {
 namespace Core {
 //-----------------------------------------------------------------------------
 
-class state_c : public serial_c {
+class link_state_c : public serial_c {
 public:
   /// Default constructor
-  state_c( void ) {
+  link_state_c( void ) {
     for( unsigned i = 0; i < size(); i++ ) _x[i] = 0.0;
     _x[3] = 1.0;  // normalize w coordinate
   }
   /// Destructor
-  virtual ~state_c( void ) {}
+  virtual ~link_state_c( void ) {}
 
 private:
   double _x[13];             //< the thirteen vector state data
@@ -213,6 +217,127 @@ public:
     for( unsigned i = 0; i < size(); i++ ) {
       stream >> _x[i];
     }
+    return true;
+  }
+};
+
+//-----------------------------------------------------------------------------
+class joint_state_c : public serial_c {
+private:
+  static const unsigned _max_size = 12;  //< absolute max size for state data 
+  // misleading in that 12 params means the joint does not constrain but 
+  // allocated at this size for safety
+
+  double _x[_max_size];    // array of max allocation to hold data
+  unsigned _current_size;  // number of elements actually in array
+
+public:
+  /// Default constructor
+  joint_state_c( void ) {
+    // zero the array
+    for( unsigned i = 0; i < _max_size; i++ ) _x[i] = 0.0;
+
+    _current_size = 1; // assume the joint has one DOF for ease of use
+                       // NOTE: must resize(...) for joint with other than 1 DOF
+  }
+  /// Destructor
+  virtual ~joint_state_c( void ) {}
+
+  void resize( unsigned size ) {
+    assert( size <= 6 );
+    _current_size = size;
+  }
+
+  /// Gets a positional component of state.
+  double q( unsigned i ) const {
+    assert( i < size_q() );
+    return _x[i];
+  }
+
+  /// Gets a first order derivative component of state.
+  double dq( unsigned i ) const {
+    assert( i < size_dq() );
+    return _x[i+size_q()];
+  }
+
+  /// Sets a positional component of state.
+  void q( unsigned i, const double& q ) {
+    assert( i < size_q() );
+    _x[i] = q;
+  }
+
+  /// Sets a first order derivative component of state.
+  void dq( unsigned i, const double& dq ) {
+    assert( i < size_dq() );
+    _x[i+size_q()] = dq;
+  }
+/*
+  /// Gets the total size of the state vector
+  unsigned size( void ) const {
+    return _current_size * 2;
+  }
+*/
+  /// Gets the size of the positional components of the state vector
+  unsigned size_q( void ) const {
+    return _current_size;
+  }
+
+  /// Gets the size of the first order derivative components of the state vector
+  unsigned size_dq( void ) const {
+    return _current_size;
+  }
+/*
+  /// Gets a reference to one of the state components.
+  /// @param i the index of the component to get.  Must be less than thirteen.
+  /// @return one of the states components
+  double& operator[]( unsigned i ) { 
+    assert( i < size() );
+    return _x[i];
+  }
+
+  /// Gets a value to one of the state components.
+  /// @param i the index of the component to get.  Must be less than thirteen.
+  /// @return one of the states components
+  const double& operator[]( unsigned i ) const { 
+    assert( i < size() );
+    return _x[i];
+  }
+*/
+  /// Prints the contents of the vector to the console
+  void print( void ) {
+    printf( "q{" );
+    for( unsigned i = 0; i < size_q(); i++ ) {
+      if( i > 0 ) printf( ", " );
+      printf( "%f", _x[i] );
+    }
+    printf( "}" );
+
+    printf( "dq{" );
+    for( unsigned i = 0; i < size_dq(); i++ ) {
+      if( i > 0 ) printf( ", " );
+      printf( "%f", _x[i+size_q()] );
+    }
+    printf( "}" );
+  }
+
+  // serial_c interface
+  virtual std::stringstream& serialize( std::stringstream& stream, char delimiter ) {
+/*
+    for( unsigned i = 0; i < size(); i++ ) {
+      if( i > 0 ) stream << delimiter;
+      stream << _x[i];
+    }
+*/
+    return stream;
+  }
+
+  // TODO : Error detection
+  virtual bool deserialize( std::stringstream& stream ) {
+/*
+    for( unsigned i = 0; i < size(); i++ ) {
+      stream >> _x[i];
+    }
+*/
     return true;
   }
 };

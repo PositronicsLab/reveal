@@ -74,7 +74,7 @@ private:
   /// @param db the database to query
   /// @param experiment_id the experiment to request
   /// @return true on success OR false on any failure
-  bool fetch( Reveal::Core::scenario_ptr& scenario, Reveal::Core::experiment_ptr& experiment, Reveal::Core::trial_ptr& initial_trial, Reveal::Core::analyzer_ptr& analyzer, boost::shared_ptr<Reveal::DB::database_c> db, std::string experiment_id );
+  bool fetch( Reveal::Core::scenario_ptr& scenario, Reveal::Core::experiment_ptr& experiment, Reveal::Core::solution_ptr& initial_state, Reveal::Core::analyzer_ptr& analyzer, boost::shared_ptr<Reveal::DB::database_c> db, std::string experiment_id );
 };
 
 //-----------------------------------------------------------------------------

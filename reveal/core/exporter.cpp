@@ -123,13 +123,22 @@ bool exporter_c::write( double t, double dt, trial_ptr trial ) {
     }
     for( unsigned j = 0; j < model->joints.size(); j++ ) {
       Reveal::Core::joint_ptr joint = model->joints[j];
+      key = model->id + "::" + joint->id + "::state";
+
+      for( unsigned k = 0; k < joint->state.size_q(); k++ ) {
+        _trial_datawriter.write( key, joint->state.q( k ), k );
+      }
+      for( unsigned k = 0; k < joint->state.size_dq(); k++ ) {
+        _trial_datawriter.write( key, joint->state.dq( k ), k );
+      }
+    }
+    for( unsigned j = 0; j < model->joints.size(); j++ ) {
+      Reveal::Core::joint_ptr joint = model->joints[j];
       key = model->id + "::" + joint->id + "::control";
-      _trial_datawriter.write( key, joint->control.linear_x(), 0 );
-      _trial_datawriter.write( key, joint->control.linear_y(), 1 );
-      _trial_datawriter.write( key, joint->control.linear_z(), 2 );
-      _trial_datawriter.write( key, joint->control.angular_x(), 3 );
-      _trial_datawriter.write( key, joint->control.angular_y(), 4 );
-      _trial_datawriter.write( key, joint->control.angular_z(), 5 );
+
+      for( unsigned k = 0; k < joint->control.size(); k++ ) {
+        _trial_datawriter.write( key, joint->control.u( k ), k );
+      }
     }
   }
 
@@ -167,6 +176,17 @@ bool exporter_c::write( double t, double dt, solution_ptr solution ) {
       _solution_datawriter.write( key, link->state.angular_dx(), 0 );
       _solution_datawriter.write( key, link->state.angular_dy(), 1 );
       _solution_datawriter.write( key, link->state.angular_dz(), 2 );
+    }
+    for( unsigned j = 0; j < model->joints.size(); j++ ) {
+      Reveal::Core::joint_ptr joint = model->joints[j];
+      key = model->id + "::" + joint->id + "::state";
+
+      for( unsigned k = 0; k < joint->state.size_q(); k++ ) {
+        _trial_datawriter.write( key, joint->state.q( k ), k );
+      }
+      for( unsigned k = 0; k < joint->state.size_dq(); k++ ) {
+        _trial_datawriter.write( key, joint->state.dq( k ), k );
+      }
     }
   }
 

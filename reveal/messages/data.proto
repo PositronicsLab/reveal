@@ -20,7 +20,8 @@ message Link {
 
 message Joint {
   optional string id = 1;
-  optional Control control = 2;
+  optional State state = 2;
+  optional Control control = 3;
 }
 
 message Model {

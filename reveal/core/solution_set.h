@@ -34,7 +34,9 @@ public:
 
 
   Reveal::Core::experiment_ptr experiment; //< associated experiment
-  Reveal::Core::trial_ptr initial_trial;   //< initial trial data
+  //Reveal::Core::trial_ptr initial_trial;   //< initial trial data
+  Reveal::Core::solution_ptr initial_state;
+
   std::vector<Reveal::Core::trial_ptr>    trials;   //< current trial data
   std::vector<Reveal::Core::solution_ptr> solutions;//< current solution data
   std::vector<Reveal::Core::solution_ptr> models;   //< current model solutions

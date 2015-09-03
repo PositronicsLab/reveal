@@ -13,6 +13,7 @@ author: James R Taylor (jrt@gwu.edu)
 #include <assert.h>
 
 #include "reveal/core/component.h"
+#include "reveal/core/state.h"
 #include "reveal/core/control.h"
 
 //-----------------------------------------------------------------------------
@@ -24,16 +25,22 @@ namespace Core {
 class joint_c : public component_c {
 public:
   std::string id;          //< the unique joint identifier
+  joint_state_c state;     //< the joint state
   control_c control;       //< the control applied to the joint
 
   /// Default constructor
   joint_c( void ) {}
+  /// Parameterized constructor
+  joint_c( std::string id ) { this->id = id; }
   /// Destructor
   virtual ~joint_c( void ) {}
 
   /// Prints the instance data to the console
   void print( void ) {
     printf( "joint[%s]", id.c_str() );
+    printf( ", state{" );
+    state.print();
+    printf( "}" );
     printf( ", control{" );
     control.print();
     printf( "}" );

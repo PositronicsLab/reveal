@@ -719,7 +719,7 @@ bool exchange_c::read_digest( Reveal::Messages::Samples::Message* msg ) {
   _digest = Reveal::Core::digest_ptr( new Reveal::Core::digest_c() );
   
   for( int i = 0; i < msg->digest().scenario_size(); i++ ) {
-    Reveal::Core::scenario_ptr scenario = Reveal::Core::scenario_ptr( new Reveal::Core::scenario_c() );
+    Reveal::Core::scenario_ptr scenario( new Reveal::Core::scenario_c() );
     _digest->add_scenario( scenario );
 
     scenario->id = msg->digest().scenario(i).id();
@@ -843,6 +843,11 @@ bool exchange_c::write_trial( Reveal::Messages::Samples::Message* msg ) {
 
       msg_joint->set_id( joint->id );
 
+      Reveal::Messages::Data::State* state = msg_joint->mutable_state();
+      for( unsigned k = 0; k < joint->state.size_q(); k++ ) 
+        state->add_q( joint->state.q(k) );
+      for( unsigned k = 0; k < joint->state.size_dq(); k++ )
+        state->add_dq( joint->state.dq(k) );    
       Reveal::Messages::Data::Control* control = msg_joint->mutable_control();
       for( unsigned k = 0; k < joint->control.size_u(); k++ ) 
         control->add_u( joint->control.u(k) );
@@ -860,13 +865,13 @@ bool exchange_c::read_trial( Reveal::Messages::Samples::Message* msg ) {
   _trial->scenario_id = msg->trial().scenario_id();
   _trial->t = msg->trial().t();
   for( int i = 0; i < msg->trial().model_size(); i++ ) {
-    Reveal::Core::model_ptr model = Reveal::Core::model_ptr( new Reveal::Core::model_c() );
+    Reveal::Core::model_ptr model( new Reveal::Core::model_c() );
     Reveal::Messages::Data::Model msg_model = msg->trial().model(i);
     
     model->id = msg_model.id();
 
     for( int j = 0; j < msg_model.link_size(); j++ ) {
-      Reveal::Core::link_ptr link = Reveal::Core::link_ptr( new Reveal::Core::link_c() );
+      Reveal::Core::link_ptr link( new Reveal::Core::link_c() );
       Reveal::Messages::Data::Link msg_link = msg_model.link(j);
       link->id = msg_link.id();
 
@@ -881,10 +886,16 @@ bool exchange_c::read_trial( Reveal::Messages::Samples::Message* msg ) {
     }
 
     for( int j = 0; j < msg_model.joint_size(); j++ ) {
-      Reveal::Core::joint_ptr joint = Reveal::Core::joint_ptr( new Reveal::Core::joint_c() );
+      Reveal::Core::joint_ptr joint( new Reveal::Core::joint_c() );
       Reveal::Messages::Data::Joint msg_joint = msg_model.joint(j);
       joint->id = msg_joint.id();
 
+      for( int k = 0; k < msg_joint.state().q_size(); k++ ) {
+        joint->state.q( k, msg_joint.state().q(k) );
+      }
+      for( int k = 0; k < msg_joint.state().dq_size(); k++ ) {
+        joint->state.dq( k, msg_joint.state().dq(k) );
+      }
       for( int k = 0; k < msg_joint.control().u_size(); k++ ) {
         joint->control.u( k, msg_joint.control().u(k) );
       }
@@ -923,6 +934,19 @@ bool exchange_c::write_solution( Reveal::Messages::Samples::Message* msg ) {
       for( unsigned k = 0; k < link->state.size_dq(); k++ )
         state->add_dq( link->state.dq(k) );    
     }
+
+    for( unsigned j = 0; j < model->joints.size(); j++ ) {
+      Reveal::Core::joint_ptr joint = model->joints[j];
+      Reveal::Messages::Data::Joint* msg_joint = msg_model->add_joint();
+
+      msg_joint->set_id( joint->id );
+
+      Reveal::Messages::Data::State* state = msg_joint->mutable_state();
+      for( unsigned k = 0; k < joint->state.size_q(); k++ ) 
+        state->add_q( joint->state.q(k) );
+      for( unsigned k = 0; k < joint->state.size_dq(); k++ )
+        state->add_dq( joint->state.dq(k) );    
+    }
   }
 
   return true;
@@ -938,13 +962,13 @@ bool exchange_c::read_solution( Reveal::Messages::Samples::Message* msg ) {
   _solution->real_time = msg->solution().real_time();
 
   for( int i = 0; i < msg->solution().model_size(); i++ ) {
-    Reveal::Core::model_ptr model = Reveal::Core::model_ptr( new Reveal::Core::model_c() );
+    Reveal::Core::model_ptr model( new Reveal::Core::model_c() );
     Reveal::Messages::Data::Model msg_model = msg->solution().model(i);
     
     model->id = msg_model.id();
 
     for( int j = 0; j < msg_model.link_size(); j++ ) {
-      Reveal::Core::link_ptr link = Reveal::Core::link_ptr( new Reveal::Core::link_c() );
+      Reveal::Core::link_ptr link( new Reveal::Core::link_c() );
       Reveal::Messages::Data::Link msg_link = msg_model.link(j);
       link->id = msg_link.id();
 
@@ -956,6 +980,23 @@ bool exchange_c::read_solution( Reveal::Messages::Samples::Message* msg ) {
       }
 
       model->links.push_back( link );
+    }
+
+    for( int j = 0; j < msg_model.joint_size(); j++ ) {
+      Reveal::Core::joint_ptr joint( new Reveal::Core::joint_c() );
+      Reveal::Messages::Data::Joint msg_joint = msg_model.joint(j);
+      joint->id = msg_joint.id();
+
+      for( int k = 0; k < msg_joint.state().q_size(); k++ ) {
+        joint->state.q( k, msg_joint.state().q(k) );
+      }
+      for( int k = 0; k < msg_joint.state().dq_size(); k++ ) {
+        joint->state.dq( k, msg_joint.state().dq(k) );
+      }
+
+      joint->control.resize( 0 );
+
+      model->joints.push_back( joint );
     }
 
     _solution->models.push_back( model );

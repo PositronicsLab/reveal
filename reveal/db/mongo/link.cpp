@@ -3,6 +3,12 @@
 #include "reveal/core/model.h"
 
 //-----------------------------------------------------------------------------
+#define DOCUMENT "links"
+#define FIELD_ID "id"
+#define FIELD_STATE_POSITION "q"
+#define FIELD_STATE_VELOCITY "dq"
+
+//-----------------------------------------------------------------------------
 namespace Reveal {
 //-----------------------------------------------------------------------------
 namespace DB {
@@ -15,7 +21,7 @@ bool link_c::insert( mongo::BSONObjBuilder& bson_parent, const std::vector<Revea
 
   for( unsigned i = 0; i < links.size(); i++ ) 
     insert( bab, links[i] ); 
-  bson_parent.appendArray( "links", bab.arr() );
+  bson_parent.appendArray( DOCUMENT, bab.arr() );
 
   return true;
 }
@@ -23,17 +29,17 @@ bool link_c::insert( mongo::BSONObjBuilder& bson_parent, const std::vector<Revea
 //-----------------------------------------------------------------------------
 bool link_c::insert( mongo::BSONArrayBuilder& bson_array, Reveal::Core::link_ptr link ) {
   mongo::BSONObjBuilder bob;
-  bob.append( "id", link->id );
+  bob.append( FIELD_ID, link->id );
 
   mongo::BSONArrayBuilder bab_q;
   for( unsigned i = 0; i < link->state.size_q(); i++ )
     bab_q.append( link->state.q(i) );
-  bob.appendArray( "state_q", bab_q.arr() );
+  bob.appendArray( FIELD_STATE_POSITION, bab_q.arr() );
   
   mongo::BSONArrayBuilder bab_dq;
   for( unsigned i = 0; i < link->state.size_dq(); i++ ) 
     bab_dq.append( link->state.dq(i) );
-  bob.appendArray( "state_dq", bab_dq.arr() );
+  bob.appendArray( FIELD_STATE_VELOCITY, bab_dq.arr() );
 
   bson_array.append( bob.obj() );
 
@@ -47,7 +53,7 @@ bool link_c::fetch( Reveal::Core::model_ptr model, mongo::BSONObj bson_model ) {
   mongo::BSONObj bson_links;
   std::vector<mongo::BSONElement> v_links;
 
-  bson_links = bson_model.getObjectField( "links" );
+  bson_links = bson_model.getObjectField( DOCUMENT );
   bson_links.elems( v_links );
 
   for( unsigned i = 0; i < v_links.size(); i++ ) {
@@ -63,24 +69,24 @@ bool link_c::fetch( Reveal::Core::model_ptr model, mongo::BSONObj bson_model ) {
 //-----------------------------------------------------------------------------
 bool link_c::fetch( Reveal::Core::link_ptr link, mongo::BSONObj bson ) {
 
-    assert( link );
+  assert( link );
 
-    link->id = bson.getField( "id" ).String();
+  link->id = bson.getField( FIELD_ID ).String();
 
-    mongo::BSONObj bson_q = bson.getObjectField( "state_q" );
-    std::vector<mongo::BSONElement> v_q;
-    bson_q.elems( v_q );
+  mongo::BSONObj bson_q = bson.getObjectField( FIELD_STATE_POSITION );
+  std::vector<mongo::BSONElement> v_q;
+  bson_q.elems( v_q );
 
-    for( unsigned i = 0; i < v_q.size(); i++ )
-      link->state.q( i, v_q[i].Double() );
+  for( unsigned i = 0; i < v_q.size(); i++ )
+    link->state.q( i, v_q[i].Double() );
 
-    mongo::BSONObj bson_dq = bson.getObjectField( "state_dq" );
+  mongo::BSONObj bson_dq = bson.getObjectField( FIELD_STATE_VELOCITY );
 
-    std::vector<mongo::BSONElement> v_dq;
-    bson_dq.elems( v_dq );
+  std::vector<mongo::BSONElement> v_dq;
+  bson_dq.elems( v_dq );
 
-    for( unsigned i = 0; i < v_dq.size(); i++ )
-      link->state.dq( i, v_dq[i].Double() );
+  for( unsigned i = 0; i < v_dq.size(); i++ )
+    link->state.dq( i, v_dq[i].Double() );
 
   return true;
 }

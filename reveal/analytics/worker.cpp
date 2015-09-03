@@ -31,7 +31,8 @@ bool worker_c::execute( boost::shared_ptr<Reveal::DB::database_c> db, const std:
   Reveal::Core::scenario_ptr scenario;
   Reveal::Core::experiment_ptr experiment;
   Reveal::Core::analyzer_ptr analyzer;
-  Reveal::Core::trial_ptr initial_trial;
+  //Reveal::Core::trial_ptr initial_trial;
+  Reveal::Core::solution_ptr initial_state;
   boost::shared_ptr<Reveal::Analytics::module_c> module;
   Reveal::Analytics::error_e error;
   Reveal::DB::database_c::error_e db_error;
@@ -43,12 +44,12 @@ bool worker_c::execute( boost::shared_ptr<Reveal::DB::database_c> db, const std:
   db->open();
 
   // fetch the experimental configuration from the database
-  if( !fetch( scenario, experiment, initial_trial, analyzer, db, experiment_id) )
+  if( !fetch( scenario, experiment, initial_state, analyzer, db, experiment_id) )
     return false;
 
   // sanity check that the fetch was successful
-  assert( scenario && experiment && initial_trial && analyzer );
-  //printf( "initial_trial t[%f]\n", initial_trial->t );
+  assert( scenario && experiment && initial_state && analyzer );
+  //printf( "initial_state t[%f]\n", initial_state->t );
 
   // load the analyzer module
   if( !load( module, analyzer ) )
@@ -78,7 +79,8 @@ bool worker_c::execute( boost::shared_ptr<Reveal::DB::database_c> db, const std:
   // set relevant solution set variables
   solution_set->time_step = scenario->sample_rate;
   solution_set->epsilon = EPSILON;
-  solution_set->initial_trial = initial_trial;
+  //solution_set->initial_trial = initial_trial;
+  solution_set->initial_state = initial_state;
 
   // generate an analysis by passing the solution_set to plugin execute method
   error = module->analyze( solution_set, analysis );
@@ -105,7 +107,8 @@ bool worker_c::execute( boost::shared_ptr<Reveal::DB::database_c> db, const std:
   Reveal::Core::scenario_ptr scenario;
   Reveal::Core::experiment_ptr experiment;
   Reveal::Core::analyzer_ptr analyzer;
-  Reveal::Core::trial_ptr initial_trial;
+  //Reveal::Core::trial_ptr initial_trial;
+  Reveal::Core::solution_ptr initial_state;
   boost::shared_ptr<Reveal::Analytics::module_c> module;
   Reveal::Analytics::error_e error;
   Reveal::DB::database_c::error_e db_error;
@@ -114,9 +117,9 @@ bool worker_c::execute( boost::shared_ptr<Reveal::DB::database_c> db, const std:
   db->open();
 
   // fetch the experimental configuration from the database
-  if( !fetch( scenario, experiment, initial_trial, analyzer, db, experiment_id) )
+  if( !fetch( scenario, experiment, initial_state, analyzer, db, experiment_id) )
     return false;
-  assert( scenario && experiment && initial_trial && analyzer );
+  assert( scenario && experiment && initial_state && analyzer );
 
   // load the analyzer module
   if( !load( module, analyzer ) )
@@ -141,7 +144,7 @@ bool worker_c::execute( boost::shared_ptr<Reveal::DB::database_c> db, const std:
     if( !solution_set ) 
       printf( "failed to select requested solution_set from db\n" );
 
-    solution_set->initial_trial = initial_trial;
+    solution_set->initial_state = initial_state;
         
     error = module->analyze( solution_set, analysis );
     if( error != Reveal::Analytics::ERROR_NONE ) {
@@ -190,7 +193,8 @@ bool worker_c::batch_execute( boost::shared_ptr<Reveal::DB::database_c> db, cons
   Reveal::Core::scenario_ptr scenario;
   Reveal::Core::experiment_ptr experiment;
   Reveal::Core::analyzer_ptr analyzer;
-  Reveal::Core::trial_ptr initial_trial;
+  //Reveal::Core::trial_ptr initial_trial;
+  Reveal::Core::solution_ptr initial_state;
   Reveal::Core::solution_set_ptr solution_set;
   Reveal::Core::analysis_ptr analysis;
   boost::shared_ptr<Reveal::Analytics::module_c> module;
@@ -201,9 +205,9 @@ bool worker_c::batch_execute( boost::shared_ptr<Reveal::DB::database_c> db, cons
   db->open();
 
   // fetch the experimental configuration from the database
-  if( !fetch( scenario, experiment, initial_trial, analyzer, db, experiment_id) )
+  if( !fetch( scenario, experiment, initial_state, analyzer, db, experiment_id) )
     return false;
-  assert( scenario && experiment && initial_trial && analyzer );
+  assert( scenario && experiment && initial_state && analyzer );
 
   // load the analyzer module
   if( !load( module, analyzer ) )
@@ -220,7 +224,7 @@ bool worker_c::batch_execute( boost::shared_ptr<Reveal::DB::database_c> db, cons
     printf( "failed to select requested solution_set from db\n" );
   assert( solution_set );
 
-  solution_set->initial_trial = initial_trial;
+  solution_set->initial_state = initial_state;
 
   // submit the comprehensive solution set to the analyzer
   //printf( "analyzing\n" );
@@ -284,7 +288,7 @@ bool worker_c::load( boost::shared_ptr<Reveal::Analytics::module_c>& module, Rev
 }
 
 //-----------------------------------------------------------------------------
-bool worker_c::fetch( Reveal::Core::scenario_ptr& scenario, Reveal::Core::experiment_ptr& experiment, Reveal::Core::trial_ptr& initial_trial, Reveal::Core::analyzer_ptr& analyzer, boost::shared_ptr<Reveal::DB::database_c> db, std::string experiment_id ) {
+bool worker_c::fetch( Reveal::Core::scenario_ptr& scenario, Reveal::Core::experiment_ptr& experiment, Reveal::Core::solution_ptr& initial_state, Reveal::Core::analyzer_ptr& analyzer, boost::shared_ptr<Reveal::DB::database_c> db, std::string experiment_id ) {
 
   Reveal::DB::database_c::error_e error;
 
@@ -298,10 +302,10 @@ bool worker_c::fetch( Reveal::Core::scenario_ptr& scenario, Reveal::Core::experi
     printf( "db error[%d] fetching scenario\n", error );
   if( !scenario ) return false;
 
-  error = db->fetch( initial_trial, experiment->scenario_id, experiment->start_time, experiment->epsilon );
+  error = db->fetch( initial_state, Reveal::Core::solution_c::MODEL, experiment->scenario_id, experiment->start_time, experiment->epsilon );
   if( error != Reveal::DB::database_c::ERROR_NONE ) 
-    printf( "db error[%d] fetching initial trial\n", error );
-  if( !initial_trial ) return false;
+    printf( "db error[%d] fetching initial state\n", error );
+  if( !initial_state ) return false;
 
   error = db->fetch( analyzer, experiment->scenario_id );
   if( error != Reveal::DB::database_c::ERROR_NONE )

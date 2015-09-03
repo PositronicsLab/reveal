@@ -22,18 +22,27 @@ namespace Core {
 //-----------------------------------------------------------------------------
 
 class control_c : public serial_c {
+private:
+  static const unsigned _max_size = 6;  //< absolute max size for control data
+
+  double _u[_max_size];      //< array of max allocation to hold data
+  unsigned _current_size;    // number of elements actually in array
 public:
   /// Default constructor
   control_c( void ) {
-    for( unsigned i = 0; i < size_u(); i++ ) _u[i] = 0.0;
+    for( unsigned i = 0; i < _max_size; i++ ) _u[i] = 0.0;
+
+    _current_size = 1; // assume the joint has one control for ease of use
+                       // NOTE: must resize(...) for joint with other than 1 DOF
   }
   /// Destructor
   virtual ~control_c( void ) {}
 
-private:
-  double _u[6];      //< the six vector control data
+  void resize( unsigned size ) {
+    assert( size <= _max_size );
+    _current_size = size;
+  }
 
-public:
   /// Gets the value of the control for the respective dimension's index.
   /// @param i the index of the control value to get.  Must be less than six.
   /// @return the value of the control in the specified dimension
@@ -53,30 +62,14 @@ public:
   /// Returns the size of the control data
   /// @return the size of the control data
   unsigned size_u( void ) const {
-    return 6;
+    return _current_size;
   }
 
   /// Returns the size of the control data
   /// @return the size of the control data
   unsigned size( void ) const {
-    return 6;
+    return _current_size;
   }
-
-  // TODO: These need to be deprecated as there is no real reliable association
-  double linear_x( void ) { return _u[0]; }
-  double linear_y( void ) { return _u[1]; }
-  double linear_z( void ) { return _u[2]; }
-  double angular_x( void ) { return _u[3]; }
-  double angular_y( void ) { return _u[4]; }
-  double angular_z( void ) { return _u[5]; }
-
-  // TODO: These need to be deprecated as there is no real reliable association
-  void linear_x( const double& x ) { _u[0] = x; }
-  void linear_y( const double& y ) { _u[1] = y; }
-  void linear_z( const double& z ) { _u[2] = z; }
-  void angular_x( const double& x ) { _u[3] = x; }
-  void angular_y( const double& y ) { _u[4] = y; }
-  void angular_z( const double& z ) { _u[5] = z; }
 
   /// Gets a reference to the control value at the specified index
   /// @param i the index to return the reference to.  Must be less than size

@@ -24,10 +24,12 @@ namespace Core {
 class link_c : public component_c {
 public:
   std::string id;         //< the unique link identifier
-  state_c state;          //< the link state
+  link_state_c state;          //< the link state
 
   /// Default constructor
   link_c( void ) {}
+  /// Parameterized constructor
+  link_c( std::string id ) { this->id = id; }
   /// Destructor
   virtual ~link_c( void ) {}
 

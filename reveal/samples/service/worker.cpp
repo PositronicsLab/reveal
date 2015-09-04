@@ -558,6 +558,8 @@ worker_c::error_e worker_c::service_solution_submission( Reveal::Core::authoriza
   // the scenario data in
   Reveal::Analytics::worker_c analytics_worker;
 
+  // TO DISABLE ALL ANALYTICS (USEFUL IN DEBUGGING) REMARK THE FOLLOWING BRANCH
+
   if( !analytics_worker.execute( _db, experiment->experiment_id, solution->t ) ) {
     printf( "Analytics failed to complete on Experiment {%s}\n", experiment->experiment_id.c_str() );
   } else {

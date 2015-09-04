@@ -30,6 +30,8 @@ public:
 
   /// Default constructor
   model_c( void ) {}
+  /// Parameterized constructor
+  model_c( std::string id ) { this->id = id; }
   /// Destructor
   virtual ~model_c( void ) {}
 

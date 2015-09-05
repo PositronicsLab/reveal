@@ -11,6 +11,7 @@ if(MongoDB_INCLUDE_DIR AND MongoDB_LIBRARIES)
 else(MongoDB_INCLUDE_DIR AND MongoDB_LIBRARIES)
 
   find_path(MongoDB_INCLUDE_DIR mongo/client/dbclient.h
+      ${CMAKE_INSTALL_PREFIX}/include
       /usr/include/
       /usr/local/include/
       /usr/include/mongo/
@@ -29,17 +30,21 @@ if(WIN32)
 else(WIN32)
   find_library(MongoDB_LIBRARIES NAMES mongoclient
       PATHS
+        ${CMAKE_INSTALL_PREFIX}/lib
+        ${CMAKE_INSTALL_PREFIX}/bin
+        ${CMAKE_INSTALL_PREFIX}/lib/mongo
+        ${CMAKE_INSTALL_PREFIX}/lib64/mongo
         /usr/lib
-	/usr/lib64
+        /usr/lib64
         /usr/lib/mongo
         /usr/lib64/mongo
         /usr/local/bin
         /usr/local/lib
-	/usr/local/lib64
+        /usr/local/lib64
         /usr/local/lib/mongo
-	/usr/local/lib64/mongo
-	/opt/mongo/lib
-	/opt/mongo/lib64
+        /usr/local/lib64/mongo
+        /opt/mongo/lib
+        /opt/mongo/lib64
         /opt/mongo/bin
       )
 endif(WIN32)

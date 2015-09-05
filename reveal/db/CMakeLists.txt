@@ -9,10 +9,12 @@ project( "reveal_${COMPONENT_NAME}" )
 find_package( MongoDB REQUIRED )
 find_package( Boost REQUIRED COMPONENTS system thread )
 
+include_directories(${MongoDB_INCLUDE_DIR})
+
 #------------------------------------------------------
 # header files
 set( HDRS
-  service.h 
+  service.h
   database.h
   mongo/mongo.h
   mongo/user.h
@@ -32,7 +34,7 @@ set( HDRS
 )
 
 # source files
-set( SRCS 
+set( SRCS
   database.cpp
   mongo/mongo.cpp
   mongo/user.cpp

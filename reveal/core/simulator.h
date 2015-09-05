@@ -9,6 +9,7 @@ author: James R Taylor (jrt@gwu.edu)
 #include "reveal/core/pointers.h"
 #include <boost/function.hpp>
 #include <dlfcn.h>
+#include <iostream>
 
 //-----------------------------------------------------------------------------
 namespace Reveal {

@@ -13,8 +13,11 @@ find_package( Boost REQUIRED COMPONENTS system filesystem )
 find_package( ZeroMQ REQUIRED )
 find_package( TinyXML REQUIRED )
 find_package( DL REQUIRED )
+if (UNIX)
+  find_package( Threads REQUIRED )
+endif()
 
-include_directories( 
+include_directories(
   ${DL_INCLUDE_DIRS}
   ${ZeroMQ_INCLUDE_DIRS}
 )
@@ -26,7 +29,7 @@ link_directories(
 
 #------------------------------------------------------
 # header files
-set( HDRS 
+set( HDRS
   error.h
   console.h
   system.h
@@ -63,7 +66,7 @@ set( HDRS
 )
 
 # source files
-set( SRCS 
+set( SRCS
   console.cpp
   system.cpp
   connection.cpp
@@ -79,8 +82,9 @@ set( SRCS
 set( LIBS
   ${DL_LIBRARIES}
   ${Boost_LIBRARIES}
-  ${ZeroMQ_LIBRARIES} 
+  ${ZeroMQ_LIBRARIES}
   ${TinyXML_LIBRARIES}
+  ${CMAKE_THREAD_LIBS_INIT}
   reveal_messages
 )
 

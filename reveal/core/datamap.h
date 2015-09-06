@@ -76,6 +76,7 @@ public:
   ///         reason 
   bool map_joint_element( xml_element_ptr element, unsigned& column, std::string parent_key );
 
+  // TODO: update documentation
   /// Reads a field xml element and stores the column map definition
   /// @param element the xml element to read
   /// @param column the current column count
@@ -83,6 +84,9 @@ public:
   /// @return true if mapping was successful OR false if mapping failed for any
   ///         reason 
   bool map_field_element( xml_element_ptr element, unsigned& column, std::string parent_key = "" );
+
+  bool map_link_field_element( xml_element_ptr element, unsigned& column, std::string parent_key = "" );
+  bool map_joint_field_element( xml_element_ptr element, unsigned& column, std::string parent_key = "" );
 
   /// Prints the columns map to the console
   void print( void );

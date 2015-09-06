@@ -2,7 +2,7 @@
 
 #include <sstream>
 #include <string>
-
+#include <stdlib.h>
 //-----------------------------------------------------------------------------
 namespace Reveal {
 //-----------------------------------------------------------------------------
@@ -33,6 +33,8 @@ bool datamap_c::map_trial_element( xml_element_ptr top ) {
     }
   }
 
+  //printf( "%u trial columns mapped\n", _columns );
+
   return true;
 }
 
@@ -50,6 +52,8 @@ bool datamap_c::map_solution_element( xml_element_ptr top ) {
       map_model_element( element, _columns );
     }
   }
+
+  //printf( "%u solution columns mapped\n", _columns );
 
   return true;
 }
@@ -97,7 +101,7 @@ bool datamap_c::map_link_element( xml_element_ptr top, unsigned& column, std::st
   for( unsigned i = 0; i < top->elements(); i++ ) {
     element = top->element( i );
     if( element->get_name() == "Field" )
-      map_field_element( element, column, key );
+      map_link_field_element( element, column, key );
   }
 
   return true;
@@ -121,7 +125,7 @@ bool datamap_c::map_joint_element( xml_element_ptr top, unsigned& column, std::s
   for( unsigned i = 0; i < top->elements(); i++ ) {
     element = top->element( i );
     if( element->get_name() == "Field" )
-      map_field_element( element, column, key );
+      map_joint_field_element( element, column, key );
   }
 
   return true;
@@ -130,7 +134,7 @@ bool datamap_c::map_joint_element( xml_element_ptr top, unsigned& column, std::s
 bool datamap_c::map_field_element( xml_element_ptr element, unsigned& column, std::string parent_key ) {
   xml_attribute_ptr attribute;
   std::string key = "";
-  unsigned size = 1;
+  unsigned size = 0;
 
   // This method needs more flexibility.  Parsing the field here makes it easy
   // to know size, but the hardcoding of field names limits the capability
@@ -138,27 +142,106 @@ bool datamap_c::map_field_element( xml_element_ptr element, unsigned& column, st
     attribute = element->attribute( j );
     if( attribute->get_name() == "name" ) {
       key += attribute->get_value();
-
-      if( key == "position" ) {
-        size = 3;
-      } else if( key == "rotation" ) {
-        size = 4;
-      } else if( key == "linear-velocity" ) {
-        size = 3;
-      } else if( key == "angular-velocity" ) {
-        size = 3;
-      } else if( key == "control" ) {
-        size = 6;
-      }
-
-      if( parent_key != "" ) {
-        key = parent_key + "::" + key;
-      }
-      _map.insert( std::pair<std::string,unsigned>( key, ++column ) );
-      column += (size - 1);
-      break;
+    } else if( attribute->get_name() == "size" ) {
+      size = (unsigned)atoi( attribute->get_value().c_str() );
     }
   }
+  
+  if( key == "" ) return false;
+
+  if( key == "time" ) {
+    size = 1;
+  } else {
+    return false;                     // unexpected field element format
+  }
+
+  if( parent_key != "" ) {
+    key = parent_key + "::" + key;
+  }
+  _map.insert( std::pair<std::string,unsigned>( key, ++column ) );
+  column += (size - 1);
+
+  return true;
+}
+
+//-----------------------------------------------------------------------------
+bool datamap_c::map_link_field_element( xml_element_ptr element, unsigned& column, std::string parent_key ) {
+  xml_attribute_ptr attribute;
+  std::string key = "";
+  unsigned size = 0;
+
+  // This method needs more flexibility.  Parsing the field here makes it easy
+  // to know size, but the hardcoding of field names limits the capability
+  for( unsigned j = 0; j < element->attributes(); j++ ) {
+    attribute = element->attribute( j );
+    if( attribute->get_name() == "name" ) {
+      key += attribute->get_value();
+    } else if( attribute->get_name() == "size" ) {
+      size = (unsigned)atoi( attribute->get_value().c_str() );
+    }
+  }
+  
+  if( key == "" ) return false;
+
+  if( key == "position" ) {
+    size = 3;
+  } else if( key == "rotation" ) {
+    size = 4;
+  } else if( key == "linear-velocity" ) {
+    size = 3;
+  } else if( key == "angular-velocity" ) {
+    size = 3;
+  } else {
+    return false;                     // unexpected field element format
+  }
+
+  //if( size == 0 ) return true;        // technically successful?
+
+  if( parent_key != "" ) {
+    key = parent_key + "::" + key;
+  }
+  _map.insert( std::pair<std::string,unsigned>( key, ++column ) );
+  column += (size - 1);
+
+  return true;
+}
+
+//-----------------------------------------------------------------------------
+bool datamap_c::map_joint_field_element( xml_element_ptr element, unsigned& column, std::string parent_key ) {
+  xml_attribute_ptr attribute;
+  std::string key = "";
+  unsigned size = 0;
+
+  // This method needs more flexibility.  Parsing the field here makes it easy
+  // to know size, but the hardcoding of field names limits the capability
+  for( unsigned j = 0; j < element->attributes(); j++ ) {
+    attribute = element->attribute( j );
+    if( attribute->get_name() == "name" ) {
+      key += attribute->get_value();
+    } else if( attribute->get_name() == "size" ) {
+      size = (unsigned)atoi( attribute->get_value().c_str() );
+    }
+  }
+  
+  if( key == "" ) return false;
+
+  if( key == "position" ) {
+    if( size == 0 ) return false;     // should probably return true instead
+  } else if( key == "velocity" ) {
+    if( size == 0 ) return false;     // should probably return true instead
+  } else if( key == "control" ) {
+    if( size == 0 ) return false;     // should probably return true instead
+  } else {
+    return false;                     // unexpected field element format
+  }
+
+  //if( size == 0 ) return true;        // technically successful?
+
+  if( parent_key != "" ) {
+    key = parent_key + "::" + key;
+  }
+  _map.insert( std::pair<std::string,unsigned>( key, ++column ) );
+  column += (size - 1);
 
   return true;
 }
@@ -528,11 +611,36 @@ bool datareader_c::read_field( component_ptr owner, xml_element_ptr top, std::st
     }
   } else if( owner->component_type() == component_c::JOINT ) {
     joint_ptr joint = boost::dynamic_pointer_cast<joint_c>( owner );
-    if( name == "control" ) {
-      size = 6;
-      for( unsigned i = 0; i < size; i++ ) {
+    // TODO: the following all assumes that these fields are resized a priori
+    unsigned size = 0;
+
+    joint->state.resize( 0 );
+    joint->control.resize( 0 );
+    // get the size attribute
+    attribute = top->attribute( "size" );
+    if( attribute )
+      size = (unsigned)atoi( attribute->get_value().c_str() );
+
+    if( name == "position" ) {
+      joint->state.resize( size );
+      for( unsigned i = 0; i < joint->state.size_q(); i++ ) {
         unsigned cell = column - 1 + i;
-        joint->control[i] = _cells[cell];
+        joint->state.q( i, _cells[cell] );
+      }
+      return true; 
+    } else if( name == "velocity" ) {
+      joint->state.resize( size );  
+      // a little confusing but this resize call doesn't destroy data
+      for( unsigned i = 0; i < joint->state.size_dq(); i++ ) {
+        unsigned cell = column - 1 + i;
+        joint->state.dq( i, _cells[cell] );
+      }
+      return true; 
+    } else if( name == "control" ) {
+      joint->state.resize( size );
+      for( unsigned i = 0; i < joint->control.size(); i++ ) {
+        unsigned cell = column - 1 + i;
+        joint->control.u( i, _cells[cell] );
       }
       return true; 
     }

@@ -94,28 +94,31 @@ bool exporter_c::write( std::string analyzer_file, analyzer_ptr analyzer ) {
 }
 
 //-----------------------------------------------------------------------------
-bool exporter_c::write( double t, double dt, trial_ptr trial ) {
-  _trial_datawriter.write( "time", t );
-  _trial_datawriter.write( "time-step", dt );
+bool exporter_c::write( trial_ptr trial ) {
 
+  _trial_datawriter.write( "time", trial->t );
   for( unsigned i = 0; i < trial->models.size(); i++ ) {
     Reveal::Core::model_ptr model = trial->models[i];
     std::string key;
     for( unsigned j = 0; j < model->links.size(); j++ ) {
       Reveal::Core::link_ptr link = model->links[j];
+
       key = model->id + "::" + link->id + "::position";
       _trial_datawriter.write( key, link->state.linear_x(), 0 );
       _trial_datawriter.write( key, link->state.linear_y(), 1 );
       _trial_datawriter.write( key, link->state.linear_z(), 2 );
+
       key = model->id + "::" + link->id + "::rotation";
       _trial_datawriter.write( key, link->state.angular_x(), 0 );
       _trial_datawriter.write( key, link->state.angular_y(), 1 );
       _trial_datawriter.write( key, link->state.angular_z(), 2 );
       _trial_datawriter.write( key, link->state.angular_w(), 3 );
+
       key = model->id + "::" + link->id + "::linear-velocity";
       _trial_datawriter.write( key, link->state.linear_dx(), 0 );
       _trial_datawriter.write( key, link->state.linear_dy(), 1 );
       _trial_datawriter.write( key, link->state.linear_dz(), 2 );
+
       key = model->id + "::" + link->id + "::angular-velocity";
       _trial_datawriter.write( key, link->state.angular_dx(), 0 );
       _trial_datawriter.write( key, link->state.angular_dy(), 1 );
@@ -123,19 +126,18 @@ bool exporter_c::write( double t, double dt, trial_ptr trial ) {
     }
     for( unsigned j = 0; j < model->joints.size(); j++ ) {
       Reveal::Core::joint_ptr joint = model->joints[j];
-      key = model->id + "::" + joint->id + "::state";
 
+      key = model->id + "::" + joint->id + "::position";
       for( unsigned k = 0; k < joint->state.size_q(); k++ ) {
         _trial_datawriter.write( key, joint->state.q( k ), k );
       }
+
+      key = model->id + "::" + joint->id + "::velocity";
       for( unsigned k = 0; k < joint->state.size_dq(); k++ ) {
         _trial_datawriter.write( key, joint->state.dq( k ), k );
       }
-    }
-    for( unsigned j = 0; j < model->joints.size(); j++ ) {
-      Reveal::Core::joint_ptr joint = model->joints[j];
-      key = model->id + "::" + joint->id + "::control";
 
+      key = model->id + "::" + joint->id + "::control";
       for( unsigned k = 0; k < joint->control.size(); k++ ) {
         _trial_datawriter.write( key, joint->control.u( k ), k );
       }
@@ -148,9 +150,9 @@ bool exporter_c::write( double t, double dt, trial_ptr trial ) {
 }
 
 //-----------------------------------------------------------------------------
-bool exporter_c::write( double t, double dt, solution_ptr solution ) {
-  _solution_datawriter.write( "time", t );
-  _solution_datawriter.write( "time-step", dt );
+bool exporter_c::write( solution_ptr solution ) {
+
+  _solution_datawriter.write( "time", solution->t );
   if( solution->type == Reveal::Core::solution_c::CLIENT )
     _solution_datawriter.write( "real-time", solution->real_time );
 
@@ -159,19 +161,23 @@ bool exporter_c::write( double t, double dt, solution_ptr solution ) {
     std::string key;
     for( unsigned j = 0; j < model->links.size(); j++ ) {
       Reveal::Core::link_ptr link = model->links[j];
+
       key = model->id + "::" + link->id + "::position";
       _solution_datawriter.write( key, link->state.linear_x(), 0 );
       _solution_datawriter.write( key, link->state.linear_y(), 1 );
       _solution_datawriter.write( key, link->state.linear_z(), 2 );
+
       key = model->id + "::" + link->id + "::rotation";
       _solution_datawriter.write( key, link->state.angular_x(), 0 );
       _solution_datawriter.write( key, link->state.angular_y(), 1 );
       _solution_datawriter.write( key, link->state.angular_z(), 2 );
       _solution_datawriter.write( key, link->state.angular_w(), 3 );
+
       key = model->id + "::" + link->id + "::linear-velocity";
       _solution_datawriter.write( key, link->state.linear_dx(), 0 );
       _solution_datawriter.write( key, link->state.linear_dy(), 1 );
       _solution_datawriter.write( key, link->state.linear_dz(), 2 );
+
       key = model->id + "::" + link->id + "::angular-velocity";
       _solution_datawriter.write( key, link->state.angular_dx(), 0 );
       _solution_datawriter.write( key, link->state.angular_dy(), 1 );
@@ -179,11 +185,13 @@ bool exporter_c::write( double t, double dt, solution_ptr solution ) {
     }
     for( unsigned j = 0; j < model->joints.size(); j++ ) {
       Reveal::Core::joint_ptr joint = model->joints[j];
-      key = model->id + "::" + joint->id + "::state";
 
+      key = model->id + "::" + joint->id + "::position";
       for( unsigned k = 0; k < joint->state.size_q(); k++ ) {
         _trial_datawriter.write( key, joint->state.q( k ), k );
       }
+
+      key = model->id + "::" + joint->id + "::velocity";
       for( unsigned k = 0; k < joint->state.size_dq(); k++ ) {
         _trial_datawriter.write( key, joint->state.dq( k ), k );
       }
@@ -396,6 +404,10 @@ bool exporter_c::write_solution_file_element( xml_element_ptr parent, solution_p
       link_ptr link = model->links[j];
       write_link_element( element, link, column );
     }
+    for( unsigned j = 0; j < model->joints.size(); j++ ) {
+      joint_ptr joint = model->joints[j];
+      write_joint_element( element, joint, column, false );
+    }
     top->append( element );
   }
 
@@ -495,7 +507,7 @@ bool exporter_c::write_link_element( xml_element_ptr parent, link_ptr link, unsi
 }
 
 //-----------------------------------------------------------------------------
-bool exporter_c::write_joint_element( xml_element_ptr parent, joint_ptr joint, unsigned& column ) {
+bool exporter_c::write_joint_element( xml_element_ptr parent, joint_ptr joint, unsigned& column, bool write_controls ) {
   xml_element_ptr top, element;
   xml_attribute_ptr attribute;
 
@@ -506,7 +518,10 @@ bool exporter_c::write_joint_element( xml_element_ptr parent, joint_ptr joint, u
   attribute->set_value( joint->id );
   top->append( attribute );
  
-  add_field_element( top, "control", column, 6 );
+  add_field_element( top, "position", column, joint->state.size_q() );
+  add_field_element( top, "velocity", column, joint->state.size_dq() );
+  if( write_controls )
+    add_field_element( top, "control", column, joint->control.size() );
 
   parent->append( top );
 
@@ -535,6 +550,10 @@ bool exporter_c::add_field_element( xml_element_ptr parent, std::string name, un
   attribute = xml_attribute_ptr( new xml_attribute_c() );
   attribute->set_name( "name" );
   attribute->set_value( name );
+  element->append( attribute );
+  attribute = xml_attribute_ptr( new xml_attribute_c() );
+  attribute->set_name( "size" );
+  attribute->set_value( size );
   element->append( attribute );
   add_column_attribute( element, column, size );
   parent->append( element );

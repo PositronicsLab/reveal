@@ -38,20 +38,16 @@ public:
   bool write( scenario_ptr scenario, analyzer_ptr analyzer, solution_ptr ex_solution, trial_ptr ex_trial, std::string delimiter = " " );
 
   /// Write a trial sample to the exporter trial flat file
-  /// @param t the time of this trial
-  /// @param dt the time-step this trial will take *deprecated info*
   /// @param trial the trial data to write
   /// @return true if the write operation was successful OR false if the 
   ///         operation failed for any reason
-  bool write( double t, double dt, trial_ptr trial );
+  bool write( trial_ptr trial );
 
   /// Write a solution sample to the exporter solution flat file
-  /// @param t the time of this solution
-  /// @param dt the time-step that was taken to yield solution *deprecated info*
   /// @param solution the solution data to write
   /// @return true if the write operation was successful OR false if the 
   ///         operation failed for any reason
-  bool write( double t, double dt, solution_ptr solution );
+  bool write( solution_ptr solution );
 
 private:
   datamap_ptr _trial_column_map;     //< datamap defining trial file columns
@@ -130,13 +126,14 @@ private:
   ///         failed for any reason
   bool write_link_element( xml_element_ptr parent, link_ptr link, unsigned& column );
 
+  // TODO: update documentation
   /// Write the joint xml element which is a component of trial file definitions
   /// @param parent the xml element to assign this definition to
   /// @param joint the joint to map
   /// @param column the current column count
   /// @return true if the element was successfully written OR false if the write
   ///         failed for any reason
-  bool write_joint_element( xml_element_ptr parent, joint_ptr joint, unsigned& column );
+  bool write_joint_element( xml_element_ptr parent, joint_ptr joint, unsigned& column, bool write_controls = true );
 
   /// Add an xml attribute defining a column in a flat file
   /// @param element the element to add the attribute to

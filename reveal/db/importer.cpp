@@ -28,10 +28,12 @@ bool importer_c::read( std::string path, std::string file ) {
 
 #ifdef LOCAL_DB
   _db = boost::shared_ptr<Reveal::DB::database_c>( new Reveal::DB::database_c() );
-  if( !_db->open() ) return false;
+  if( !_db->open() ) {
+    printf( "ERROR: failed to open database\n" );
+    return false;
+  }
 #endif
 
-  //xml.read( _file );
   xml.read( full_path );
   root = xml.root();
 
@@ -45,14 +47,6 @@ bool importer_c::read( std::string path, std::string file ) {
       if( result && scenario ) {
 #ifdef LOCAL_DB
         _db->insert( scenario );
-#endif
-      }
-    } else if( element->get_name() == "Analyzer" ) {
-      Reveal::Core::analyzer_ptr analyzer;
-      result = read_analyzer_element( element, analyzer );
-      if( result && analyzer ) {
-#ifdef LOCAL_DB
-        _db->insert( analyzer );
 #endif
       }
     }
@@ -74,16 +68,18 @@ bool importer_c::read_scenario_element( Reveal::Core::xml_element_ptr top, Revea
 
   for( unsigned i = 0; i < top->attributes(); i++ ) {
     attribute = top->attribute( i );
-    if( attribute->get_name() == "id" ) {
+    std::string name = attribute->get_name();
+
+    if( name == "id" ) {
       scenario->id = attribute->get_value();
-    } else if( attribute->get_name() == "package-id" ) {
+    } else if( name == "package-id" ) {
       scenario->package_id = attribute->get_value();
-    } else if( attribute->get_name() == "sample-rate" ) {
+    } else if( name == "sample-rate" ) {
       scenario->sample_rate = (double)atof( attribute->get_value().c_str() );
-    } else if( attribute->get_name() == "sample-start-time" ) {
-      scenario->sample_start_time = (unsigned)atof( attribute->get_value().c_str() );
-    } else if( attribute->get_name() == "sample-end-time" ) {
-      scenario->sample_end_time = (unsigned)atof( attribute->get_value().c_str() );
+    } else if( name == "sample-start-time" ) {
+      scenario->sample_start_time = (double)atof( attribute->get_value().c_str() );
+    } else if( name == "sample-end-time" ) {
+      scenario->sample_end_time = (double)atof( attribute->get_value().c_str() );
     }
   }
 
@@ -284,16 +280,36 @@ bool importer_c::read_solution_file_element( Reveal::Core::xml_element_ptr top, 
 //-----------------------------------------------------------------------------
 bool importer_c::read_analyzer_file_element( Reveal::Core::xml_element_ptr top ) {
   std::string filename;  
+  Reveal::Core::xml_c xml;
   Reveal::Core::xml_attribute_ptr attribute;
+  Reveal::Core::xml_element_ptr root, element;  
 
-  // sanity check: validation of 'name' should already have occured in caller
   attribute = top->attribute( "name" );
   if( !attribute )    return false;     // no filename specified 
   filename = attribute->get_value();
 
-  bool result = read( _path, filename );
+  std::string full_path = combine_path( _path, filename );
 
-  return result;
+  //xml.read( _file );
+  xml.read( full_path );
+  root = xml.root();
+
+  bool result = false;
+  for( unsigned i = 0; i < root->elements(); i++ ) {
+    element = root->element( i );
+
+    if( element->get_name() == "Analyzer" ) {
+      Reveal::Core::analyzer_ptr analyzer;
+      result = read_analyzer_element( element, analyzer );
+      if( result && analyzer ) {
+#ifdef LOCAL_DB
+        _db->insert( analyzer );
+#endif
+      }
+    }
+  }
+
+  return true;
 }
 
 //-----------------------------------------------------------------------------

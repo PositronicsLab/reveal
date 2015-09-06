@@ -95,9 +95,32 @@ set_target_properties( ${CONFIG_UTILITY_NAME} PROPERTIES VERSION ${REVEAL_VERSIO
 install( TARGETS ${CONFIG_UTILITY_NAME} DESTINATION ${BIN_INSTALL_DIR} )
 
 #------------------------------------------------------
+# build the import tool
+set( IMPORT_UTILITY_NAME "${PROJECT_NAME}_import" )
+
+add_executable( ${IMPORT_UTILITY_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/utilities/importer.cpp )
+add_dependencies( ${IMPORT_UTILITY_NAME} 
+  reveal_db 
+  reveal_core 
+)
+
+target_link_libraries( ${IMPORT_UTILITY_NAME} 
+  ${MongoDB_LIBRARIES}
+  reveal_core
+  reveal_db
+)
+
+#------------------------------------------------------
+# install the configuration tool
+set_target_properties( ${IMPORT_UTILITY_NAME} PROPERTIES VERSION ${REVEAL_VERSION_FULL} )
+install( TARGETS ${IMPORT_UTILITY_NAME} DESTINATION ${BIN_INSTALL_DIR} )
+
+#------------------------------------------------------
 #------------------------------------------------------
 # build tests
-#if( BUILD_TESTS )
-#  add_subdirectory( test )
-#endif()
+if( BUILD_TESTS )
+  add_subdirectory( test )
+endif()
+
+#add_subdirectory( utilities )
 

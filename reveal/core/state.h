@@ -224,18 +224,20 @@ public:
 //-----------------------------------------------------------------------------
 class joint_state_c : public serial_c {
 private:
-  static const unsigned _max_size = 12;  //< absolute max size for state data 
-  // misleading in that 12 params means the joint does not constrain but 
-  // allocated at this size for safety
+  static const unsigned _max_size = 6;  //< absolute max size for state data 
 
-  double _x[_max_size];    // array of max allocation to hold data
+  double _q[_max_size];    // array of max allocation to hold data
+  double _dq[_max_size];    // array of max allocation to hold data
   unsigned _current_size;  // number of elements actually in array
 
 public:
   /// Default constructor
   joint_state_c( void ) {
     // zero the array
-    for( unsigned i = 0; i < _max_size; i++ ) _x[i] = 0.0;
+    for( unsigned i = 0; i < _max_size; i++ ) {
+      _q[i] = 0.0;
+      _dq[i] = 0.0;
+    }
 
     _current_size = 1; // assume the joint has one DOF for ease of use
                        // NOTE: must resize(...) for joint with other than 1 DOF
@@ -251,25 +253,25 @@ public:
   /// Gets a positional component of state.
   double q( unsigned i ) const {
     assert( i < size_q() );
-    return _x[i];
+    return _q[i];
   }
 
   /// Gets a first order derivative component of state.
   double dq( unsigned i ) const {
     assert( i < size_dq() );
-    return _x[i+size_q()];
+    return _dq[i];
   }
 
   /// Sets a positional component of state.
   void q( unsigned i, const double& q ) {
     assert( i < size_q() );
-    _x[i] = q;
+    _q[i] = q;
   }
 
   /// Sets a first order derivative component of state.
   void dq( unsigned i, const double& dq ) {
     assert( i < size_dq() );
-    _x[i+size_q()] = dq;
+    _dq[i] = dq;
   }
 /*
   /// Gets the total size of the state vector
@@ -308,36 +310,41 @@ public:
     printf( "q{" );
     for( unsigned i = 0; i < size_q(); i++ ) {
       if( i > 0 ) printf( ", " );
-      printf( "%f", _x[i] );
+      printf( "%f", _q[i] );
     }
     printf( "}" );
 
     printf( "dq{" );
     for( unsigned i = 0; i < size_dq(); i++ ) {
       if( i > 0 ) printf( ", " );
-      printf( "%f", _x[i+size_q()] );
+      printf( "%f", _dq[i] );
     }
     printf( "}" );
   }
 
   // serial_c interface
   virtual std::stringstream& serialize( std::stringstream& stream, char delimiter ) {
-/*
-    for( unsigned i = 0; i < size(); i++ ) {
+    for( unsigned i = 0; i < size_q(); i++ ) {
       if( i > 0 ) stream << delimiter;
-      stream << _x[i];
+      stream << _q[i];
     }
-*/
+
+    for( unsigned i = 0; i < size_dq(); i++ ) {
+      if( i > 0 ) stream << delimiter;
+      stream << _dq[i];
+    }
+
     return stream;
   }
 
   // TODO : Error detection
   virtual bool deserialize( std::stringstream& stream ) {
-/*
-    for( unsigned i = 0; i < size(); i++ ) {
-      stream >> _x[i];
+    for( unsigned i = 0; i < size_q(); i++ ) {
+      stream >> _q[i];
     }
-*/
+    for( unsigned i = 0; i < size_dq(); i++ ) {
+      stream >> _dq[i];
+    }
     return true;
   }
 };

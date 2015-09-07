@@ -188,12 +188,12 @@ bool exporter_c::write( solution_ptr solution ) {
 
       key = model->id + "::" + joint->id + "::position";
       for( unsigned k = 0; k < joint->state.size_q(); k++ ) {
-        _trial_datawriter.write( key, joint->state.q( k ), k );
+        _solution_datawriter.write( key, joint->state.q( k ), k );
       }
 
       key = model->id + "::" + joint->id + "::velocity";
       for( unsigned k = 0; k < joint->state.size_dq(); k++ ) {
-        _trial_datawriter.write( key, joint->state.dq( k ), k );
+        _solution_datawriter.write( key, joint->state.dq( k ), k );
       }
     }
   }
@@ -520,7 +520,7 @@ bool exporter_c::write_joint_element( xml_element_ptr parent, joint_ptr joint, u
  
   add_field_element( top, "position", column, joint->state.size_q() );
   add_field_element( top, "velocity", column, joint->state.size_dq() );
-  if( write_controls )
+  if( write_controls && joint->control.size() )
     add_field_element( top, "control", column, joint->control.size() );
 
   parent->append( top );

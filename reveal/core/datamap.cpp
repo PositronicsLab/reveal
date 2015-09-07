@@ -536,6 +536,9 @@ bool datareader_c::read_joint( model_ptr owner, xml_element_ptr top, std::string
   key += name;
   joint->id = name;
 
+  joint->state.resize( 0 );
+  joint->control.resize( 0 );
+
   for( unsigned i = 0; i < top->elements(); i++ ) {
     element = top->element( i );
     tag = element->get_name();
@@ -614,8 +617,6 @@ bool datareader_c::read_field( component_ptr owner, xml_element_ptr top, std::st
     // TODO: the following all assumes that these fields are resized a priori
     unsigned size = 0;
 
-    joint->state.resize( 0 );
-    joint->control.resize( 0 );
     // get the size attribute
     attribute = top->attribute( "size" );
     if( attribute )

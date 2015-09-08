@@ -14,7 +14,7 @@ running analytics on a client's evaluation of a scenario
 #include <vector>
 #include <reveal/core/pointers.h>
 #include <reveal/core/experiment.h>
-
+#include <reveal/core/solution_set.h>
 //-----------------------------------------------------------------------------
 namespace Reveal {
 //-----------------------------------------------------------------------------
@@ -36,6 +36,10 @@ public:
 
   /// Default constructor
   analysis_c( void ) { }
+  /// Parametric constructor
+  analysis_c( Reveal::Core::solution_set_ptr solution_set ) {  
+    experiment = solution_set->experiment;
+  }
   /// Destructor
   virtual ~analysis_c( void ) { }
 

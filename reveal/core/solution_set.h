@@ -32,7 +32,6 @@ public:
   /// Destructor
   virtual ~solution_set_c( void ) {}
 
-
   Reveal::Core::experiment_ptr experiment; //< associated experiment
   //Reveal::Core::trial_ptr initial_trial;   //< initial trial data
   Reveal::Core::solution_ptr initial_state;

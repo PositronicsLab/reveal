@@ -36,9 +36,15 @@ int main( void ) {
     std::string request, reply;
     request = "hello";
     printf( "sending request: %s\n", request.c_str() );
-    connection->write( request );
+    if( connection->write( request ) != Reveal::Core::connection_c::ERROR_NONE) {
+      printf( "ERROR: connection failed to write request\nExiting\n" );
+      return 1;
+    }
 
-    connection->read( reply );
+    if( connection->read( reply ) != Reveal::Core::connection_c::ERROR_NONE ) {
+      printf( "ERROR: connection failed to read reply\nExiting\n" );
+      return 1;
+    }
     printf( "received reply: %s\n", reply.c_str() );
   }
 

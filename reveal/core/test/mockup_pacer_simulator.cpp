@@ -17,12 +17,18 @@ int main( int argv, char* argc[] ) {
 
   while(true) {
     std::string request, reply;
-    connection.read( request );
+    if( connection.read( request ) != Reveal::Core::connection_c::ERROR_NONE ) {
+      printf( "ERROR: connection failed to read request\nExiting" );
+      return 1;
+    }
     printf( "received request: %s\n", request.c_str() );
 
     reply = "good day";
     printf( "sending reply: %s\n", reply.c_str() ); 
-    connection.write( reply );
+    if( connection.write( reply ) != Reveal::Core::connection_c::ERROR_NONE ) {
+      printf( "ERROR: connection failed to write reply\nExiting\n" );
+      return 1;
+    }
   }
 
   return 0;

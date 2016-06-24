@@ -88,6 +88,8 @@ set( LIBS
   reveal_messages
 )
 
+add_subdirectory( test )
+
 #------------------------------------------------------
 # build the revealcore library
 add_library( ${PROJECT_NAME} SHARED ${HDRS} ${SRCS} )

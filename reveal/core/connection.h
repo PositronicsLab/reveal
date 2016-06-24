@@ -33,9 +33,9 @@ public:
     ROUTER,       //< External server binding, accepts client connections.
     DEALER,       //< Internal server binding, ipc routing server-worker.
     WORKER,       //< Internal server connection, ipc routing endpoint, worker.
-    CLIENT        //< Client connection, makes connections to servers.
-//    IPC_SERVER,   //< Internal ipc connection server endpoint
-//    IPC_CLIENT    //< Internal ipc connection client endpoint
+    CLIENT,        //< Client connection, makes connections to servers.
+    IPC_SERVER,   //< Internal ipc connection server endpoint
+    IPC_CLIENT    //< Internal ipc connection client endpoint
   };
 
   enum error_e {
@@ -80,6 +80,10 @@ public:
   /// @param id the identifier of the port to communicate on
   connection_c( const role_e& role, void* context, std::string id );
 */
+  /// Server internal ipc constructor, role = IPC.
+  /// @param role the role {IPC} that this internal connection will play.
+  /// @param id the identifier of the port to communicate on
+  connection_c( const role_e& role, std::string id );
 
   /// Default destructor.
   virtual ~connection_c( void );
@@ -133,6 +137,7 @@ private:
 
   /// The 0MQ context.
   void* _context;
+  bool _owns_context;
   /// The 0MQ socket.
   void* _socket;
 

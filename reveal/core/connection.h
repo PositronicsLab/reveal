@@ -35,7 +35,8 @@ public:
     WORKER,       //< Internal server connection, ipc routing endpoint, worker.
     CLIENT,        //< Client connection, makes connections to servers.
     IPC_SERVER,   //< Internal ipc connection server endpoint
-    IPC_CLIENT    //< Internal ipc connection client endpoint
+    IPC_CLIENT,    //< Internal ipc connection client endpoint
+    TCP_SERVER,   //< TCP connection server endpoint
   };
 
   enum error_e {
@@ -84,6 +85,8 @@ public:
   /// @param role the role {IPC} that this internal connection will play.
   /// @param id the identifier of the port to communicate on
   connection_c( const role_e& role, std::string id );
+
+  connection_c( const role_e& role, unsigned port );
 
   /// Default destructor.
   virtual ~connection_c( void );
